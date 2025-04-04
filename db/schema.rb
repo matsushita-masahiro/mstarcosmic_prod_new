@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_03_214850) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_04_175508) do
   create_table "answers", force: :cascade do |t|
     t.integer "inquiry_id"
     t.integer "user_id"
@@ -48,20 +48,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_03_214850) do
     t.string "name"
     t.integer "number_of_machine"
     t.string "short_word"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "meishiki_categories", force: :cascade do |t|
-    t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "meishikis", force: :cascade do |t|
-    t.string "name"
-    t.string "meishiki"
-    t.integer "meishiki_category_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
