@@ -1,0 +1,97 @@
+<div class="container edit">
+<h3>編集</h3>
+<% if registration_completed?.size > 0 %>
+  <div style="color: red; font-size: 12px;">
+    <% registration_completed?.each do |error| %>
+      <span><%= error %>　</span>
+    <% end %><br>
+    登録してからご予約お願いします
+  </div>
+<% end %>
+<%= form_for @user, method: :put do |f| %>
+  <div class="errors-messages">
+    <% if @user.errors.any? %>
+      <div class="">
+        <ul class="errors-messages-ul">
+          <% @user.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+  <div class="field email">
+    <%= f.label :email %><br />
+    <%= f.email_field :email, autofocus: true, :class => "form-control" %>
+  </div>
+
+  
+  <div class="field name">
+    <%= f.label :氏名（必須） %><br />
+    <%= f.text_field :name, required: true, :class => "form-control", autocomplete: 'name' %>
+  </div>
+
+  <div class="field name_kana">
+    <%= f.label :氏名かな（必須） %><br />
+    <%= f.text_field :name_kana, required: true, :class => "form-control", autocomplete: "name_kana" %>
+  </div>
+
+  <div class="field tel">
+    <%= f.label :電話番号（必須）ハイフンなし %><br />
+    <%= f.text_field :tel, required: true, :class => "form-control", autocomplete: "tel" %>
+  </div>
+
+  <div class="field gender">
+    <%= f.label :性別（必須） %><br />
+    <%= f.radio_button :gender, "m", required: true %>　男性
+    <%= f.radio_button :gender, "f" %>　女性
+  </div>
+
+  <div class="field birthday">
+    <%= f.label :生年月日（必須） %><br />
+    <%= f.date_field :birthday, required: true, :class => "form-control", autocomplete: "birthday" %>
+  </div>
+  
+  <% if admin_user? %>
+    <div class="field abo">
+       <span class="edit-abo">ABO</span><br />
+      <%= f.radio_button :abo, "abo" %><span> ABOの方　</span>
+      <%= f.radio_button :abo, "other" %> ABO以外
+    </div>
+  <% end %>
+
+  <div class="field introducer">
+    <%= f.label :紹介者（必須） %><br />
+    <%= f.text_field :introducer, required: true, :class => "form-control", autocomplete: "introducer" %>
+  </div>
+  
+<!--管理者のみユーザータイプ変更できる-->
+  <% if current_user.user_type == "1" %>
+    <div class="field user_type">
+      <%= f.label :ユーザータイプ %><br />
+      
+      <%= f.collection_select(:user_type, UserType.all.order(:id), :id, :type_name) %>
+      <!--<= f.select :user_type, UserType.all.map{|t| [t.type_name, t.id]} %>-->
+    </div>
+  <% end %> 
+
+
+  <div class="actions">
+    <%= f.submit "保存する", class:"btn btn-primary" %>
+  </div>
+<% end %>
+
+<%= link_to "Back", :back %>
+</div>
+
+<style>
+  .errors-messages {
+    margin-top: 30px;
+    color: red;
+  }
+  
+  .errors-messages-ul {
+    padding-inline-start: 15px;
+  }
+</style>
+

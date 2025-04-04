@@ -1,0 +1,140 @@
+// Place all the styles related to the reservations controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+    
+    .schedule {
+        text-decoration: none;
+        display: inline-block;
+        
+    }
+    
+    
+    .modal-backdrop {
+        position: relative;
+        z-index: 1;
+    }
+    
+    #user-modal > div > div > div{
+        position: relative;
+        z-index: 100;
+    }
+    
+    .today {
+        background: #c0c0c0;
+    }
+    
+    .holiday {
+        // background: #f5f5f5;
+    }
+    
+    .calendar-title {
+        z-index: 2;
+        margin: 10px 0 20px 0;
+    }
+    
+    .tooltip-inner{
+      max-width: 100px;
+    }
+    
+    #reservation_remarks {
+        width: 100%;
+    }
+    
+    .my-reserved-title {
+        margin: 30px 0;
+    }
+
+    .modal-content .container {
+        width: 100%;
+    }
+    
+    .modal-content {
+        width: 90%;
+    }
+    
+    .modal-content {
+        z-index: 1500;
+    }
+
+
+  tbody {
+     z-index: 1;
+     height: 80%;
+     overflow-y: scroll;
+  }
+  
+//   thead {
+    //   width: 100%;
+    //   position: fixed;
+//       z-index: 1000;
+//       background: #000;
+//       color: white;
+//   }
+
+
+  .dammy {
+      opacity: 0;
+  }
+  
+table.table-headerfixed {
+/*    width: 100%;*/
+}
+
+table.table-headerfixed thead,
+table.table-headerfixed tbody{
+    display: block;
+    overflow-x: scroll;
+}
+
+table.table-headerfixed tr:after {
+    content: ' ';
+    display: block;
+    visibility: hidden;
+    clear: both;
+}
+
+table.table-headerfixed tbody {
+    height: 400px;
+    overflow-y: scroll;
+}
+
+th.table-date {
+    min-width: 120px;
+    width: 22%;
+}
+
+td.table-frame {
+    min-width: 30px;
+    width: 6%;
+}
+
+th.table-date-header {
+    min-width: 120px;
+    width: 22%;
+}
+
+td.table-frame-header {
+    min-width: 30px;
+    width: 6%;
+}
+
+
+.color-red {
+    color: red;
+}
+
+.color-red:hover {
+    color: red;   
+    font-size: 120%;
+}
+
+
+
+ 
+   
+   
+
+
+
+
+ 

@@ -1,0 +1,36 @@
+<h3 class="paytitle">支払い方法選択</h3>
+
+<% case @user_type.to_i %>
+<% when 1 then   # 管理者テスト期間中のみ %>  
+    <p class="test">-----   会員  -----</p>
+        <% PayType.where(user_type_id: 2).each do |p| %>
+          <%= link_to "#{number_with_delimiter(p.price)}円　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+        <% end %>
+    <p class="test">-----   一般  -----</p>
+        <% PayType.where(user_type_id: 3).each do |p| %>
+          <%= link_to "#{number_with_delimiter(p.price)}円　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+        <% end %>
+    <p class="test">-----   代理店A  -----</p>
+        <% PayType.where(user_type_id: 4).each do |p| %>
+          <%= link_to "#{number_with_delimiter(p.price)}円　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+        <% end %>
+    <p class="test">-----   代理店B  -----</p>
+        <% PayType.where(user_type_id: 5).each do |p| %>
+          <%= link_to "#{number_with_delimiter(p.price)}円　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+        <% end %>
+    <p class="test">-----    特別会員 -----</p>
+        <% PayType.where(user_type_id: 6).each do |p| %>
+          <%= link_to "無料　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+        <% end %>
+    <p class="test">-----    テスト  -----</p>
+        <% PayType.where(user_type_id: 99).each do |p| %>
+          <%= link_to "#{number_with_delimiter(p.price)}円　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+        <% end %>
+    <hr>
+<% when 2,3,4,5,6,7,99 then # 会員・新規・代理店A.B・特別会員・その他・テスト %>
+    <% PayType.where(user_type_id: @user_type.to_i).each do |p| %>
+      <%= link_to "#{number_with_delimiter(p.price)}円　#{p.pay_name}", "/payments/#{p.id}/new", :class => "btn btn-primary paytype" %>
+    <% end %>
+<% else %>
+    <%= link_to "支払い対象外", "/payments/#{@user_type.to_i}/new", :class => "btn btn-primary paytype" %>
+<% end  %>

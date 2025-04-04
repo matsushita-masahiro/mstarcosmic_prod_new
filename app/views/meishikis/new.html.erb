@@ -1,0 +1,33 @@
+<div class="container">
+    <div id="meishiki-new">
+    <h2>命式登録</h2>
+    <br>
+    <%= form_for @meishiki, html: { class: "form-inline" } do |f|  %>
+    
+      <div class="field meishiki-category">
+         <%= f.label :カテゴリー（必須） %><br />
+         <%= f.select :meishiki_category_id, MeishikiCategory.all.map{|t| [t.name, t.id]}, :include_blank => false %>
+      </div>
+    
+    
+      <div class="form-group">
+        <%= f.label "名前" %><br>
+        <%= f.text_field :name, class: "form-control", required: true %>
+      </div>
+      <br><br>
+      <div class="field">
+        <%= f.label "命式" %><br />
+        <%= f.file_field :meishiki, required: true, autocomplete: 'meishiki' %>
+      </div>
+      
+      <%= f.submit "登録", class: "btn btn-primary" %> 
+      
+    <% end %>
+    </div>
+</div>
+
+<style>
+  .meishiki-category {
+    margin: 30px 0;
+  }
+</style>

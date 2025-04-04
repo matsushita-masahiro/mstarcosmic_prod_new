@@ -1,0 +1,159 @@
+<%= render 'reserves/staff_select' %>
+
+<!--  カレンダー先週・来週 ボタン です for admin--------->
+<div class="week-flex">
+ <div class="pre-week">
+   <% if @start_date > Date.today %>
+     <%= form_tag reserves_path, :method => "get" do %>
+      <input type="hidden" name="calender_start_date" value="<%= (@start_date - 7) %>" >
+      <input type="hidden" name="staff_id" value="<%= @staff.id %>" >
+      <%= button_tag :type => "submit", class: 'btn btn-info', :style => 'border-style: none;' do %>
+      <i class="fas fa-chevron-left"></i> 前週
+      <% end %>
+     <% end %>
+   <% end %>
+ </div>
+ <div class="next-week">
+   <% if @start_date <= (Date.today + 28) %>
+    <%= form_tag reserves_path, :method => "get" do %>
+      <input type="hidden" name="calender_start_date" value="<%= (@start_date + 7) %>" >
+      <input type="hidden" name="staff_id" value="<%= @staff.id %>" >
+      <%= button_tag :type => "submit", class: 'btn btn-info', :style => 'border-style: none;' do %>
+      翌週 <i class="fas fa-chevron-right"></i>
+      <% end %>
+    <% end %>
+   <% end %>
+ </div>
+</div>
+
+<div class="space-status"><span class="staff-name"><%= @staff.id === 0 ? "指名なし" : @staff.name %></span></div>
+
+
+<!---　カレンダーボタン end --------------->
+<div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div class="table-responsive table-width reserve">
+        <table class="table table-bordered table-hover">
+          <thead class="thead-light reserves-calender" >
+            <tr>
+                <th scope="col"></th>
+              <% 7.times do |i| %>
+                  <% if (@start_date + i).wday.to_i == 0 || (@start_date + i).wday.to_i == 6 %>
+                    <th class="calender-date sanday-saturday" scope="col"><%= (@start_date + i).strftime("%m/%d") %></th>
+                  <% else %>
+                    <th class="calender-date weekday" scope="col"><%= (@start_date + i).strftime("%m/%d") %></th>
+                  <% end %>                  
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% 25.times do |t| %>    
+                <tr>
+                  <th class="calender-time" scope="row"><%= display_time(10 + t*0.5) %></th>
+                    <% 7.times do |k| %>
+                     <!-- カレンダーの左の列が本日じゃなければ  -->
+                      <% unless (@start_date + k) == Date.today %>
+                        <% reserve = reserved_status(@staff, (@start_date + k), (10+t*0.5)) %>
+                         <!-- すでに予約が入っている場合 -->
+                            <% if reserve[0] == "reserved" %>
+                              <% if reserve[1].count === 1 %>
+                              <!-- 予約の備考最初の10バイトを切り取る-->
+                                  <% if reserve[1][0].remarks %>
+                                   <% remarks = reserve[1][0].remarks[0..13] %>
+                                  <% else %>
+                                   <% remarks = "" %>
+                                  <% end %>
+                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(reserve[1][0].user_id).name %><br><%= User.find(reserve[1][0].user_id).tel %><br><%= User.find(reserve[1][0].user_id).introducer %><br><%= User.find(Staff.find(@staff.id).user_id).name %><br><%= remarks %>", data-container="body">✖</td>
+                            <% elsif reserve[1].count === 2 %>
+                                     <!-- 予約の備考最初の10バイトを切り取る-->
+                                    <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find(reserve[1][0].staff_id).name}<br>#{reserve[1][0].remarks[0..13]}" %>
+                                    <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find(reserve[1][0].staff_id).name}<br>#{reserve[1][1].remarks[0..13]}" %>
+                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">✖️</td>
+                            
+                            
+                            <% end %>
+                               <% logger.debug("||||||||||||||||||||  = reserved") %>
+                             
+                        <!-- 2件予約可能  -->
+                          <% elsif reserve[0] == "reservable_two" %>
+                          
+                            <td>
+                              <%= link_to "◎", new_reserve_path(date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
+                            </td>                          
+                          
+                          
+                             <% logger.debug("||||||||||||||||||||  = reservable_two") %>
+                        <!-- 1件予約可能  -->     
+                           <% elsif reserve[0] == "reservable_one" %>
+                                 <% if reserve[1].nil? %>
+                                    <% if @staff.id === 1 %>
+                                     <td>
+                                        <%= link_to "△", new_reserve_path(date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
+                                     </td>
+                                    <% else %>
+                                     <td>
+                                        <%= link_to "△", new_reserve_path(date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
+                                     </td>
+                                    <% end %>
+                                 <% else %>
+                                    <% tooltip_content = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{User.find(Staff.find(reserve[1][0].staff_id).user_id).name}<br>#{reserve[1][0].remarks}" %>
+                                    <% if @staff.id === 1 %>
+                                        <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title=<%= tooltip_content %> data-container="body">
+                                           <%= link_to "△", new_reserve_path(date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
+                                        </td> 
+                                    <% else %>
+                                        <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title=<%= tooltip_content %> data-container="body">
+                                           <%= link_to "△", new_reserve_path(date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
+                                        </td>                                     
+                                    <% end %>
+                                 <% end %>
+                          
+                          
+                             <% logger.debug("||||||||||||||||||||  = reservable_one") %>                            
+
+                          <% elsif reserve[0] == "absence" %> 
+                             <td class="holiday calender-today">==</td>
+                             <% logger.debug("||||||||||||||||||||  = absence") %>
+                          <% end %>                      
+
+                      <!-- カレンダーの左の列が本日なら  -->
+                      <% else %>   <!-- if  start_date == Date.today  else to start_date != Date.today -->
+                          <% if reserve = Reserve.find_by(reserved_date: (@start_date + k),reserved_space: (10+t*0.5)) %>
+                            <!-- 予約の備考最初の10バイトを切り取る-->
+                            <% if reserve.remarks %>
+                             <% remarks = reserve.remarks[0..13] %>
+                            <% else %>
+                             <% remarks = "" %>
+                            <% end %>
+                            
+                            <% if reserve.user_id == 0 %>
+                                <td class="holiday calender-today">==</td>
+                            <% else %>
+                              <!-- 予約が入っていて休日ではない場合 -->
+                                  <td class="table-frame  calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(reserve.user_id).name %><br><%= User.find(reserve.user_id).tel %><br><%= User.find(reserve.user_id).introducer %><br><%= remarks %>", data-container="body">✖</td>
+                            <% end %>   <!-- reserve.user_id == 0 end-->
+                          <% else %>   <!-- Reserve.find_by else -->
+                            <td class="calender-today">◎</td>
+                          <% end %>    <!-- Reserve.find_by end --> 
+                      <% end %>    <!-- if  start_date == Date.today  end -->
+                    <% end %>   <!-- 7.times end -->
+                </tr>
+            <% end %>   <!-- 26.times end -->
+          </tbody>
+        </table>
+</div>
+
+<!-- mstarcosmicからcopy -->
+<div id="reserveModal" class="modal" onclick="closeModal(this)">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal(this)">&times;</span>
+        <div id="modal-form"></div>
+    </div>
+</div>
+
+
+
+
+
+
+
+

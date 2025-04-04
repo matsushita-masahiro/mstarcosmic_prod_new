@@ -1,0 +1,18 @@
+<div id="staff-new">
+    <h2>機械登録</h2>
+    <% if @users.present? %>
+        <%= form_for @staff do |f| %>
+          <div>
+              <% @users.each do |user| %>
+                  <div class="radio-inline">
+                    <%= f.radio_button :user_id, user.id %>
+                    <%= f.label user.name, class: "job_type_label" %>
+                  </div>
+              <% end %>
+          </div>
+          <%= f.submit "登録", class: "btn btn-primary" %>
+        <% end %>
+    <% else %>
+      <p>登録すべき機械がありません</p>
+    <% end %>
+</div>

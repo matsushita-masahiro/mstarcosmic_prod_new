@@ -66,3 +66,26 @@ group :test do
 end
 
 gem "cssbundling-rails", "~> 1.4"
+
+# from original
+gem 'recaptcha',  require: "recaptcha/rails"
+# fot SEO
+gem 'meta-tags'
+gem 'dotenv-rails'
+gem 'carrierwave'
+gem 'fog-aws'
+
+# google analitycs
+gem 'google-analytics-rails'
+
+# エラーメッセージの日本語化
+gem 'rails-i18n'
+
+gem 'seed-fu'
+
+gem 'rails_12factor', group: :production
+gem 'devise'
+# Use ActiveModel has_secure_password
+gem 'bcrypt'
+gem 'devise-i18n'
+gem 'devise-i18n-views'

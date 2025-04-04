@@ -1,0 +1,9 @@
+<div id="staff-index">
+    <h3>出勤カレンダー入力・変更</h3>
+    <%= link_to "機械登録", new_staff_path, class: "btn btn-primary" %>
+    <ul class="staff-ul">
+        <% @staffs.each do |staff| %>
+             <li><%= link_to User.find(staff.user_id).name, user_schedules_path(staff.user_id) %></li>
+        <% end %>
+    </ul>
+</div>

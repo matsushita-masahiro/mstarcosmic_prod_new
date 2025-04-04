@@ -1,0 +1,56 @@
+<div class="container">
+<h3>メタトロン購入お問合せ<br>送信内容</h3>
+
+    
+  <div class="field name">
+    <span class="Heading">氏名</span><br />
+    <p><%= @inquiry.name %></p>
+  </div>
+
+  <div class="field">
+    <span class="Heading">メール</span><br />
+    <p><%= @inquiry.email %></p>
+  </div>
+
+  <div class="field">
+    <span class="Heading">電話番号</span><br />
+    <p><%= @inquiry.phone %></p>
+  </div>  
+
+  <div class="field">
+    <span class="Heading">郵便番号</span><br />
+    <p><%= @inquiry.postcode %></p>
+  </div>
+
+  <div class="field">
+    <span class="Heading">都道府県</span><br />
+    <p><%= @inquiry.prefecture_name %></p>
+  </div>
+
+  <div class="field">
+    <span class="Heading">市町村区</span><br />
+    <p><%= @inquiry.address_city %></p>
+  </div>  
+
+  <div class="field">
+    <span class="Heading">体験希望</span><br />
+    <p><%= @inquiry.trial_flag? ? "希望する":"希望しない" %></p>
+  </div>  
+
+  <div class="field">
+    <span class="Heading">購入相談</span><br />
+    <p><%= @inquiry.buy_consult_flag? ? "希望する":"希望しない" %></p>
+  </div> 
+
+  <div class="field">
+    <span class="Heading">HP作成相談</span><br />
+    <p><%= @inquiry.hp_consult_flag? ? "希望する":"希望しない" %></p>
+  </div> 
+    
+  <div class="field">
+    <span class="Heading">内容</span>
+    <%= simple_format(@inquiry.content) %>
+  </div>
+
+
+</div>

@@ -1,5 +1,36 @@
 // Entry point for your Sass build
+@import "answers";
+@import "custom";
+@import "fadein";
+@import "home";
+@import "inquiries";
+@import "machine_schedules";
+@import "main";
+@import "meishikis";
+@import "metatron_sale_inquiries";
+@import "ms_inquiry_answers";
+@import "page_contents";
+@import "pay_types";
+@import "payments";
+@import "reservations";
+@import "reserves";
+@import "sanmeis";
+@import "schedules";
+@import "staff_machine_relations";
+@import "staffs";
+@import "user_types";
+@import "users";
 @import "top";
-body {
-     color: red;
- }
+@import "new_layouts/about_metatron";
+@import "new_layouts/fasting";
+@import "new_layouts/metatron_sale";
+@import "new_layouts/new_customer_banner";
+@import "new_layouts/price_banner";
+@import "new_layouts/special_treatment";
+@import "new_layouts/staffs";
+@import "new_layouts/woman";
+
+
+
+
+

@@ -1,0 +1,380 @@
+#fasting {
+    
+    width: 100%;
+
+    
+    section.about-metatron {
+        
+        padding: 50px 20% 50px 20%;
+        
+        .title-1 {
+            margin-bottom: 50px;
+            text-align: center;
+            font-size: 1.5vw;
+            font-weight: 600;
+        }
+        
+        .title-2 {
+            text-align: center;
+            font-size: 3vw;
+            font-weight: 600;
+        }
+        
+        .features-topics {
+            margin: 50px 0;
+            display: flex;
+            justify-content: space-between;
+
+            div {
+                width: 32%;
+                
+                .feature-topic-img {
+                    width: 100%;
+                }
+            }
+        }
+        
+        .cristing_program > ul {
+            padding-left: 20px;
+        }
+        
+        .cristing_program_title {
+            font-weight: 600;
+        }
+        
+        
+    }
+    
+    section.metatron-features {
+        
+        background: #000;
+        padding: 0 20%;
+        
+        .title {
+            padding: 100px 0 50px;
+            color: #fff;
+            text-align: center;
+            font-size: 3vw;
+            font-weight: 600;            
+        }
+        
+        .img-area {
+            display: flex;
+            justify-content: space-between;
+            
+            div {
+                
+                width: 32%;
+                
+                .feature-topic-img {
+                    display: inline-block;
+                    width: 100%;
+                }
+            }
+        }
+        
+        
+        .metatron-features-title {
+            margin: 30px 0;
+            color: #cdc8c8;
+        }
+        
+        
+        .features-image-area {
+            padding: 50px 0;
+            
+            display: flex;
+            justify-content: space-between;
+            
+            div.metatron-feature-each {
+                width: 32%;
+                
+               .feature-img {
+                    display: inline-block;
+                    width: 100%;
+                }  
+                
+                .title {
+                    font-size: 1.5vw;
+                    font-weight: 600;
+                    padding: 30px 0;
+                }
+                
+                .detail {
+                    display: block;
+                    color: #cdc8c8;
+                }
+                
+                .sp-detail {
+                    display: none;
+                }
+            }
+        }
+    }
+    
+    .metatron-description {
+        padding: 80px 20%;
+        display: block;
+        
+        img.description-img {
+            width: 100%;
+        }
+    }
+    
+    .description-word {
+        display: none;
+    }
+    
+    .chomomi_qa .chomomi_qa_table {
+        padding: 5px;
+        background: #d3d3d370;
+        border: solid 10px #d3d3d300;
+        margin: 20px 0;
+    }
+    
+    .chomomi_qa .chomomi_qa_table .tr {
+        border-bottom: 1px solid #80808038;
+        margin: 5px 0;
+    }
+    
+    .chomomi_qa .head {
+        width: 5%;
+        vertical-align: top;
+    }
+    
+    .chomomi_qa .content {
+        width: 95%;
+    }
+    
+    
+    section.reviews {
+        padding: 50px 20% 50px 20%;
+        
+        h4 {
+            margin-bottom: 15px;
+        }
+        
+        h4 > span {
+            
+            padding: 0 5px 5px 0;
+            border-bottom: 1px solid lightgray;
+        }
+        
+        .name {
+            font-weight: bold;
+        }
+        
+        ul {
+            list-style-type: none
+        }
+    }
+    
+    
+    // reviews
+    
+    .reviews {
+        .review {
+            display: flex;
+            padding: 0 0 50px 0;
+            
+            .review_left {
+                width: 50%;
+            }
+            
+            .content {
+                padding: 65px 0 0 0;
+                width: 50%;
+            }
+            
+        }
+    }
+    .before_after_img_area {
+        // float: left;
+        width: 100%;
+    }
+    
+    .before_after_img {
+        width: 80%;
+        border: 1px solid lightgray;
+        margin: 20px 20% 0 0;
+    }
+    
+    .reviews {
+        .content {
+            margin-top: 20px;
+        }
+    }    
+    
+    
+
+}
+
+
+
+@media screen and (max-width: 768px) {
+    
+    .about-metatron-top-image {
+        display: none;
+    }
+    
+    .sp-about-metatron-top-image {
+        width: 100%;
+        display: block;
+    }    
+    
+    
+    
+    #fasting {
+            
+      section.about-metatron {
+          
+        padding: 50px 10% 50px 10%;
+
+        .title-1 {
+            margin-bottom: 30px;
+            font-size: 5vw;
+            font-weight: 600;
+        }
+        
+        .title-2 {
+            font-size: 6vw;
+            font-weight: 600;
+        }
+        
+        .features-topics {
+            display: block;
+            
+            div {
+                
+                width: 100%;
+                margin-bottom: 20px;
+                
+               .feature-topic-img {
+                    width: 100%;
+               }
+            }
+            
+            
+        }
+         
+
+
+      }
+        
+        section.metatron-features {
+
+            padding: 0 10%;
+            
+            
+            .title {
+                font-size: 5vw;
+                text-align: left;
+                padding: 50px 0 0px;
+            }  
+            
+            .img-area {
+                display: none;
+            }
+            
+            .features-image-area {
+                
+                display: block;
+                
+                div.metatron-feature-each {
+                    
+                    width: 100%;
+                    
+                    
+                    .title {
+                        font-size: 5vw;
+                        text-align: center;
+                    }
+
+                    
+                    .detail {
+                        display: none;
+                    }
+                    
+                    .sp-detail {
+                        display: block;
+                        color: #cdc8c8;
+                        padding-bottom: 30px;
+                    }
+                }
+            }
+        }
+        
+    .metatron-description {
+        
+        padding: 80px 10%;
+        
+        
+        .description {
+           display: none;
+        }
+        
+        .description-word {
+            display: block;
+        }
+
+    } 
+    
+    section.reviews {
+        padding: 50px 10% 50px 10%;
+        
+        
+        ul {
+            padding-left: 10px;
+        }
+
+    } 
+    
+    
+      
+  
+    //   reviews
+    .before_after_img_area {
+        width: 100%;
+    }
+    
+    .before_after_img {
+        width: 100%;
+        margin: 20px auto;
+        padding: 0 10%;
+    }
+    
+    // .reviews {
+
+
+        
+    //     .content {
+    //         margin-top: 20px;
+    //     }
+    // }
+    
+    .reviews {
+        .review {
+            display: block;
+            padding: 0 0 50px 0;
+            
+            .review_left {
+                width: 100%;
+            }
+            
+            .content {
+                padding: 0px;
+                width: 100%;
+            }
+            
+        }
+    }
+  
+        
+  }
+
+    
+
+    
+    
+}
+

@@ -32,7 +32,22 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  # config.action_mailer.raise_delivery_errors = false
+  
+  config.action_mailer.perform_caching = false
+  host = 'https://5e9c5dfc4c5d40c2a5e837c8e9990e08.vfs.cloud9.ap-southeast-1.amazonaws.com'
+  config.action_mailer.default_url_options = { host: host, port: 3000 }
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+      port:                 587,
+      address:              'mail92.onamae.ne.jp',
+      domain:               'ne.jp',
+      user_name:           ENV['USER_EMAIL'],
+      password:            ENV['EMAIL_PASSWORD'],
+      authentication:       'plain',
+      enable_starttls_auto: true
+    }
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false

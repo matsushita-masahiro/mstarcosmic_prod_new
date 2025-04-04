@@ -1,0 +1,2 @@
+module StaffMachineRelationsHelper
+end

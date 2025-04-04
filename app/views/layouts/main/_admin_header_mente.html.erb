@@ -1,0 +1,125 @@
+<script src="https://kit.fontawesome.com/051cef80cf.js" crossorigin="anonymous"></script>
+<div id="new-header">
+    <ul class="new-header">
+        <li class="logo"><a href="/main"><img src="/new-images/logo.png" class="logo"></a></li>
+        <li class="not_image"><a href="/main">管理者メニュー</a></li>
+        <!--<li class="not_image"><a href="/about_metatron">メタトロンとは</a></li>-->
+        <!--<li class="not_image"><a href="">料金表</a></li>-->
+        
+        <% if user_signed_in? %>
+            <% if admin_user? %>
+               <li class="not_image"><%= link_to 'ページ別文章管理', page_contents_path%></li>
+               <li class="not_image reserve_menu"><a href="">予約関連</a>
+                  <ul class="dropdown">
+                      <li><%= link_to '予約カレンダー', "/reserves/h/index" %></li>
+                      <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
+                  </ul> 
+               </li>
+               <li class="not_image reserve_menu"><a href="">管理者メニュー</a>
+                  <ul class="dropdown">
+                      <li><%= link_to 'お客様一覧', users_path %></li>
+                      <li><%= link_to '回数券管理', payments_path %></li>
+                      <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
+                      <li><%= link_to 'メタトロン購入問合せ', metatron_sale_inquiries_path %></li>
+                      <li><%= link_to 'スケジュール', "/admin/staffs" %></li>
+                      <li><%= link_to '出張登録', machine_machine_schedules_path("h") %></li>
+                      <li><%= link_to '算命', sanmeis_menu_path %></li>
+                      <!--<li><= link_to sanmeis_menu_path do %>-->
+                      <!--   <i class="fa-solid fa-gear"></i>設定 -->
+                      <!--    < end %>-->
+                      <!--</li>-->
+                      
+                  </ul> 
+               </li>
+            <% end %>
+            <li><%= link_to destroy_user_session_path, method: "delete" do %><img src="/new-images/logout.png" class="button"><% end %></li>
+        <% else %>
+            <li><%= link_to new_user_registration_path do %><img src="/new-images/signup_button.png" class="button"><% end %></li>
+            <li><%= link_to new_user_session_path do %><img src="/new-images/login_button.png" class="button"><% end %></li>
+        <% end %>
+        <% if user_signed_in? %>
+          <% if admin_user? %>
+
+          <% else %>
+            <li><%= link_to new_inquiry_path do %><img src="/new-images/inquiry_button.png" class="button"><% end %></li>
+          <% end %>
+        <% else %>
+            <li><%= link_to new_inquiry_path do %><img src="/new-images/inquiry_button.png" class="button"><% end %></li>
+        <% end %>
+    </ul>
+
+</div>
+<div id="sp-new-header">
+    <ul class="sp-new-header">
+        <li class="logo"><a href="/main"><img src="/new-images/logo.png" class="logo-img"></a></li>
+            <li></li>
+            <li></li>
+        <% if user_signed_in? %>
+            <li><%= link_to destroy_user_session_path, method: "delete" do %><img src="/new-images/logout_sp.png" class="button"><% end %></li>
+        <% else %>
+            <li><%= link_to new_user_registration_path do %><img src="/new-images/sp-signup.png" class="button"><% end %></li>
+            <li><%= link_to new_user_session_path do %><img src="/new-images/sp-login.png" class="button"><% end %></li>
+        <% end %>
+        <% if user_signed_in? %>
+            <% if admin_user? %>
+            <% end %>
+        <% else %>
+           <li><%= link_to new_inquiry_path do %><img src="/new-images/sp-inquiry.png" class="button"><% end %></li>
+        <% end %>
+        <li class="sp-menu"><img src="/new-images/sp-menu.png" class="button" id="open"></li>
+    </ul>
+</div>
+<div class="overlay">
+    <img src="/new-images/sp-close.png" class="button" id="close">
+    <section class="nav">
+        <ul>
+            <li><a href="/about_metatron">メタトロンとは</a></li>
+            <li><a href="/price_plan">料金表</a></li>
+            <% if user_signed_in? %>
+               <li><%= link_to 'ページ別文章管理', page_contents_path%></li>
+               <li><%= link_to '予約カレンダー', "/reserves/h/index" %></li>
+               <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
+               <li><%= link_to 'お客様一覧', users_path %></li>
+               <li><%= link_to '回数券管理', payments_path %></li>
+               <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
+               <li><%= link_to 'メタトロン購入お問合せ一覧', metatron_sale_inquiries_path %></li>
+               <li><%= link_to 'スケジュール', "/admin/staffs" %></li>
+               <li><%= link_to '出張登録', machine_machine_schedules_path("h") %></li>
+               <li><%= link_to '算命学', sanmeis_menu_path %></li>
+            <% else %>
+            <% end %>
+        </ul>
+    </section>
+    
+</div>
+
+
+<script>
+      const open = document.getElementById('open');
+      const overlay = document.querySelector('.overlay');
+      const close = document.getElementById('close');
+      
+
+    
+      open.addEventListener('click', () => {
+        overlay.classList.add('show');
+        open.classList.add('hide');
+      });
+    
+      close.addEventListener('click', () => {
+        overlay.classList.remove('show');
+        open.classList.remove('hide');
+      });
+      
+      // 20240823 追加 for 荒川料金選択
+      const priceListSelectMenu = document.getElementById('price_list_select_link');
+      
+      priceListSelectMenu.addEventListener('click', () => {
+        console.log("priceListSelectMenu js 通過");
+        overlay.classList.remove('show');
+        open.classList.remove('hide');
+      });
+</script>
+
+
+

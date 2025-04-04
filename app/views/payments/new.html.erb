@@ -1,0 +1,11 @@
+<div  class="container">
+  <h2>お支払い（<%= @number_of_coupons %>回分）</h2>
+    <p><%= @user.name %>様</p>
+    <!--<p>支払額：<= number_with_delimiter(PayType.find(@pay_type.to_i).price) %>円</p>-->
+    <div class="payment_new">
+            <%= render :partial => "new_paypal" %>
+    </div> 
+
+</div>
+
+

@@ -1,0 +1,42 @@
+<div class="container">
+<!--<h3>必ずお読みください</h3>-->
+
+ <div class="readme">      
+        <% case @user.user_type.to_i  %>
+        <% when 2 then %>
+        <%= render :partial => "readme_2"  %>
+        <% when 3 then %>
+        <%= render :partial => "readme_3"  %>
+        <% when 4 then %>
+        <%= render :partial => "readme_4"  %>
+        <% when 5 then %>
+        <%= render :partial => "readme_5"  %>
+        <% when 6 then %>
+        <%= render :partial => "readme_6"  %>
+        <% when 7 then %>
+        <%= render :partial => "readme_7"  %>
+        <% when 8 then %>
+        <%= render :partial => "readme_8"  %>
+        <% when 9 then %>
+        <%= render :partial => "readme_9"  %>
+        <% when 10 then %>
+        <%= render :partial => "readme_10"  %>
+        <% else %>
+        <%= render :partial => "readme_error"  %>
+        <% end %>
+        
+  </div>  
+
+</div>
+
+
+  <!--{:id => 1, :type_name => "管理者", :price => 0 },-->
+  <!--{:id => 2, :type_name => "既存＆distributor", :price => 9000 },-->
+  <!--{:id => 3, :type_name => "新規&一般",         :price => 10000 },-->
+  <!--{:id => 4, :type_name => "病人(5回券/月)",    :price => 30000 },-->
+  <!--{:id => 5, :type_name => "既存＆distributorの回数券(11枚)", :price => 87000 },-->
+  <!--{:id => 6, :type_name => "新規&一般の回数券(11枚)", :price => 97000 },-->
+  <!--{:id => 7, :type_name => "代理店", :price => 9000 },-->
+  <!--{:id => 8, :type_name => "代理店の回数券(11枚)", :price => 9000 },-->
+  <!--{:id => 9, :type_name => "その他", :price => 9000 },-->
+  <!--{:id => 10, :type_name => "特別ユーザー", :price => 0 }-->

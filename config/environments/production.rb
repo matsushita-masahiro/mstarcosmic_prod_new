@@ -68,6 +68,19 @@ Rails.application.configure do
   #   port: 587,
   #   authentication: :plain
   # }
+  
+  config.action_mailer.default_url_options = { :host => 'https://www.mstarcosmic.com' }  
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+      port:                 587,
+      address:              'mail92.onamae.ne.jp',
+      domain:               'ne.jp',
+      user_name:           ENV['USER_EMAIL'],
+      password:            ENV['EMAIL_PASSWORD'],
+      authentication:       'plain',
+      enable_starttls_auto: true
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

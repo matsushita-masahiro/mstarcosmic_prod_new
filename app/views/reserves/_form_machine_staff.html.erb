@@ -1,0 +1,116 @@
+<div class="modal-dialog modal-lg" style="z-index: 10000;" >
+ <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">予約確認</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>   
+    <div class="container reserve-form">
+        <%= form_for @reserve do |f| %>
+          <%= f.hidden_field :staff_id, :value => @staff.id %>
+          <table class="table table-bordered modal-table">
+            <tbody>
+              <tr>
+                <th scope="row" style="background: #dcdcdc;">氏名</th>
+                <td><%= current_user.name %></td>
+          
+              </tr>
+              <tr>
+                <th scope="row">性別</th>
+                <td><%= Global::GENDER[current_user.gender] %></td>
+          
+              </tr>
+              <tr>
+                <th scope="row">電話</th>
+                <td><%= current_user.tel %></td>
+              </tr>
+              <tr>
+                <th scope="row">開始日時</th>
+                <td><%= @date.to_date.strftime("%Y年 %-m月 %-d日") %>(<%= Global::WEEKDAY[@date.to_date.wday] %>)　<%= display_time(@frame.to_f) %>〜</td>
+              </tr>
+              <tr>
+                <th scope="row">スタッフ</th>
+                <td><%= @staff.name %></td>
+              </tr>              
+              <tr>
+                <th scope="row">マシン</th>
+                <td>
+                  <% if @machine == "h" %>
+                    Holistic
+                  <% elsif @machine == "w" %>
+                    Wellbeing
+                  <% else %>
+                    <% if @staff.id == 1 %>
+                      算命学
+                    <% elsif @staff.id == 5 %>
+                      腸もみ等
+                    <% else %>
+                      その他
+                    <% end %>
+                  <% end %>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">予約枠</th>
+                <td>
+                  <!-- 2023/9/8 modify 全予約 新規は60分のみ-->
+
+                      <label class="radio_text"> 60分</label><br>
+
+                </td>
+              </tr>     
+              <tr>
+                <th scope="row">備考</th>
+                <td><%= f.text_area :remarks, class: "form-control", :id => "message-text" %></td>
+              </tr>   
+            </tbody>
+          </table>        
+        
+
+                <%= f.hidden_field :reserved_date, :value => @date %>
+                <%= f.hidden_field :reserved_space, :value => @frame %>
+                <%= f.hidden_field :start_date, :value => @start_date %>
+                <%= f.hidden_field :user_id, :value => current_user.id %>
+                <%= f.hidden_field :staff_id, :value => @staff.id %>
+                <%= f.hidden_field :machine, :value => @machine %>
+                <%= f.hidden_field :frames, :value => "60" %>
+        
+
+        
+      <div class="modal-footer">
+        <div>
+          <button type="button" class="btn btn-warning" data-bs-dismiss="modal">戻る</button>
+        </div>
+        <div>
+          <%= f.submit "予約確定", class: "btn btn-primary btn-reserve-confirm" %>
+        </div>
+
+      </div>        
+      <% end %>
+
+    </div>
+  </div>
+</div>
+
+<script>
+
+function nidoosi2(form) {
+    let elements = form.elements;
+    for (let i = 0; i < elements.length; i++) {
+            if (elements[i].type == 'submit') {
+             elements[i].disabled = true;
+            }
+    }
+} 
+
+
+$('#holiday').on('click', function(){
+    // 2重送信防止クラスのチェック
+    if ( $(this).hasClass('double_click') ){
+        return false;
+    }
+    $(this).text("処理中...");
+    // 2重送信防止クラス
+    $(this).addClass('double_click');
+});
+</script>
+

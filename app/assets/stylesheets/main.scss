@@ -1,0 +1,583 @@
+// Place all the styles related to the main controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+
+
+.top-image {
+    width: 100%;
+}
+
+@media screen and (max-width: 792px) {
+   .top-image {
+        // width: 100%;
+        // height: 70vh;
+        // object-fit: cover;
+    }
+
+}
+
+
+.main-main {
+    margin-top: 80px;
+    min-height: calc(100vh - 430px);
+}
+
+
+.top-word-word {
+    position: absolute;
+    top: 110px;
+    padding: 0 23%;
+    
+    font-size: 1vw;
+    font-weight: 600;
+    margin: 0 auto;
+    z-index: 2;
+    
+    .title-1, .title-2 {
+        font-size: 2.5vw;
+        font-weight: 700;
+    }
+    
+    .title-1 {
+        margin-top: 2.1vw;
+    }
+   
+   span {
+       margin-right: 20px;
+       font-size: 1.2vw;
+   }
+   
+   .shop {
+       display: grid;
+       grid-template-columns: 18% 22% 59%;
+       margin-bottom: 2.1vw;
+   }
+   
+   .top-banner {
+       margin-top: 2.1vw;
+       width: 50%;
+   }
+}
+
+@media screen and (max-width: 792px) { 
+  
+    .main-main {
+        margin-top: 0px;
+        min-height: calc( 100vh - 230px);
+    }  
+  
+  
+    .top-word-word {
+        padding: 0;
+        left: 15px;
+        font-size: 10px;
+        top: calc( 15vw + 80px );
+        width: 90%;
+        
+       .shop {
+           display: grid;
+           grid-template-columns: 15% 70%;
+           margin-bottom: 30px;
+           
+           .kitamura {
+               display: block;
+               width: 300px;
+           }
+       }
+       
+       .title-1, .title-2 {
+           font-size: 7vw;
+       }
+       
+       .title-1 {
+           margin-top: 30px;
+       }
+       
+      .top-banner {
+        width: 250px;
+      }
+    }
+}
+
+
+$top-height: 662.66px;
+
+#main-top {
+    
+        .top-word {
+            position: relative;
+        }
+        
+        .sale-metatron {
+            position: absolute;
+            top: 34vw;
+            left: 21vw;
+            width: 8vw;
+            height: 12vw;
+            opacity: 0.5;
+        }
+    
+    .features {
+        width: 90%;
+        margin: 50px auto 0;
+        // height: 1460px;
+        
+        .features-top {
+            
+            .sp-top-banner {
+                display: none;
+            }
+            
+            width: 90%;
+            margin: 0 auto;
+        
+            h3 {
+                letter-spacing: 2px;
+                margin: 0 0 10px 0;
+                font-weight: 900;
+            }
+            
+            .top-word {
+                font-size: 20px;
+                font-weight: 700;
+            }
+            
+            .mstarcosmic {
+                font-size: 50px;
+                font-weight: 900;
+                letter-spacing: 5px;
+                margin-bottom: 10px;
+            }
+            
+            @media screen and (max-width: 792px) {  
+                .mstarcosmic {
+                    font-size: 30px;
+                }
+                
+                
+                .top-word {
+                    font-size: 13px;
+                }
+            }
+            
+            p {
+                font-size: 11px;
+                padding: 1%;
+                font-weight: 500;
+                // color: #9d9d9d;
+            }
+        }
+        
+    }
+        
+
+ 
+        @media screen and (max-width: 792px) {
+          
+          .features {
+            width: 90%;
+          }
+          
+          
+            
+            .metatron-features {
+                
+                // height: 1400px;
+                
+                .metatron-features-title {
+                    font-size: 4vw;
+                }
+                
+                .detail {
+                    display: none;
+                }
+                
+                .sp-detail {
+                    display: block;
+                    font-size: 11px;
+                    margin: 20px 0;
+                }
+                
+                .sp-about-metatron-link:hover {
+                    opacity: 0.8;
+                }
+              
+             .metatron-feature {
+                display: block;
+                
+              .metatron-feature-each {
+                
+                width: 100%;
+                
+                .title {
+                    margin: 20px 0;
+                    font-size: 4vw; 
+                }
+                
+                .detail {
+                    display: none;
+                }
+                
+                .sp-detail {
+                    display: block;
+                    text-align: center;
+                    font-size: 11px;
+                }
+                
+            }
+                
+            }             
+              
+              
+              
+               
+            }
+            
+
+        }
+
+        
+        
+    }  // .features end
+    
+    // start metatron-features
+    .metatron-features {
+
+            margin: 50px 0 0;
+            padding: 5% 10%;
+            color: #000;
+            background: #3f98ef33;
+            
+            .sp-detail {
+                display: none;
+            }
+            
+            p {
+                font-size: 11px;
+                padding: 10px 10px 20px 10px;
+                color: #000;
+           }
+
+            
+            .about-button {
+                margin-top: 50px;
+                text-align: center;
+                padding-bottom: 30px;
+                
+                a > img {
+                    display: inline-block;
+                    width: 18vw;
+                }
+                
+                a > img:hover {
+                    opacity: 0.8;
+                }
+            }
+        
+            
+            .metatron-features-title {
+                padding: 20px 1%;
+                font-size: 17px;
+                text-align: center;
+            } 
+            
+                 
+    
+        .metatron-feature {
+            // height: 390px;
+            color: #000;       
+            display: flex;
+            justify-content: space-between;
+            
+            .metatron-feature-each {
+                text-align: center;
+                width: 80%;
+                margin: 0 auto;
+                
+                .title {
+                    text-align: center;
+                    margin: 30px 0;
+                    font-size: 1.2vw;
+                }
+                
+                .detail {
+                    
+                    text-align: center;
+                    color: #000;
+                    font-size: 1vw;
+                    padding: 7px;
+                }
+                
+                .sp-detail {
+                    display: none;
+                }
+                
+                .feature-img {
+                    display: inline-block;
+                    width: 38vw;
+                    height: 25vw;
+                    object-fit: cover;
+                }              
+                
+                
+            }
+        }     
+          
+ 
+    }
+    
+    
+    
+    @media screen and (max-width: 792px) {
+        .features {
+            width: 100%;
+            margin: 30px 0;
+            
+            .features-top {
+                .sp-top-banner {
+                    display:block;
+                    width: 100%;
+                    margin-bottom: 20px;
+                }
+            }
+        }
+            
+            .metatron-features {
+              .metatron-feature {
+                .metatron-feature-each {
+                
+                    .feature-img {
+                        width: 80vw;
+                        height: 53vw;
+                        margin: 20px 0;
+                    }
+                }
+              }
+            }
+        
+    }
+    
+
+    
+    
+    // plan_price 
+    
+    #plan_price {
+        width: 80%;
+        margin: 0 auto 50px;
+        font-size: 11px;;
+        /*position: relative;*/
+        /*background: gray;*/
+    }
+    
+    #plan_price > img {
+        display: inline-block;
+        margin: 50px 0;
+        width: 100%;
+    }
+    
+    #plan_price > .price_link_div {
+        position: relative;
+        /*text-align: center;*/
+        
+    }
+    
+    #plan_price > .price_link_div img {
+        display: inline-block;
+        width: 16vw;
+        position: absolute;
+        bottom: 30px;
+        left: calc( 50% - 8vw);
+    }
+    
+    #plan_price > .price_link_div img:hover {
+        opacity: 0.8;
+    }
+    
+    #sp-plan_price {
+        display: none;
+    }
+    
+    @media screen and (max-width: 792px) {  
+        #plan_price {
+            
+            display: none;
+        }
+        
+        #sp-plan_price {
+            display: block;
+            position: relative;
+            width: 80%;
+            margin: 0 auto 50px;
+
+            
+            .plan_price_img {
+                width: 100%;
+                margin: 30px 0;
+            }
+            
+        } 
+        
+        .sp-price_link_div {
+            background: #fff;
+            height: 200px;
+            line-height: 200px;
+            text-align: center;
+            
+            a > .sp-price_button {
+                width: 70%;
+            }
+            
+            a > .sp-price_button:hover {
+                opacity: 0.8;
+            }
+        }
+    }
+    
+    
+
+
+
+
+// footer  -------------------
+
+
+#footer {
+    background: #fff;
+    width: 60%;
+    height: 300px;
+    padding: 50px 0;
+    margin: 0 auto;
+    
+    .footer-upper {
+        text-align: right;
+        height: 40px;
+        display: grid;
+        grid-template-columns: 16.6% 16.6% 16.6% 16.6% 16.6% 16.6%;
+        
+        img.metatron-logo {
+            display: inline-block;
+            width: 80%;
+        }
+        
+        img.metatron-logo:hover {
+            opacity: 0.8;
+        }
+    }
+    
+    .footer-middle {
+        height: 30px;
+        padding-left: 16.6%;
+        display: grid;
+        grid-template-columns: 16% 30% 15% 30%;
+        text-align: center;
+        a {
+            color: #000;
+        }
+    }
+    
+     .footer-lower {
+        height: 30px;
+        padding-left: 40%;
+        display: grid;
+        grid-template-columns: 35% 20% 44%;
+        font-size: 0.8rem;
+        text-align: right;
+        
+        a {
+            color: #000;
+        }
+    } 
+    
+    .page_up_link {
+        margin: 30px 0;
+        text-align: right;
+        
+       .page_top {
+         img {
+           transform: scale(0.3);
+         }
+       }        
+        
+        
+    }
+
+}
+
+
+#sp-footer {
+ display: none;
+}
+
+
+#copyright {
+    display: block;
+    padding: 0 20%;
+    height: 50px;
+    line-height: 50px;
+    background: #000;
+    color: #ffffffd1;
+    text-align: right;
+}
+
+#sp-copyright {
+  display: none;
+} 
+
+@media screen and (max-width: 792px) { 
+
+  
+ #footer {
+   display: none;
+   
+ }
+ 
+ #sp-footer {
+   background: #fff;
+   height: 25vw;
+   line-height: 25vw;
+   display: grid;
+   grid-template-columns: 20% 35% 30%;
+//   grid-column-gap: 5px;
+   justify-content: space-around;
+   .metatron-logo {
+       width: 100%;
+   }
+   
+   .page_up_link {
+       text-align: right;
+      // padding-top: 3vw;
+       
+       .page_top {
+         img {
+           transform: scale(0.3);
+         }
+       }
+
+   }
+
+   
+ }
+ 
+   #copyright {
+      display: none;
+   }
+   
+   #sp-copyright {
+      display: block;
+      text-align: center;
+      // padding: 0 20%;
+      height: 50px;
+      line-height: 50px;
+      background: #000;
+      color: #ffffffd1;       
+   } 
+ 
+ 
+}
+    
+
+
+

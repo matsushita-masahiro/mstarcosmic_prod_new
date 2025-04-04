@@ -1,0 +1,41 @@
+<h3 class="paytitle">回数券購入</h3>
+
+<%= link_to "5回", "/payments/5/new", :class => "btn btn-primary paytype" %>
+<%= link_to "10回", "/payments/10/new", :class => "btn btn-primary paytype" %>
+
+<div class="bought-coupon">
+<hr>
+  <div class="title">購入済み回数券</div>
+  
+    
+        <table class="table table-bordered table-schedule table-striped">
+          <thead>
+            <tr>
+              <th scope="col">開始日</th>
+              <th scope="col">回数</th>
+              <th scope="col">使用済み</th>
+              <th scope="col">残回数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @payments.each do |payment| %>
+               <tr>
+                  <td class="center"><%= payment.created_at.strftime("%Y.%m.%d") %></td>
+                  <td class="center"><%= payment.coupons.count %></td>
+                  <td class="center">
+                      <% payment.coupons.where(status: "used").order(:updated_at).each do |coupon| %>
+                        <%= coupon.updated_at.strftime("%Y.%m.%d") %><br>
+                      <% end %>
+                  </td>
+                  <td class="center"><%= payment.coupons.where(status: "new").count %></td>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>  
+
+</div>
+
+<style>
+
+</style>
+

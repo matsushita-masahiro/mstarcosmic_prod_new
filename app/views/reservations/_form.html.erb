@@ -1,0 +1,88 @@
+<div class="modal-dialog modal-lg" style="z-index: 1500">
+ <div class="modal-content">
+    <div class="container">
+        <%= form_for @reservation, :url => {:action => "create" }, :data => {:remote => true}, :html => {:onsubmit =>
+"return nidoosi2(this);"} do |f| %>
+            <%= render "shared/error_messages", model: @reservation %>
+            
+            <div class="input-wrapper">
+                <div class="label-field">
+                    <span>氏名</span>
+                </div>
+                <div class="input-field">
+                    <%= current_user.name %>
+                </div>
+            </div>
+            
+  
+            
+            <div class="input-wrapper">
+                <div class="label-field">
+                    <span>性別</span>
+                </div>
+                <div class="input-field">
+                    <%= Global::GENDER[current_user.gender] %>
+                </div>
+            </div>
+            
+            <div class="input-wrapper">
+                <div class="label-field">
+                    <span>電話番号</span>
+                </div>
+                <div class="input-field">
+                   <%= current_user.tel %>           
+                </div>
+            </div>
+            
+            <div class="input-wrapper">
+                <div class="label-field">
+                    <span>予約日時</span>
+                </div>
+                <div class="input-field">
+                   <%= @date.to_date.strftime("%Y年 %-m月 %-d日") %>(<%= Global::WEEKDAY[@date.to_date.wday] %>)　<%= @frame %>:00〜        
+                </div>
+            </div>
+            <div class="input-wrapper">
+                <div class="label-field">
+                    <span>備考</span>
+                </div>
+                <div class="input-field">
+                   <%= f.text_area :remarks %>           
+                </div>
+            </div>
+                <%= f.hidden_field :reserved_date, :value => @date %>
+                <%= f.hidden_field :reserved_space, :value => @frame %>
+                <%= f.hidden_field :user_id, :value => current_user.id %>
+                <button type="button" class="btn btn-warning" data-dismiss="modal">キャンセル</button>
+                <%= button_to "予約を確定", {action: 'create'}, {method: :post, class: "btn btn-primary"}%>
+                <!-- 管理者なら休日ボタンを表示 -->
+                <% if User.find(current_user.id).user_type == "1"  %>
+                  <%= link_to "お休み", "/reservations/make_holiday/#{@date}/#{@frame}", {method: :post, class: "btn btn-danger",  :id => "holiday"} %>
+                <% end %>
+        <% end %>
+    </div>   
+  </div>
+</div>
+
+<script>
+<!--
+function nidoosi2(form) {
+    let elements = form.elements;
+    for (let i = 0; i < elements.length; i++) {
+            if (elements[i].type == 'submit') {
+             elements[i].disabled = true;
+            }
+    }
+} 
+//-->
+
+$('#holiday').on('click', function(){
+    // 2重送信防止クラスのチェック
+    if ( $(this).hasClass('double_click') ){
+        return false;
+    }
+    $(this).text("処理中...");
+    // 2重送信防止クラス
+    $(this).addClass('double_click');
+});
+</script>

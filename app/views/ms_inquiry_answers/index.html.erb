@@ -1,0 +1,33 @@
+<div class="container">
+    <h3 class="my-reserved-title">お問合せ回答一覧</h3>
+    
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th scope="col" class="col-xs-2 col-sm-2 col-md-2 col-lg-2">名前</th>
+              <th scope="col" class="col-xs-2 col-md-2 col-lg-2">メール</th>
+              <th scope="col" class="col-xs-4 col-md-4 col-lg-4">お問合せ内容</th>
+              <th scope="col" class="col-xs-4 col-md-4 col-lg-4">回答</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @inquiries.each do |inquiry| %>
+               <tr>
+                  <td><%= inquiry.name %></td>
+                  <td><%= inquiry.email %></td>
+                  <td><%= link_to inquiry.content, inquiries_path %></td>
+                  <td>
+                    <% i = 0 %>
+                    <% Answer.where(inquiry_id: inquiry.id).each do |answer| %>
+                        <% if i > 0 %>
+                          <p>----------------</p>
+                        <% end %>  
+                        <% i += 1 %>
+                      <%= simple_format(answer.comment) %>
+                    <% end %>
+                  </td>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+</div>

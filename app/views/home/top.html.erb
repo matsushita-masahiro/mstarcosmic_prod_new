@@ -1,2 +1,37 @@
-<h1>Home#top</h1>
-<p>Find me in app/views/home/top.html.erb</p>
+<!--header-->
+<div class="header-image">
+  <div class="container text-center">
+    <h1 class="text-main">m☆COSMIC</h1>
+    <br>
+    <% if !user_signed_in? %> 
+    
+      <%= link_to "無料登録", new_user_registration_path, class:"singup btn btn-info" %>
+      <%= link_to "ログイン", new_user_session_path, class:"singin btn btn-success" %>
+    <% end %>
+  </div>
+</div>
+
+<!--func-->
+
+<div class="top-comment flex-box">
+  <div>
+      <p class="title">m☆COSMIC</p>
+  </div>
+  <div class="item">
+     <% text = PageContent.find_by(id: 1).content %>
+     <%= simple_format(text) %>
+  </div>
+</div>
+
+    
+    
+    
+</div>
+
+
+
+<!--footer-->
+
+
+ 
+

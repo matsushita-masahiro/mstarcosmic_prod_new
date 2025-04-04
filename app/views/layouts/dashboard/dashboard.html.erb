@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>mStarCOSMIC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= display_meta_tags(default_meta_tags) %>
+    <%= csrf_meta_tags %>
+
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <script src="https://kit.fontawesome.com/051cef80cf.js" crossorigin="anonymous"></script>
+    <!-- google analitycs -->
+    <%= analytics_init if Rails.env.production? %>  
+  </head>
+  <body>
+     <%= render "layouts/navbar"  %>
+     
+      <div class="main-page">
+         <div class="float-right">
+            <% if notice %>
+              <p class = "alert alert-success"><%= notice %></p>
+            <% end %>
+            <% if alert %>
+              <p class = "alert alert-danger"><%= alert %></p>
+            <% end %> 
+          </div>
+        <%= yield %>
+      </div>
+    
+    <%= render "layouts/footer"  %>
+    <!-- google rechapture -->
+    <script>
+      function onClick(e) {
+        e.preventDefault();
+        grecaptcha.enterprise.ready(async () => {
+          const token = await grecaptcha.enterprise.execute('6LePVWYpAAAAAA-wexeM9hbPBQHowBUdlV7LHzqV', {action: 'LOGIN'});
+        });
+      }
+    </script>
+  </body>
+</html>
+
+

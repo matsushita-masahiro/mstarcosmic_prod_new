@@ -1,0 +1,22 @@
+<div class="staff-select-area">
+    <% if @machine == "b" %>
+      <% if StaffMachineRelation.find_by(machine: "e") %>
+        <div>
+            <form action="/reserves/new_cust_other" method="get">
+                <input type="hidden" value="e" name="machine" >
+                <input type="submit" value="エステ">
+            </form>
+        </div>
+      <% end %>
+    <% elsif @machine == "e" %>
+      <% if StaffMachineRelation.find_by(machine: "b") %>
+        <div>
+            <form action="/reserves/new_cust_other" method="get">
+                <input type="hidden" value="b" name="machine" >
+                <input type="submit" value="鍼・整体">
+            </form>
+        </div>
+      <% end %>
+    <% end %>
+</div>
+

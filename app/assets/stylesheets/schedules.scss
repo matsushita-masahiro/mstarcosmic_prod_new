@@ -1,0 +1,271 @@
+// Place all the styles related to the schedules controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+#schedule {
+    
+    height: 70vh;
+    
+    h2 {
+        border-bottom: 1px solid gray;
+        padding-bottom: 30px;
+        margin: 100px 10% 0px 10%;
+        text-align: center;
+    }
+    
+    .staff-schedule {
+        text-align: center;
+    }
+    
+}
+
+#schedule-new {
+  
+        td.allChecked {
+          line-height: 82px;
+          font-weight: bold;
+        }
+  
+        .back-link {
+          width: 60%;
+          margin: 100px auto 0;
+          text-align: left;
+        }    
+      
+        .title {
+          margin: 10px auto 0;
+          text-align: center;
+          font-size: 2rem;
+          font-weight: bold;
+        }
+
+
+        
+        div.table-responsive.table-width.schedule > table {
+            width: 60%;
+            margin: 0 auto;
+            
+        }
+        
+        
+        div.table-responsive.table-width.schedule > table > tbody {
+            display: block;
+            height: 500px;
+            overflow: auto;
+        }
+        
+        thead, tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+        
+        
+        div.table-responsive.table-width > table > thead > tr > th {
+            padding: 1.2vw;
+            text-align: center;
+            font-weight: normal;
+        }
+        
+        th.calender-date {
+            font-size: 2vw;
+        }
+        
+        
+        div.table-responsive.table-width > table > tbody > tr > th {
+            text-align: center;
+            margin: 0 auto;
+            font-size: 2vw;
+            font-weight: normal;
+        }
+        
+        div.table-responsive.table-width.schedule > table > tbody > tr > td {   
+            text-align: center;
+        }
+        
+        div.table-responsive.table-width > table > tbody > tr > td > a {
+            padding-top: 20px;
+            font-size: 20px;
+        }
+        
+        .schedule table th, .schedule table td {
+          width: 12.3%;
+        }
+        
+        .schedule-submit {
+          width: 60%;
+          margin: 0 auto;
+        }
+        
+        
+        
+        // スマホ
+        
+        @media (max-width: 767.98px) {
+        
+            div.table-responsive.table-width.schedule > table {
+                width: 90%;
+                margin: 0 auto;
+                
+            }
+            
+            .schedule-submit {
+              width: 90%;
+              margin: 0 auto;
+            }
+            
+            .week-flex {
+                width: 90%;
+            }
+                
+          
+        }
+        
+        
+      .schedule-submit-tr {
+         background: white;
+         border: 4px solid red;
+         border-style:none;
+         text-align: right;
+       }
+       
+       .schedule-submit-tr td {
+         border-style:none; 
+       }
+       
+        .schedule-submit-tr th {
+        // border: 0px none;
+         border-style:none; 
+       }
+       
+       
+       .thead-dates {
+         background: #696969;
+         color: #fff;
+       }
+  
+        
+
+}
+
+#all_schedules {
+  
+        td.allChecked {
+          line-height: 82px;
+          font-weight: bold;
+        }
+  
+          
+        .back-link {
+          width: 60%;
+          margin-top: 100px;
+          text-align: left;
+        }  
+      
+        .title {
+          margin: 10px auto 0;
+          text-align: center;
+          font-size: 2rem;
+          font-weight: bold;
+
+        }
+
+
+        
+        div.table-responsive.table-width.schedule > table {
+            width: 60%;
+            margin: 0 auto;
+            
+        }
+        
+        
+        div.table-responsive.table-width.schedule > table > tbody {
+            display: block;
+            height: 500px;
+            overflow: auto;
+        }
+        
+        thead, tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+        
+        
+        div.table-responsive.table-width > table > thead > tr > th {
+            padding: 1.2vw;
+            text-align: center;
+            font-weight: normal;
+        }
+        
+        th.calender-date {
+            font-size: 2vw;
+        }
+        
+        
+        div.table-responsive.table-width > table > tbody > tr > th {
+            text-align: center;
+            margin: 0 auto;
+            font-size: 2vw;
+            font-weight: normal;
+        }
+        
+        div.table-responsive.table-width.schedule > table > tbody > tr > td {   
+            text-align: center;
+        }
+        
+
+        
+        .schedule table th, .schedule table td {
+          width: 12.5%;
+        }
+
+        
+        
+        
+        // スマホ
+        
+        @media (max-width: 767.98px) {
+        
+            div.table-responsive.table-width.schedule > table {
+                width: 90%;
+                margin: 0 auto;
+                
+            }
+            
+            .schedule-submit {
+              width: 90%;
+              margin: 0 auto;
+            }
+            
+            .week-flex {
+                width: 90%;
+            }
+                
+          
+        }
+        
+        
+      .schedule-submit-tr {
+         background: white;
+         border: 4px solid red;
+         border-style:none;
+         text-align: right;
+       }
+       
+       .schedule-submit-tr td {
+         border-style:none; 
+       }
+       
+        .schedule-submit-tr th {
+        // border: 0px none;
+         border-style:none; 
+       }
+       
+       
+       .thead-dates {
+         background: #696969;
+         color: #fff;
+       }  
+}

@@ -1,0 +1,17 @@
+
+     次の方が無料会員登録・変更されました
+      登録内容
+      名前：<%= @user.name %>
+      かな：<%= @user.name_kana %>
+      電話：<%= @user.tel %>
+      メール：<%= @user.email %>
+      生年月日：<%= @user.birthday.strftime(" %Y-%m-%d ") %>
+      性別：<%= Global::GENDER[@user.gender] %>
+      紹介者：<%= @user.introducer %>
+      備考：<%= @user.remarks %>
+      ---------------------------------
+      m☆COSMIC 事務局
+      HP : https://www.mstarcosmic.com
+      email : <%= ENV['USER_EMAIL'] %>
+      鹿田聖子
+      ---------------------------------

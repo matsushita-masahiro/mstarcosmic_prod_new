@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <h2>出張登録エラー</h2>
+      <p>Machine：<%= Machine.find_by(short_word: @machine).name %></p>
+    <hr />
+      <p>下記枠が出張登録不可です</p>
+      <% @error_array.each do |error_date_space| %>
+        <p><%= error_date_space[0].to_date.strftime("%F") %>..<%= error_date_space[1].to_f %></p>
+        <% reserves = Reserve.where(reserved_date: error_date_space[0].to_date, reserved_space: error_date_space[1].to_f, machine: @machine) %>
+        <div>予約者</div>
+        <ul>
+          <% reserves.each do |reserve| %>
+            <li>予約者：<%= User.find_by(id: reserve.user_id).name %></li>
+            <li>スタッフ：<%= reserve.staff.name %></li>
+            <li>備考：<%= simple_format(reserve.remarks) %></li>
+          <% end %>
+          
+        </ul>
+      <% end %>
+      <hr style="border-top: 2px dashed black; margin-left: 1px; width: 200px;">
+   <hr />
+</body>
+</html>

@@ -1,0 +1,109 @@
+<section id="special-treatment" class="metatron-features">
+        <div class="special-treatment-title">SPECIAL TREATMENT</div>
+
+        
+        <div class="metatron-feature">
+            <div class="metatron-feature-each">
+                <img src="/new-images/chomomi.jpg" class="feature-img fadein">
+                <div class="title">栄養指導・腸もみ<br></div>
+                <div class="detail" style="text-align: center;">
+                  美と健康のパーソナルサポートを提供致します。
+                </div> 
+                <div class="sp-detail" style="text-align: center;">
+                    美と健康のパーソナルサポートを提供致します。
+                </div>
+                <div class="sp-about-button">
+                    <%= link_to intestinal_path do %>
+                       <img src="/new-images/chomomi_link.png" class="sp-about-metatron-link">
+                    <% end %>
+                </div>        
+                <div class="about-button">
+                    <%= link_to intestinal_path do %>
+                       <img src="/new-images/chomomi_link.png" class="about-metatron-link">
+                    <% end %>
+                </div>
+            </div>
+            <div class="metatron-feature-each">
+                <img src="/new-images/fasting.jpg" class="feature-img fadein" >
+                <div class="title">ファスティング<br></div>
+                <div class="detail">
+                   身体に溜まった老廃物や毒素をファスティングでデトックスしましょう！
+                </div>
+                <div class="sp-detail">
+                    身体に溜まった老廃物や毒素をファスティングでデトックスしましょう！
+                </div> 
+                <div class="sp-about-button">
+                    <%= link_to fasting_path do %>
+                       <img src="/new-images/fasting_link.png" class="sp-about-metatron-link">
+                    <% end %>
+                </div>        
+                <div class="about-button">
+                    <%= link_to fasting_path do %>
+                       <img src="/new-images/fasting_link.png" class="about-metatron-link">
+                    <% end %>
+                </div>                
+            </div>      
+            <div class="metatron-feature-each">
+                <img src="/new-images/seitai.jpg" class="feature-img fadein" >
+                <div class="title">整体・マッサージ・エステ</div>
+                <div class="detail" style="text-align: center;">
+                  身体を整え、動きやすく、外側からサポートしていきます。
+                </div>
+                <div class="sp-detail" style="text-align: center;">
+                    身体を整え、動きやすく、外側からサポートしていきます。
+                </div>
+                <div class="sp-about-button">
+                    <!--<= link_to "#special-treatment" do %>-->
+                    <%= link_to massage_path do %>
+                       <img src="/new-images/massage_link.png" class="sp-about-metatron-link">
+                    <% end %>
+                </div>        
+                <div class="about-button">
+                    <!--<= link_to "#special-treatment" do %>-->
+                    <%= link_to massage_path do %>
+                       <img src="/new-images/massage_link.png" class="about-metatron-link">
+                    <% end %>
+                </div>                
+            </div> 
+        </div>
+</section>
+
+<style>
+
+    .special-treatment-title {
+      text-align: center;
+      font-size: 20px;
+      margin: 0 0 50px;
+    }
+    .sp-about-button {
+        display: none;
+    }
+    
+    .about-button {
+        display: block;
+    }
+    
+    @media screen and (max-width: 768px) {
+      
+      
+      .special-treatment-title {
+        margin: 20px 0 20px;
+      }
+        
+        .sp-about-button {
+            display: block;
+            text-align: center;
+            
+        } 
+        
+        .sp-about-button img {
+            margin: 50px 0;
+            width: 80%;
+        }
+        
+         .about-button {
+            display: none;
+         }       
+        
+    }
+</style>

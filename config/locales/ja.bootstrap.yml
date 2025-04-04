@@ -1,0 +1,14 @@
+ja:
+  bootstrap:
+    helpers:
+      submit:
+        create: "%{model}を登録する"
+        update: "%{model}を更新する"
+      label:
+        user:
+          email: "メールアドレス"
+          password: "パスワード"
+          password_confirmation: "パスワード（確認）"
+        post:
+          title: "タイトル"
+          body: "本文"

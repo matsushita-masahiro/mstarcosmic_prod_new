@@ -1,0 +1,46 @@
+
+<div class="container edit">
+<h3>回数券処理</h3>
+
+<h4>会員名：<%= @user.name %></h4>
+<!--<h4>会員タイプ：<= UserType.find(@user.user_type.to_i).type_name %></h4>-->
+<h4>残り回数券：<%= @new_coupons.count %>枚</h4>
+
+ <div class="container">        
+    <%= form_for(@payment) do |f| %>
+      <div class="field">
+        <%= f.label :備考：１０文字以内 %><br />
+        <%= f.text_field :remarks, :class => "col-xs-3" %><br>
+      </div>
+        <%= f.submit "回数券を使う", :class => "btn btn-success" %>
+    <% end %>
+
+    <h3 class="my-reserved-title">回数券一覧</h3>
+    
+        <table class="table table-bordered table-schedule">
+          <thead>
+            <tr>
+              <th scope="col">回数券使用日時</th>
+              <th scope="col">備考</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @used_coupons.each do |used_coupon| %>
+               <tr>
+                  <td><%= used_coupon.updated_at.strftime("%Y/%m/%d....%H:%M") %></td>
+                  <% if used_coupon.remarks %>
+                    <td><%= used_coupon.remarks %></td>
+                  <% else %>
+                    <td><%= "------" %></td>
+                  <% end %>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+    
+    <% if Coupon.find_by(payment_id: @payment.id, status: "used") %>
+       <%= link_to "１枚取消", "/payments/#{@payment.id}", :method => "delete", :class => "cancel btn btn-danger" %>
+    <% end %>
+
+</div>
+</dir>

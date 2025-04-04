@@ -1,0 +1,20 @@
+
+     様からのお問合せに対する回答
+      名前：<%= @inquiry.name %>
+      メール：<%= @inquiry.email %>
+      電話：<%= @inquiry.phone %>
+      〒：<%= @inquiry.postcode %>
+      住所：<%= @inquiry.prefecture_name %><%= @inquiry.address_city %>
+      体験：<%= @inquiry.trial_flag? ? "希望する" : "希望しない" %>
+      購入相談：<%= @inquiry.buy_consult_flag? ? "希望する" : "希望しない" %>
+      HP作成相談：<%= @inquiry.hp_consult_flag? ? "希望する" : "希望しない" %>   
+      内容：<%= simple_format(@inquiry.content) %>
+      日時：<%= @inquiry.created_at.strftime("%Y/%m/%d %H:%M") %>
+      ----------------
+      回答：<%= simple_format(@answer.comment) %>
+      ---------------------------------
+      m☆COSMIC 事務局
+      HP ： https://www.mstarcosmic.com
+      email ： <%= ENV['USER_EMAIL'] %>
+      鹿田聖子
+      ---------------------------------

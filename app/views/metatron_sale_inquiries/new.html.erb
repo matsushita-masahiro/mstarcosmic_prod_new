@@ -1,0 +1,83 @@
+<div class="metatron_sale_inquiry_new">
+  <h3 style="margin-bottom: 50px;">メタトロン購入 お問合せ</h3>
+  <% logger.debug("-------------- inquiry new.html.erb") %>
+
+  <%= form_for @inquiry  do |f| %>
+  
+      
+    <div class="field name">
+      <%= f.label :氏名 %><br />
+      <%= f.text_field :name, autofocus: true, required: true, :class => "form-control my-form", autocomplete: 'name' %>
+    </div>
+
+    <div class="field name">
+      <%= f.label :氏名かな %><br />
+      <%= f.text_field :name_kana, autofocus: true, required: true, :class => "form-control my-form", autocomplete: 'name_kana' %>
+    </div>
+  
+    <div class="field">
+      <%= f.label :email %><br />
+      <%= f.email_field :email, required: true, :class => "form-control my-form", autocomplete: "email" %>
+    </div>
+    
+    <div class="field name">
+      <%= f.label :電話番号 %><br />
+      <%= f.text_field :phone, autofocus: true, required: true, :class => "form-control my-form", autocomplete: 'phone' %>
+    </div>
+    
+    <div class="field name">
+      <%= f.label :郵便番号 %><br />
+      <%= f.text_field :postcode, autofocus: true, required: true, :class => "form-control my-form", autocomplete: 'postcode' %>
+    </div>
+    
+    <div class="field name" style="width: 300px;">
+      <%= f.label :都道府県 %><br />
+      <%= f.collection_select :prefecture_code, JpPrefecture::Prefecture.all, :code, :name, { prompt: '選択してください' }, class: 'form-control' %>
+    </div>
+    
+    <div class="field name">
+      <%= f.label :市区町村 %><br />
+      <%= f.text_field :address_city, autofocus: true, required: true, :class => "form-control my-form", autocomplete: 'address_city' %>
+    </div>
+    
+  <div class="field gender">
+    <%= f.label :体験希望 %><br />
+    <%= f.radio_button :trial_flag, true, checked: true %>Yes　
+    <%= f.radio_button :trial_flag, false, checked: false %>No
+  </div>
+    
+  <div class="field gender">
+    <%= f.label :購入相談 %><br />
+    <%= f.radio_button :buy_consult_flag, true, checked: true %>Yes　
+    <%= f.radio_button :buy_consult_flag, false, checked: false %>No
+  </div>   
+
+  <div class="field gender">
+    <%= f.label "HP作成相談" %><br />
+    <%= f.radio_button :hp_consult_flag, true, checked: true %>Yes　
+    <%= f.radio_button :hp_consult_flag, false, checked: false %>No
+  </div>   
+    <div class="field">
+        <%= f.label :お問合せ内容 %><br />
+        <%= f.text_area :content, :size => "20x10", required: true, :class => "form-control my-form", autocomplete: "content" %>
+    </div>
+    
+    <div class="actions">
+      <%= f.submit "送信", data: { confirm: "送信してOKですか？"}, class:"btn btn-primary" %>
+    </div>
+  <% end %>
+
+
+</div>
+
+<style>
+  
+  .metatron_sale_inquiry_new {
+    width: 100%;
+    padding: 10% 10%;
+    background: #d3d3d34d;
+  }
+
+
+</style>
+

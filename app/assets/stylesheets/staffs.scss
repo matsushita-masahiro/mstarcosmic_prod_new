@@ -1,0 +1,97 @@
+// Place all the styles related to the staffs controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+#staff-new {
+    width: 40%;
+    margin: 100px auto 50px;
+    text-align: center;
+    
+    h4 {
+        padding-bottom: 10px;
+        border-bottom: lightgray solid 1px;
+    }
+    
+    input.staff-input-width {
+        margin: 0 auto;
+        width: 70%;
+    }
+    
+    @media (max-width: 790px) {
+        input.staff-input-width {
+            width: 100%;
+        }        
+    }
+    
+    .machine-select-br {
+        display: none;
+    }
+}
+
+#staff-edit {
+    width: 40%;
+    margin: 0px auto;
+    text-align: center;
+    
+    .checkbox {
+        
+        input[type="checkbox"] {
+            margin-left: -50px;
+        }
+        
+        label {
+            display: block;
+            
+            
+        }
+    }
+    
+    h4 {
+        padding-bottom: 10px;
+        border-bottom: lightgray solid 1px;
+    }
+}
+
+
+
+#staff-index {
+    width: 50%;
+    margin: 150px auto;
+    text-align: center;   
+    
+    ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    
+    
+}
+
+#staffs {
+    
+        
+    .staff-name {
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .staff-position {
+        font-size: 9px;
+    }
+    
+}
+
+@media screen and (max-width: 830px) {
+    #staff-new { 
+        width: 80%;
+        
+        .machine-select-br {
+            display: block;
+        }        
+    }
+}
+
+
+

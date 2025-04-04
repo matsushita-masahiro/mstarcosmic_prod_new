@@ -1,0 +1,39 @@
+<div class="container">
+<h3>お問合せへの回答</h3>
+
+  <div class="field name">
+    氏名<br />
+    <p><%= @inquiry.name %></p>
+  </div>
+
+  <div class="field">
+    メール<br />
+    <p><%= @inquiry.email %></p>
+  </div>
+  
+  <div class="field">
+    お問合せ日時<br />
+    <p><%= @inquiry.created_at.strftime("%Y/%m/%d %H:%M") %></p>
+  </div>
+    
+  <div class="field">
+    内容<br />
+    <p><%= @inquiry.content %></p>
+  </div>
+  
+ <%= form_for([@inquiry, @answer]) do |f| %>
+
+      <%= f.hidden_field :inquiry_id, :value => @inquiry.id %>
+
+      <div class="field name">
+        <%= f.label :回答 %><br />
+        <%= f.text_area :comment, :size => "20x10", required: true, :class => "form-control my-form", autocomplete: 'name' %>
+      </div>
+     
+      <div class="actions">
+        <%= f.submit "回答する", data: { confirm: "回答してOKですか？"}, class:"btn btn-primary" %>
+      </div>
+　<% end %>
+
+
+</div>

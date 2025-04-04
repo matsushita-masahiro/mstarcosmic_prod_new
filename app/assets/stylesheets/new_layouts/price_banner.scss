@@ -1,0 +1,27 @@
+.price_banner {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 150px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 10px;
+    text-align: center;
+    background: #1acb83;
+    opacity: 1;
+    color: #fff;
+    z-index: 3;
+    text-decoration: none;
+}
+
+.price_banner:hover {
+    text-decoration: none;
+    color: #fff;
+    opacity: 0.8;
+}
+
+.floating {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+}

@@ -1,0 +1,25 @@
+<div class="container">
+<h3>ページ別表示内容登録</h3>
+
+<%= form_for(@page_content) do |f| %>
+
+
+  <div class="field user_type">
+    <%= f.label :ページ %><br />
+    <%= f.select :user_type_id, @upc, {}, {class: 'form-control my-form'} %>
+  </div>
+
+  <div class="field">
+    <%= f.label :表示内容 %><br />
+    <%= f.text_area :content, :size => "20x18", autofocus: true, required: true, :class => "form-control my-form", autocomplete: "content" %>
+  </div>
+
+ 
+  
+  <div class="actions">
+    <%= f.submit "登録", data: { confirm: "登録してOKですか？"}, class:"btn btn-primary" %>
+  </div>
+<% end %>
+
+
+</div>

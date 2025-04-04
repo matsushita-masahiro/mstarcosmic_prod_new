@@ -1,0 +1,47 @@
+#features {
+    display: flex;
+    justify-content: space-between;
+}
+
+.features-top {
+    width: 60%;
+}
+
+.publish-area {
+    width: 40%;
+}
+
+.publish-area > .woman-title {
+    /*text-align: center;*/
+    margin: 0 0 20px 10%;
+}
+
+.publish-area > .woman {
+    width: 70%;
+    margin: 0 0 0 10%;
+}
+
+@media screen and (max-width: 768px) {
+    #features {
+        display: block;
+    }
+    
+    .features-top {
+        width: 100%;
+    }
+    
+    .publish-area {
+        width: 100%;
+    }
+    
+    .publish-area > .woman-title {
+        /*text-align: center;*/
+        margin: 10px 0 20px 5%;
+    }
+    
+    .publish-area > .woman {
+        width: 70%;
+        margin: 0 0 0 5%;
+    }
+    
+}   

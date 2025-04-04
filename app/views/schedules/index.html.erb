@@ -1,0 +1,48 @@
+<div id="schedule-new">
+    <!--< if current_user.user_type == "1" %>-->
+     <div class="back-link"><%= link_to "<< 戻る", "/admin/staffs" %></div>
+    <!--< end %>-->
+    <div class="title">スケジュール登録（<%= @staff.name %>）</div>
+    <% if user_signed_in? && current_user.user_type == "1" %>
+        <% if @staff.active_flag %>
+          <div class="nonactivate"><%= link_to "予約カレンダーからはずす", "/staffs/#{@staff.id}/nonactivate", method: "patch" %></div>
+        <% else %>
+          <div class="activate"><%= link_to "予約カレンダーに入れる", "/staffs/#{@staff.id}/activate", method: "patch" %></div>
+        <% end %>
+    <% end %>
+    <%= render 'schedule_calender' %>
+    <% if admin_user? %>
+        <div class="dismiss"><%= link_to "スタッフを解任", "/admin/staffs/#{@staff.id}", method: :delete, class: "btn btn-danger", data: { confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも削除されますが本当に解任されますか？
+    ？" } %></div>
+        <div class="dismiss">※スタッフ解任すると、全ての出勤カレンダーも削除されます。</div>
+    <% end %>
+</div>
+
+<style>
+    .activate, .nonactivate {
+        color: black;
+        margin: 20px auto 0;
+        text-align: center;
+        width: 200px;
+        height: 40px;
+        background: lightgray;
+        line-height: 40px;
+        border-radius: 5px;
+    }
+    
+    .activate:hover, .nonactivate:hover {
+        opacity: 0.7;
+    }
+    
+    .nonactivate > a {
+        color: red;
+    }
+    
+    .dismiss {
+        font-size: 12px;
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+</style>
+    

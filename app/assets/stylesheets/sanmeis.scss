@@ -1,0 +1,34 @@
+// Place all the styles related to the sanmeis controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+h2.sanmei-title {
+    text-align: center;
+}
+.sanmei-btn {
+    margin: 10px 0;
+    width: 150px;
+    text-align: center;
+}
+
+ul.sanmei-ul {
+    padding: 0 0;
+    margin: 0 auto;
+    list-style: none;
+}
+
+ul.sanmei-ul > li {
+    text-align: center;
+}
+
+.meishiki {
+    margin-top: 200px;
+    margin-bottom: 200px;
+    text-align: center;
+}
+
+.meishiki select {
+    border: 1px solid #d3d3d3;
+}
+

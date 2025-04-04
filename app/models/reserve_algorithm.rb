@@ -1,0 +1,6 @@
+class ReserveAlgorithm < ApplicationRecord
+    
+
+
+    
+end

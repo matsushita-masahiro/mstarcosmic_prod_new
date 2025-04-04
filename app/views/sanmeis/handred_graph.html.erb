@@ -1,0 +1,1535 @@
+<div class="container meishiki">
+                          <img src="" alt="" width="1" height="10&quot;">
+                        
+                        
+                          
+						  <table width="100%" background-color: rgba( 204, 255, 204, 0.55 )>
+                            <tbody><tr>
+                              <td><div><font size="5">本能を選択し、性別と生年月日を入力して下さい。</font>
+<script language="JavaScript1.1">
+<!--
+    /* 各種テーブル */
+    var d_10kan;   /* １０干表示 */
+	var d_10uraten /*　１０干裏天干 */
+	var d_10urachi /* １０干裏地支 */
+	var d_10urazou　/*　１０干裏蔵干 */
+	var d_10uratengg /* １０干裏天干五行　*/
+	var d_10urachigg /*　１０干裏地支五行　*/
+	var d_10urazougg /* １０干裏蔵干五行　*/
+    var d_12shi;   /* １２支表示 */
+    var d_10shu;   /* １０大主星表示 */
+    var d_12jyu;   /* １２大従星表示 */
+	var d_12shigg  /*　１２支五行　*/
+	var d_10shigg  /*　１０干五行　*/
+	var d_12jyuenergy  /*１２大従星エネルギー　*/
+	
+    /* 各種グローバル変数 */
+    var b_y_inp;   /* 入力年 */
+    var b_nengo;   /* 年号文字列 */
+    var b_y_bias;  /* 年号バイアス */
+    var b_y0;      /* 西暦年 */
+    var b_m0;      /* 月 */
+    var b_d0;      /* 日 */
+    var today=new Date();     /* 現在日時 */
+    var c_sflg, c_sdte;       /* 節入り */
+    var im_py, im_pm, im_pd;  /* 干支番号 */
+    var im_ky, im_km, im_kd;  /* 天干  （年干　月干　日干）*/
+    var im_sy, im_sm, im_sd;  /* 地支 　（年支　月支　日支）*/
+    var im_zy, im_zm, im_zd;  /* 蔵干 */
+    var im_tx;                /* 天中殺 */
+    var ym_sc, ym_se, ym_sw, ym_sn, ym_ss;  /* 主星 */
+    var ym_jy, ym_jm, ym_jd;                /* 従星 */
+	var moku,ka,dou,gon,sui   /*木火土金水*/
+	var sel_graph;
+	var selgraph;
+
+    
+
+	
+		
+	/* 切り捨て型・整数化 */
+    function cint(x) {
+        return Math.round(x-0.5);
+    }
+
+    /* 特殊mod */
+    function cmod(x, y) {
+        var t, a;
+    
+        t=x/y;
+        a=Math.round((t-Math.round(t-0.5))*y);
+        if (a==0) a=y;
+        return a;
+    }
+    
+    /* 日数計算 */
+    function cdate(y, m, d) {
+        if (m<3) {
+            m=m+12;
+            y=y-1;
+        }
+        x=cint(y*365.25)+cint(y/400)-cint(y/100)+cint((m-2)*30.59)+d-21;
+        return x;
+    }
+
+    /* 月の末日 */
+    function calc_maxdte(y, m) {
+        var s;
+        var x;
+        
+        if (y%400==0 || (y%100>0 && y%4==0)) {
+            s="312931303130313130313031";
+        } else {
+            s="312831303130313130313031";
+        }
+        x=parseInt(s.substr((m-1)*2, 2));
+        
+        return x;
+    }
+	
+	/* Array数値　降順並び替え */
+	function sortNumber(a, b)
+		{
+		return a - b;
+		}
+   
+
+   /* ２８元 */
+    function calc_zokan(sno, dte) {
+        var s;
+        var x;
+
+        switch (sno) {
+                    /* 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 20 */
+            case  1:s="101010101010101010101010101010101010101010"; break;
+            case  2:s="101010101010101010108 8 8 6 6 6 6 6 6 6 6 "; break;
+            case  3:s="5 5 5 5 5 5 5 5 3 3 3 3 3 3 3 1 1 1 1 1 1 "; break;
+            case  4:s="2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "; break;
+            case  5:s="2 2 2 2 2 2 2 2 2 2 1010105 5 5 5 5 5 5 5 "; break;
+            case  6:s="5 5 5 5 5 5 7 7 7 7 7 7 7 7 7 3 3 3 3 3 3 "; break;
+            case  7:s="6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 4 "; break;
+            case  8:s="4 4 4 4 4 4 4 4 4 4 2 2 2 6 6 6 6 6 6 6 6 "; break;
+            case  9:s="5 5 5 5 5 5 5 5 5 5 5 9 9 9 7 7 7 7 7 7 7 "; break;
+            case 10:s="8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 "; break;
+            case 11:s="8 8 8 8 8 8 8 8 8 8 4 4 4 5 5 5 5 5 5 5 5 "; break;
+            case 12:s="1 1 1 1 1 1 1 1 1 1 1 1 1 9 9 9 9 9 9 9 9 "; break;
+            default:s="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ";
+        }
+        if (dte>20) dte=20;
+        x=parseInt(s.substr(dte*2, 2));
+        return x;
+    }
+
+    /* １０大主星 */
+    function calc_10shu(n, k) {
+        var s;
+        var x;
+
+        switch (n) {
+                    /* 0 1 2 3 4 5 6 7 8 9 10 */
+            case  1:s="0 1 2 3 4 5 6 7 8 9 10"; break;
+            case  2:s="0 2 1 4 3 6 5 8 7 109 "; break;
+            case  3:s="0 9 101 2 3 4 5 6 7 8 "; break;
+            case  4:s="0 109 2 1 4 3 6 5 8 7 "; break;
+            case  5:s="0 7 8 9 101 2 3 4 5 6 "; break;
+            case  6:s="0 8 7 109 2 1 4 3 6 5 "; break;
+            case  7:s="0 5 6 7 8 9 101 2 3 4 "; break;
+            case  8:s="0 6 5 8 7 109 2 1 4 3 "; break;
+            case  9:s="0 3 4 5 6 7 8 9 101 2 "; break;
+            case 10:s="0 4 3 6 5 8 7 109 2 1 "; break;
+            default:s="0 0 0 0 0 0 0 0 0 0 0 ";
+        }
+        x=parseInt(s.substr(k*2, 2));
+        return x;
+    }
+	
+	
+	
+
+    /* １２大従星 */
+    function calc_12jyu(n, k) {
+        var s;
+        var x;
+
+        switch (n) {
+                    /* 0 1 2 3 4 5 6 7 8 9 101112 */		
+            case  1:s="9 7 1011128 4 2 5 1 3 6 9 "; break;
+            case  2:s="2 4 8 1211107 9 6 3 1 5 2 "; break;
+            case  3:s="1 3 6 9 7 1011128 4 2 5 1 "; break;
+            case  4:s="3 1 5 2 4 8 1211107 9 6 3 "; break;
+            case  5:s="1 3 6 9 7 1011128 4 2 5 1 "; break;
+            case  6:s="3 1 5 2 4 8 1211107 9 6 3 "; break;
+            case  7:s="4 2 5 1 3 6 9 7 1011128 4 "; break;
+            case  8:s="7 9 6 3 1 5 2 4 8 1211107 "; break;
+            case  9:s="11128 4 2 5 1 3 6 9 7 1011"; break;
+            case 10:s="1211107 9 6 3 1 5 2 4 8 12"; break;
+            default:s="0 0 0 0 0 0 0 0 0 0 0 0 0 ";
+        }
+        x=parseInt(s.substr(k*2, 2));
+        return x;
+    }
+	
+
+
+	
+	/*　四天運と剋線の順位 表*/
+    function calc_juni(n, k) {
+        var s;
+        var x;
+
+        switch (n) {
+                    /* 01234 */
+            case  1:s="04421"; break;
+            case  2:s="03412"; break;
+            case  3:s="02143"; break;
+            case  4:s="01234"; break;
+            case  5:s="04321"; break;
+            case  6:s="03412"; break;
+            case  7:s="04321"; break;
+            case  8:s="03412"; break;
+            case  9:s="02143"; break;
+            case 10:s="01234"; break;
+            default:s="00000";
+        }
+        x=parseInt(s.substr(k,1));
+        return x;
+    }
+
+	/*　蔵干表　裏*/
+    function calc_ura_zokan(n,k) {
+        var s;
+        var x;
+
+        switch (n) {
+                    /* 0 1 2 3 */
+            case  1:s="00100000"; break;
+            case  2:s="00100806"; break;
+            case  3:s="00050301"; break;
+            case  4:s="00020000"; break;
+            case  5:s="00021005"; break;
+            case  6:s="00050703"; break;
+            case  7:s="00060004"; break;
+            case  8:s="00040206"; break;
+            case  9:s="00050907"; break;
+            case 10:s="00080000"; break;
+			case 11:s="00080405"; break;
+            case 12:s="00010009"; break;
+            default:s="00000000";
+        }
+        x=parseInt(s.substr(k*2,2));
+        return x;
+    }
+	
+	//　数理エネルギー     01:木　02:火　03:土　04:金　05:水
+    function calc_suri_gogyo(n,k) {
+        var s;
+        var x;
+
+        switch (n) {
+                    /* 0 1 2 3 4 */
+            case  1:s="0105030204"; break;
+            case  2:s="0105030204"; break;
+            case  3:s="0201040305"; break;
+            case  4:s="0201040305"; break;
+            case  5:s="0302050401"; break;
+            case  6:s="0302050401"; break;
+            case  7:s="0403010502"; break;
+            case  8:s="0403010502"; break;
+            case  9:s="0504020103"; break;
+            case 10:s="0504020103"; break;
+            default:s="0000000000";
+        }
+        x=parseInt(s.substr(k*2,2));
+        return x;
+    }       
+	
+	
+	
+	
+    /* 節入り日 */
+    function calc_setsu(y, m) {
+        var s;
+        var x;
+ 
+        switch (y) {
+            case 1873:s="545566778877"; break;
+            case 1874:s="546566788877"; break;
+            case 1875:s="646566888987"; break;
+            case 1876:s="645455777877"; break;
+            case 1877:s="545556777877"; break;
+            case 1878:s="546566788877"; break;
+            case 1879:s="646566788987"; break;
+            case 1880:s="645455777877"; break;
+            case 1881:s="545556777877"; break;
+            case 1882:s="546566788877"; break;
+            case 1883:s="646566788987"; break;
+            case 1884:s="645455777877"; break;
+            case 1885:s="545556777877"; break;
+            case 1886:s="546566788877"; break;
+            case 1887:s="646566788987"; break;
+            case 1888:s="645455777877"; break;
+            case 1889:s="535555777877"; break;
+            case 1890:s="546566788877"; break;
+            case 1891:s="646566788987"; break;
+            case 1892:s="645455777877"; break;
+            case 1893:s="535455777877"; break;
+            case 1894:s="545556778877"; break;
+            case 1895:s="546566788887"; break;
+            case 1896:s="645455777876"; break;
+            case 1897:s="535455777877"; break;
+            case 1898:s="545556778877"; break;
+            case 1899:s="546566788877"; break;
+            case 1900:s="646566888987"; break;
+            case 1901:s="646566888988"; break;
+            case 1902:s="656667888988"; break;
+            case 1903:s="657677899988"; break;
+            case 1904:s="756566788987"; break;
+            case 1905:s="646566888988"; break;
+            case 1906:s="656667888988"; break;
+            case 1907:s="657677899988"; break;
+            case 1908:s="756566788987"; break;
+            case 1909:s="646566888988"; break;
+            case 1910:s="656666888988"; break;
+            case 1911:s="657677899988"; break;
+            case 1912:s="756566788987"; break;
+            case 1913:s="646566888988"; break;
+            case 1914:s="656666888988"; break;
+            case 1915:s="657677899988"; break;
+            case 1916:s="756566788987"; break;
+            case 1917:s="646566888988"; break;
+            case 1918:s="646566888988"; break;
+            case 1919:s="657667889988"; break;
+            case 1920:s="656566788887"; break;
+            case 1921:s="646566888988"; break;
+            case 1922:s="646566888988"; break;
+            case 1923:s="656667889988"; break;
+            case 1924:s="656566788887"; break;
+            case 1925:s="646566888987"; break;
+            case 1926:s="646566888988"; break;
+            case 1927:s="656667889988"; break;
+            case 1928:s="656566788887"; break;
+            case 1929:s="646566888987"; break;
+            case 1930:s="646566888988"; break;
+            case 1931:s="656667889988"; break;
+            case 1932:s="656566788877"; break;
+            case 1933:s="646566788987"; break;
+            case 1934:s="646566888988"; break;
+            case 1935:s="656667888988"; break;
+            case 1936:s="656566788877"; break;
+            case 1937:s="646566788987"; break;
+            case 1938:s="646566888988"; break;
+            case 1939:s="656666888988"; break;
+            case 1940:s="656566788877"; break;
+            case 1941:s="646566788987"; break;
+            case 1942:s="646566888988"; break;
+            case 1943:s="656666888988"; break;
+            case 1944:s="656566788877"; break;
+            case 1945:s="646566788987"; break;
+            case 1946:s="646566888988"; break;
+            case 1947:s="656666888988"; break;
+            case 1948:s="656556788877"; break;
+            case 1949:s="646566788987"; break;
+            case 1950:s="646566888988"; break;
+            case 1951:s="656566888988"; break;
+            case 1952:s="656556778877"; break;
+            case 1953:s="646566788887"; break;
+            case 1954:s="646566888988"; break;
+            case 1955:s="646566888988"; break;
+            case 1956:s="655556778877"; break;
+            case 1957:s="546566788887"; break;
+            case 1958:s="646566888987"; break;
+            case 1959:s="646566888988"; break;
+            case 1960:s="655556778877"; break;
+            case 1961:s="546566788887"; break;
+            case 1962:s="646566788987"; break;
+            case 1963:s="646566888988"; break;
+            case 1964:s="655556777877"; break;
+            case 1965:s="546566788887"; break;
+            case 1966:s="646566788987"; break;
+            case 1967:s="646566888988"; break;
+            case 1968:s="655556777877"; break;
+            case 1969:s="546566788877"; break;
+            case 1970:s="646566788987"; break;
+            case 1971:s="646566888988"; break;
+            case 1972:s="655555777877"; break;
+            case 1973:s="546566788877"; break;
+            case 1974:s="646566788987"; break;
+            case 1975:s="646566888988"; break;
+            case 1976:s="655555777877"; break;
+            case 1977:s="546556788877"; break;
+            case 1978:s="646566788987"; break;
+            case 1979:s="646566888988"; break;
+            case 1980:s="655455777877"; break;
+            case 1981:s="546556778877"; break;
+            case 1982:s="646566788887"; break;
+            case 1983:s="646566888987"; break;
+            case 1984:s="645455777877"; break;
+            case 1985:s="545556778877"; break;
+            case 1986:s="546566788887"; break;
+            case 1987:s="646566888987"; break;
+            case 1988:s="645455777877"; break;
+            case 1989:s="545556778877"; break;
+            case 1990:s="546566788987"; break;
+            case 1991:s="646566788987"; break;
+            case 1992:s="645455777877"; break;
+            case 1993:s="545556778877"; break;
+            case 1994:s="546566788877"; break;
+            case 1995:s="646566788987"; break;
+            case 1996:s="645455777877"; break;
+            case 1997:s="545556777877"; break;
+            case 1998:s="546566788877"; break;
+            case 1999:s="646566788987"; break;
+            case 2000:s="645455777877"; break;
+            case 2001:s="545555777877"; break;
+            case 2002:s="546566788877"; break;
+            case 2003:s="646566788987"; break;
+            case 2004:s="645455777877"; break;
+            case 2005:s="545555777877"; break;
+            case 2006:s="546566788877"; break;
+            case 2007:s="646566788987"; break;
+            case 2008:s="645455777877"; break;
+            case 2009:s="545555777877"; break;
+            case 2010:s="546556778877"; break;
+            case 2011:s="646566788987"; break;
+            case 2012:s="645455777877"; break;
+            case 2013:s="545555777877"; break;
+            case 2014:s="546556778877"; break;
+            case 2015:s="646566788887"; break;
+            case 2016:s="645455777877"; break;
+            case 2017:s="545455777877"; break;
+            case 2018:s="546556778877"; break;
+            case 2019:s="646566788887"; break;
+            case 2020:s="645455777877"; break;
+            case 2021:s="535455777877"; break;
+            case 2022:s="545556778877"; break;
+            case 2023:s="646566788887"; break;
+            case 2024:s="645455677877"; break;
+            case 2025:s="535455777877"; break;
+            case 2026:s="545556777877"; break;
+            case 2027:s="546566788887"; break;
+            case 2028:s="645455677876"; break;
+            case 2029:s="535455777877"; break;
+            case 2030:s="545555777877"; break;
+            case 2031:s="546566788887"; break;
+            case 2032:s="645455677876"; break;
+            case 2033:s="535455777877"; break;
+            case 2034:s="545555777877"; break;
+            case 2035:s="546566788877"; break;
+            case 2036:s="645455677876"; break;
+            case 2037:s="535455777877"; break;
+            case 2038:s="545555777877"; break;
+            case 2039:s="546566788877"; break;
+            case 2040:s="645455677876"; break;
+            case 2041:s="535455777877"; break;
+            case 2042:s="545555777877"; break;
+            case 2043:s="546556778877"; break;
+            case 2044:s="645455677876"; break;
+            case 2045:s="535455777877"; break;
+            case 2046:s="545455777877"; break;
+            case 2047:s="546556778877"; break;
+            case 2048:s="645455677776"; break;
+            case 2049:s="535455777877"; break;
+            case 2050:s="545455777877"; break;
+            case 2051:s="546556778877"; break;
+            default  :
+                if (cmod(y, 4)==3) {
+                    s="646566788887";
+                } else {
+                    s="546556778877";
+                }
+        }
+        m=cmod(m, 12);
+        x=parseInt(s.substr(m-1, 1));
+        return x;
+    }
+    
+	/* 100年干支　   1912年基準　干＝壬(9)　支＝子(1)　*/
+               
+				function calc_nenkan(x) {;
+					var a=0;
+				
+					a=((x-1912)+9)%10;
+					if (a==0) {a=10};
+					return a;
+				}
+				
+				function calc_nenshi(y) {
+					var b=0;
+				
+					b=((y-1912)+1)%12;
+					   if (b==0) {b=12};
+					return b;
+				}
+	
+	
+	     
+		        
+	
+	
+    /* 年号切り替えイベント */
+    function chg_nengo(parts) {
+        b_nengo=parts.options[parts.selectedIndex].value;
+        switch (b_nengo) {
+            case "平成":b_y_bias=1988; break;
+            case "昭和":b_y_bias=1925; break;
+            case "大正":b_y_bias=1911; break;
+            case "明治":b_y_bias=1867; break;
+            default    :b_y_bias=0;
+        }
+    }
+
+	
+	
+    /* 計算ボタンイベント */
+    function calc(f) {
+        var w, x;
+        var y1, m1;
+		var today;
+        var this_year;
+        var this_month;
+        var this_day;
+		var your_age;
+		var your_sex;
+		var im_pd,im_pm,im_py  
+        var energy_total=0
+					   
+		
+        /*本日日付*/
+		today = new Date()
+        this_year = today.getFullYear();
+        this_month = today.getMonth()+1;
+        this_day = today.getDate();
+				
+		
+        /* 計算 */
+        b_y_inp=parseInt(f.y_inp.value, 10);
+        b_y0=b_y_inp+b_y_bias;
+        b_m0=parseInt(f.m_inp.value, 10);
+        b_d0=parseInt(f.d_inp.value, 10);
+		x=calc_setsu(b_y0, b_m0);
+
+		
+		 
+		 
+		/*年齢計算*/
+		
+		your_age=0;
+		if      (b_m0==this_month && b_d0<=this_day) your_age=this_year-b_y0   ;
+		else if (b_m0==this_month && b_d0>this_day)  your_age=this_year-b_y0-1 ; 
+		else if (b_m0 >this_month)                   your_age=this_year-b_y0-1 ;
+		else if (b_m0 <this_month)                   your_age=this_year-b_y0   ; 
+		else                                         your_age="error"          ;
+		
+		
+
+		
+         y1=b_y0;
+         m1=b_m0;		
+        if (x>b_d0) {
+            c_sflg=1;
+            m1=m1-1;
+            if (m1<1) {
+                m1=m1+12;
+                y1=y1-1;
+            }
+            c_sdte=calc_maxdte(y1, m1)-calc_setsu(y1, m1)+b_d0;
+        } else {
+            c_sflg=0;
+            c_sdte=b_d0-x;
+        }
+        
+        im_py=b_y0;
+        if (b_m0<2 || (b_m0==2 && c_sflg==1)) {
+            im_py=im_py-1;
+        }
+        im_py=cmod(im_py-3, 60);
+        im_ky=cmod(im_py, 10);
+        im_sy=cmod(im_py, 12);
+        im_zy=calc_zokan(im_sy, c_sdte);  
+        im_pm=b_y0*12+b_m0;
+        if (c_sflg==1) {
+            im_pm=im_pm-1;
+        }			
+        im_pm=cmod(im_pm-47, 60);				
+        im_km=cmod(im_pm, 10);
+        im_sm=cmod(im_pm, 12);
+        im_zm=calc_zokan(im_sm, c_sdte);
+        x=cdate(b_y0, b_m0, b_d0);
+        im_pd=cmod(x, 60);
+        im_kd=cmod(im_pd, 10);
+        im_sd=cmod(im_pd, 12);
+        im_zd=calc_zokan(im_sd, c_sdte);
+        im_tx=11-cint((im_pd-1)/10)*2;
+
+		
+		/* 次の節入日までの日数*/
+		    var yoku_setsu = 0
+		
+		  	if    (b_d0<=calc_setsu(b_y0,b_m0))      yoku_setsu = calc_setsu(b_y0,b_m0)-b_d0    ;
+			else if (b_m0==12)                       yoku_setsu = calc_setsu(b_y0+1,1)+calc_maxdte(b_y0,12)-b_d0 ;
+			else                                     yoku_setsu = calc_setsu(b_y0,b_m0+1)+calc_maxdte(b_y0,b_m0)-b_d0 ;
+		    
+		                       	
+		/* 前の節入日までの日数*/
+		    var mae_setsu = 0
+		
+		  	if    (b_d0>=calc_setsu(b_y0,b_m0))      mae_setsu = b_d0-calc_setsu(b_y0,b_m0)    ;
+			else if (b_m0==1)                        mae_setsu = b_d0+calc_maxdte(b_y0,12)-calc_setsu(b_y0-1,12) ;
+			else                                     mae_setsu = b_d0-calc_setsu(b_y0,b_m0-1)+calc_maxdte(b_y0,b_m0-1) ;
+		    
+		    
+		/* 順行運初旬*/
+		    var j_shojun = 0
+		    if      (b_d0==calc_setsu(b_y0,b_m0))         j_shojun = 10  ;
+			else if (parseInt(yoku_setsu/3)>=10)       j_shojun = 10  ;
+			else if (parseInt(yoku_setsu/3)<=1)    j_shojun = 1  ;
+			else if (yoku_setsu%3>=2)        j_shojun = 1+parseInt(yoku_setsu/3);
+			else if (yoku_setsu%3==1)        j_shojun = parseInt(yoku_setsu/3);
+			else    j_shojun = parseInt(yoku_setsu/3) ;
+		
+		 /* 逆行運初旬*/
+		    var g_shojun = 0
+		    if      (b_d0==calc_setsu(b_y0,b_m0))         g_shojun = 1  ;
+			else if (parseInt(mae_setsu/3)>=10)        g_shojun = 10  ;
+			else if (parseInt(mae_setsu/3)<=1)         g_shojun = 1  ;
+	        else if (mae_setsu%3==2)                      g_shojun = 1+parseInt(mae_setsu/3);
+		    else if (yoku_setsu%3==1)                      g_shojun = parseInt(mae_setsu/3);
+			else    g_shojun = parseInt(mae_setsu/3);  
+			
+		/* グラフ種決定 */
+        var graph_shu = 0;
+		var myGraph = document.getElementsByName("100graph")[0];
+		graph_shu = myGraph.options[myGraph.selectedIndex].value;		
+		
+        //alert(graph_shu)		
+		
+		/*　性別チェック */
+		var your_sex ="";
+
+        var mysex = document.getElementsByName("radio");
+		
+        for (i = 0; i < mysex.length; i++)  {
+        if (mysex[i].checked) {
+           your_sex = mysex[i].value;
+	        }
+        }
+        //alert(your_sex) 
+		/* 大運方向 */
+		var sei_flag = 0 ;
+		
+		if       (your_sex == "女") sei_flag = -1   ;
+		else if  (your_sex == "男") sei_flag = 1  ;
+		else                    sei_flag = "error" ;
+		
+		var nen_inyou = 0 ;
+		if      (im_ky%2 == 0) nen_inyou = -1    ;
+		else if (im_ky%2 == 1) nen_inyou = 1     ;
+		else                   nen_inyou = 0   ;
+		
+		var taiunhoukou = 0  ;
+		taiunhoukou = nen_inyou*sei_flag  ;
+		
+		
+		/* 初旬決定 */
+		var shojun
+		if      (taiunhoukou == 1)  shojun = j_shojun ;
+		else if (taiunhoukou ==-1) shojun = g_shojun ;
+		else                       shojun = "error" ;
+		
+		//alert(shojun)
+   
+        //大運ゼロ旬干支　=　im_pm(月干支番号　1から60)　
+		var zero_jun_kanshi=im_pm
+  		
+		var zero_jun_kan=0;
+		if     (zero_jun_kanshi%10==0) zero_jun_kan=10;
+		else                           zero_jun_kan=zero_jun_kanshi%10;					
+			
+		var zero_jun_shi=0 ;
+		if     (zero_jun_kanshi%12==0) zero_jun_shi=12;
+		else                           zero_jun_shi=zero_jun_kanshi%12;
+		
+		/*　i歳時の大運干*/
+		var taiun_kan=[zero_jun_kan];          //　左記には宣言してないが１０１個要素を書き出してる
+		var k=0;
+		for (i=1; i<101; i++){;
+			if (i<shojun+k*10){;
+			   taiun_kan[i]=taiun_kan[i-1];	
+			}else{if (taiunhoukou==1 && taiun_kan[i-1]==10) taiun_kan[i]=1;
+				  if (taiunhoukou==1 && taiun_kan[i-1]!=10) taiun_kan[i]=taiun_kan[i-1]+1;
+				  if (taiunhoukou==-1 && taiun_kan[i-1]==1) taiun_kan[i]=10;
+				  if (taiunhoukou==-1 && taiun_kan[i-1]!=1) taiun_kan[i]=taiun_kan[i-1]-1;  
+			     k=k+1;					
+				  };
+		};
+		
+
+		/*　i歳時の大運支*/
+		var taiun_shi=[zero_jun_shi];　　　　　　　　//　左記には宣言してないが１０１個要素を書き出してる
+		var k=0;
+		for (i=1; i<101; i++){;
+			if (i<shojun+k*10){;
+			   taiun_shi[i]=taiun_shi[i-1];						
+			}else{if (taiunhoukou==1 && taiun_shi[i-1]==12) taiun_shi[i]=1;
+				 if (taiunhoukou==1 && taiun_shi[i-1]!=12) taiun_shi[i]=taiun_shi[i-1]+1;
+				 if (taiunhoukou==-1 && taiun_shi[i-1]==1) taiun_shi[i]=12;
+				 if (taiunhoukou==-1 && taiun_shi[i-1]!=1) taiun_shi[i]=taiun_shi[i-1]-1;
+　　　　　　　　　　　　　k=k+1;																						
+				 };
+		};
+       
+
+			
+
+        /* セロ歳の年干と年支　*/
+		
+        var zero_nen_kan = im_ky;
+		var zero_nen_shi = im_sy;
+		
+　　　　　　　/* 命式と裏蔵干から出した甲から癸までの個数　*/    
+
+		var no_of_kan=[0,0,0,0,0,0,0,0,0,0,0];          
+		no_of_kan[im_kd]=no_of_kan[im_kd]+1;     //命式日干
+	
+		no_of_kan[im_km]=no_of_kan[im_km]+1;　　　　//命式月干
+	
+		no_of_kan[im_ky]=no_of_kan[im_ky]+1;     //命式年干
+		
+				
+	
+		/* 裏蔵干の干の合計　*/
+		for (var i = 1; i < 4; i++) {;                   //日支から
+			 no_of_kan[calc_ura_zokan(im_sd,i)]++ ;
+			};
+			
+		for (var i = 1; i < 4; i++) {;　　　　　　　　　　　　　　　　//月支から
+			 no_of_kan[calc_ura_zokan(im_sm,i)]++ ;
+			} ;
+			
+		for (var i = 1; i < 4; i++) {;                  //年支から
+			 no_of_kan[calc_ura_zokan(im_sy,i)]++ 
+			};
+
+	    /* 大運、年運からの干の算出 */
+		
+
+		/* エネルギー値　小計　合計*/
+		var energy_sum1=[0,0,0,0,0,0,0,0,0,0,0];
+		for (var i = 1; i < 11; i++) {;
+			 energy_sum1[i]=calc_12jyu(i,im_sd)+calc_12jyu(i,im_sm)+calc_12jyu(i,im_sy) ;
+			} 
+　　		  
+		var energy_sum2=[0,0,0,0,0,0];
+		for (var i = 0; i < 5; i++) {;
+			 energy_sum2[i+1]=energy_sum1[i*2+1]*no_of_kan[i*2+1]+energy_sum1[i*2+2]*no_of_kan[i*2+2];
+			 } ;
+
+		/* エネルギー値総合計　*/
+		var energy_sum0=0
+		for (var i = 1; i < 6; i++) {;　　　　　　　　　　　　　　　　
+			 energy_sum0=energy_sum0+energy_sum2[i] ;
+			} ;
+		
+		/* 数理エネルギー　五行　*/
+		var suri_gogyo=[0,0,0,0,0];
+
+		for (var i = 0; i < 5; i++) {;                   
+			 suri_gogyo[i]=calc_suri_gogyo(im_kd,i);
+			 };
+	
+		/* ゼロ歳の西暦　節分前か後か　*/
+		
+		        if (b_m0==1 || (b_m0==2 && b_d0<calc_setsu(b_y0,2))){;
+				   zero_y=b_y0-1;
+				}else{zero_y=b_y0;
+				};
+				
+		 
+                 
+				
+	  
+	
+    /* ここから　その年齢(a歳)の総エネルギー計算 ルーチン　⇒　　　　*/			   //5/20 20時
+      
+　　　　　　　function calc_ttl_energy(a){;
+
+            /* 命式と裏蔵干と大運干と年運干から出した甲から癸までの個数　*/
+				var no_of_kan=[0,0,0,0,0,0,0,0,0,0,0];          
+						no_of_kan[im_kd]=no_of_kan[im_kd]+1;     //命式日干	
+						no_of_kan[im_km]=no_of_kan[im_km]+1;　　　　//命式月干
+						no_of_kan[im_ky]=no_of_kan[im_ky]+1;     //命式年干				
+					
+						/* 裏蔵干の干の合計　*/
+						for (var i = 1; i < 4; i++) {;                   //日支から
+							 no_of_kan[calc_ura_zokan(im_sd,i)]++ ;
+							};
+						
+						for (var i = 1; i < 4; i++) {;　　　　　　　　　　　　　　　　//月支から
+							 no_of_kan[calc_ura_zokan(im_sm,i)]++ ;
+							} ;
+							
+						for (var i = 1; i < 4; i++) {;                  //年支から
+							 no_of_kan[calc_ura_zokan(im_sy,i)]++ 
+							};
+
+						/* 大運支からの干の算出 */
+						for (var i = 1; i < 4; i++) {;                   
+							 no_of_kan[calc_ura_zokan(taiun_shi[a],i)]++ ;
+							};
+							
+						/* 年運支からの干の算出 */
+						for (var i = 1; i < 4; i++) {;                   
+							 no_of_kan[calc_ura_zokan(calc_nenshi(zero_y+a),i)]++ ;
+							};
+						/* 年運　干を足す */
+							　no_of_kan[calc_nenkan(zero_y+a)]++;
+							
+						/* 大運　干を算出　*/	　
+							 no_of_kan[taiun_kan[a]]++;
+					　						
+						 
+		 var x=0;
+		 var y=0;			 
+		 var energy_year=0;
+		 var ar_energy=[[0,0,0,0,0,0,0,0,0],       //[日支,月支,年支,大運支,年運支,小計,個数,干計,五行毎エネルギー（2,4,6,8,10列)]
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0]];									   
+						   for (var k=1; k<11; k++) {;                   
+						   ar_energy[k][0]=calc_12jyu(k,im_sd);                           //日支   
+						   ar_energy[k][1]=calc_12jyu(k,im_sm);                           //月支
+						   ar_energy[k][2]=calc_12jyu(k,im_sy);                           //年支
+						 
+						   ar_energy[k][3]=calc_12jyu(k,taiun_shi[a]);                    //大運支
+						   //alert(calc_12jyu(k,taiun_shi[a]))
+						   ar_energy[k][4]=calc_12jyu(k,calc_nenshi(zero_y+a));         //年運支
+						   //alert(calc_12jyu(k,calc_nenshi(zero_y-1+a)))
+						   ar_energy[k][5]=ar_energy[k][0]+ar_energy[k][1]+ar_energy[k][2]+ar_energy[k][3]+ar_energy[k][4];　　　　//小計
+						   ar_energy[k][6]=no_of_kan[k];　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　//個数
+						   ar_energy[k][7]=no_of_kan[k]*ar_energy[k][5];　　　　　　　　　　　　　　　　　　　//干計
+						   energy_year=energy_year+ar_energy[k][7];　　　　　　　　　　　　　　　　　　　　　　//エネルギー足し算
+							}; 	
+						var gogyo_energy=[0,0,0,0,0,0];   //本能毎のエネルギー
+						if (im_kd==1 || im_kd==2)  gogyo_energy=[ar_energy[1][7]+ar_energy[2][7],ar_energy[3][7]+ar_energy[4][7],ar_energy[5][7]+ar_energy[6][7],ar_energy[7][7]+ar_energy[8][7],ar_energy[9][7]+ar_energy[10][7]];
+						if (im_kd==3 || im_kd==4)　 gogyo_energy=[ar_energy[3][7]+ar_energy[4][7],ar_energy[5][7]+ar_energy[6][7],ar_energy[7][7]+ar_energy[8][7],ar_energy[9][7]+ar_energy[10][7],ar_energy[1][7]+ar_energy[2][7]];
+						if (im_kd==5 || im_kd==6)  gogyo_energy=[ar_energy[5][7]+ar_energy[6][7],ar_energy[7][7]+ar_energy[8][7],ar_energy[9][7]+ar_energy[10][7],ar_energy[1][7]+ar_energy[2][7],ar_energy[3][7]+ar_energy[4][7]];
+						if (im_kd==7 || im_kd==8)  gogyo_energy=[ar_energy[7][7]+ar_energy[8][7],ar_energy[9][7]+ar_energy[10][7],ar_energy[1][7]+ar_energy[2][7],ar_energy[3][7]+ar_energy[4][7],ar_energy[5][7]+ar_energy[6][7]];
+						if (im_kd==9 || im_kd==10) gogyo_energy=[ar_energy[9][7]+ar_energy[10][7],ar_energy[1][7]+ar_energy[2][7],ar_energy[3][7]+ar_energy[4][7],ar_energy[5][7]+ar_energy[6][7],ar_energy[7][7]+ar_energy[8][7]];
+					
+					  　　//alert(Math.round((gogyo_energy.sort(sortNumber)[4]-gogyo_energy.sort(sortNumber)[0])/energy_year*1000)/1000)
+						a=energy_year;　　　　　　　//　総エネルギー
+						b=gogyo_energy[0];    // 攻撃
+						c=gogyo_energy[1];    // 習得
+						d=gogyo_energy[2];    // 守備
+						e=gogyo_energy[3];    // 伝達
+						f=gogyo_energy[4];    // 魅力
+						y=Math.round((gogyo_energy.sort(sortNumber)[4]-gogyo_energy.sort(sortNumber)[0])/energy_year*1000)/1000	
+						
+						energy_total=energy_total+energy_year;
+						
+					   return [a,b,c,d,e,f];	   
+				 };
+
+			
+	
+
+　　　　/*  ←　　ここまでがその年の総エネルギー計算　　ルーチン    */
+
+		
+		
+		var ar_100nen=[[0,0,0,0,0,0,0],            // [年齢,エネルギー値,守備,伝達,魅力,攻撃,習得]
+		               [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+                       [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+                       [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+                       [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+                       [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+					   [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+					   [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+					   [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+					   [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+					   [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]];
+					   
+		var ttl_energy=[0,0,0,0,0,0,0];
+		/* 100年表　作成　*/														
+																
+					   for (var i = 0; i < 101; i++) {;                   
+					       ar_100nen[i][0]=i;                           //年齢
+						   ar_100nen[i][1]=calc_ttl_energy(i)[0];       //総エネルギー
+                           ar_100nen[i][2]=calc_ttl_energy(i)[1];       //守備　福
+                           ar_100nen[i][3]=calc_ttl_energy(i)[2];       //伝達　寿
+                           ar_100nen[i][4]=calc_ttl_energy(i)[3];       //魅力　禄
+                           ar_100nen[i][5]=calc_ttl_energy(i)[4];       //攻撃　官
+                           ar_100nen[i][6]=calc_ttl_energy(i)[5];       //習得　印
+						   ttl_energy[1]=ttl_energy[1]+ar_100nen[i][1];       //総　エネルギー合計
+						   ttl_energy[2]=ttl_energy[2]+ar_100nen[i][2];       //守備　エネルギー合計
+						   ttl_energy[3]=ttl_energy[3]+ar_100nen[i][3];       //伝達　エネルギー合計
+						   ttl_energy[4]=ttl_energy[4]+ar_100nen[i][4];       //魅力　エネルギー合計
+						   ttl_energy[5]=ttl_energy[5]+ar_100nen[i][5];       //攻撃　エネルギー合計
+						   ttl_energy[6]=ttl_energy[6]+ar_100nen[i][6];       //習得　エネルギー合計
+												   
+					    };  
+　　　　　　　//alert(ar_100nen)
+		//alert(ttl_energy)
+		/* 最高値　最低値　*/
+		            var min1=0;
+					var min2=0;
+					var min3=0;
+					var max1=0;
+					var max2=0;
+					var max3=0;
+                    var sort_energy=[];
+					var pre_sort_energy=[];
+                    for (var i=0; i<101; i++){;
+					    sort_energy[i]=ar_100nen[i][graph_shu];           // graph_shu 1;総エネルギー 2;守備　3;伝達　4;魅力　5;攻撃　6;習得
+						pre_sort_energy[i]=ar_100nen[i][graph_shu];
+					}	
+
+					
+					//　最小値
+                    min1=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[0]);
+					if  (sort_energy[0]!=sort_energy[1]) {;                                      
+					      min2=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[1]);          //[1]!=[2]なら
+					}else{min2=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[1],min1+1)};  //[1]==[2]なら
+   
+					if  (sort_energy[1]!=sort_energy[2]) {;
+					      min3=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[2]);　　　　　　　　//[2]!=[3]なら
+				    }else{ min3=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[2],min2+1)};　	//[2]==[3]なら
+					
+	
+					// 最大値
+					max1=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[100]);
+					if  (sort_energy[100]!=sort_energy[99]) {;                                      
+					      max2=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[99]);          //[100]!=[99]なら
+					}else{max2=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[99],max1+1)};  //[100]==[99]なら
+   
+					if  (sort_energy[99]!=sort_energy[98]) {;
+					      max3=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[98]);　　　　　　　　　　//[99]!=[98]なら
+				    }else{ max3=pre_sort_energy.indexOf(sort_energy.sort(sortNumber)[98],max2+1)};　	//[99]==[98]なら
+					
+					var y_max=0;     //	Y軸ｍａｘ
+					var y_min=0;     //　Y軸ｍｉｎ
+					if  (sort_energy[100]<=(Math.ceil(sort_energy[100]/100)*100-50)) {;　　　　　　　　　// Math.ceil 切り上げ
+					     y_max=Math.ceil(sort_energy[100]/100)*100-50;　　　　　　　　　　　　　　　　　　　　　　　　// ｙ軸Max決め
+						 }else{y_max=Math.ceil(sort_energy[100]/100)*100};
+						 
+					if  (sort_energy[0]>=(Math.floor(sort_energy[0]/100)*100+50)) {;　　　　　　　　　　　　// y軸min決め
+					     y_min=Math.floor(sort_energy[0]/100)*100+50;
+						 }else{y_min=Math.floor(sort_energy[0]/100)*100};
+						 
+					//alert(sort_energy[100]+"="+y_max);
+					//alert(sort_energy[0]+"="+y_min);
+					//alert(Math.round(ttl_energy/101));　　// エネルギー平均
+					//alert(ar_100nen);
+					
+　　　 /* 行動範囲表示 */
+	 if    (isNaN(b_y_inp) || isNaN(b_m0) || isNaN(b_d0)){
+            document.write('性別は必須項目です。<BR>');
+			document.write('日付入力が正しくありません。<BR>');
+            document.write('数字は全て半角で入力して下さい。<BR>');
+            document.write('また、星出し可能な年の範囲は、<BR>');
+            document.write('明治6年(1873)～平成62年(2050)です。<BR>');
+        } else {
+            if (b_y0<1873 || b_y0>2050 || b_m0<1 || b_m0>12 || b_d0<0 || b_d0>31) {
+                document.write('日付入力が正しくありません。<BR>');
+                document.write('数字は全て半角で入力して下さい。<BR>');
+                document.write('また、星出し可能な年の範囲は、<BR>');
+                document.write('明治6年(1873)～平成62年(2050)です。<BR>');
+            } else {	
+		
+
+	 /* canvas表示 */
+     
+	    var canvas = document.getElementById('100nengraph');
+		
+　// 本能別　エネルギーグラフ表示　　　graph_shu 1;総エネルギー 2;守備　3;伝達　4;魅力　5;攻撃　6;習得
+
+        if (canvas.getContext){
+            var ctx = canvas.getContext('2d');
+
+　　　　　　　　canvas.width = canvas.offsetWidth;
+         canvas.height = canvas.offsetHeight;
+			
+			ctx.clearRect(0,0,1000,1000);
+			
+            var y_start=70;               // ｙ軸上限
+			var y_end=y_start+420;　　　　　　　　　　　　　//　ｙ軸下限
+			var graph_h=1050;
+			var graph_z=(y_end-y_start)/(y_max-y_min)
+			var x_start=60;
+			var x_end=x_start+700;
+			var ave=Math.round(ttl_energy[graph_shu]/101);
+			
+			/* 最高値、最低値、総合計 */
+			ctx.fillStyle="black";
+			ctx.font = "italic 11px Arial";
+			ctx.fillText("Total:"+ttl_energy[graph_shu],x_end-200,y_start-30);
+			ctx.fillText("Max(1):"+sort_energy[100]+":"+max1,x_end-100,y_start-30);
+			ctx.fillText("       (2):"+sort_energy[99]+":"+max2,x_end-100,y_start-20);
+			ctx.fillText("       (3):"+sort_energy[98]+":"+max3,x_end-100,y_start-10);
+			ctx.fillText("Min(1):"+sort_energy[0]+":"+min1,x_end-100,y_end+35);
+			ctx.fillText("      (2):"+sort_energy[1]+":"+min2,x_end-100,y_end+45);
+			ctx.fillText("      (3):"+sort_energy[2]+":"+min3,x_end-100,y_end+55);
+			
+			var honnou_tb=[0,"総エネルギー","守備　福　エネルギー","伝達　寿　エネルギー","魅力　禄　エネルギー","攻撃　官　エネルギー","習得　印　エネルギー"];
+			ctx.fillStyle = "black";
+            ctx.font = "italic 15px Arial";			
+			ctx.fillText(honnou_tb[graph_shu],x_start+7,y_start-30);
+			ctx.fillText("西暦",x_start+7,y_end+55);
+			ctx.fillText(b_y0,x_start+40,y_end+55);
+			ctx.fillText("年",x_start+75,y_end+55);
+			ctx.fillText(b_m0,x_start+95,y_end+55);
+			ctx.fillText("月",x_start+110,y_end+55);
+			ctx.fillText(b_d0,x_start+130,y_end+55);
+			ctx.fillText("日生",x_start+150,y_end+55);
+			ctx.fillText(your_sex,x_start+190,y_end+55);
+			
+			
+			/* 春夏秋冬の背景色を描画　*/
+			for (i=0; i<100; i++){;
+			   if (taiun_shi[i]==1 || taiun_shi[i]==2 || taiun_shi[i]==12) {ctx.fillStyle = 'rgba(67,135,233,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)};  //	冬
+			   if (taiun_shi[i]==3 || taiun_shi[i]==4 || taiun_shi[i]==5)  {ctx.fillStyle = 'rgba(0,255,65,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)};   //　春
+			   if (taiun_shi[i]==6 || taiun_shi[i]==7 || taiun_shi[i]==8)  {ctx.fillStyle = 'rgba(255,129,25,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)};   // 夏
+			   if (taiun_shi[i]==9 || taiun_shi[i]==10 || taiun_shi[i]==11)  {ctx.fillStyle = 'rgba(107,73,45,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)}; // 秋
+			};
+			
+			/* 春夏秋冬表示を描く　*/
+			ctx.fillStyle="black";
+			ctx.font = "italic 15px Arial";
+			if (taiun_shi[0]==12 || taiun_shi[0]==1 || taiun_shi[0]==2) {ctx.fillText("冬の時代",x_start,y_start+20)};
+			if (taiun_shi[0]==3 || taiun_shi[0]==4 || taiun_shi[0]==5) {ctx.fillText("春の時代",x_start,y_start+20)};
+			if (taiun_shi[0]==6 || taiun_shi[0]==7 || taiun_shi[0]==8) {ctx.fillText("夏の時代",x_start,y_start+20)};
+			if (taiun_shi[0]==9 || taiun_shi[0]==10 || taiun_shi[0]==11) {ctx.fillText("秋の時代",x_start,y_start+20)};	
+
+			for (i=1; i<11; i++){;
+	　　　　　　　　ctx.fillStyle="black";
+			　　ctx.font = "italic 15px Arial";
+			   if ((taiun_shi[i-1]==2 && taiun_shi[i]==3)) {ctx.fillText("春の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==3 && taiun_shi[i]==2)) {ctx.fillText("冬の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==5 && taiun_shi[i]==6)) {ctx.fillText("夏の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==6 && taiun_shi[i]==5)) {ctx.fillText("春の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==8 && taiun_shi[i]==9)) {ctx.fillText("秋の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==9 && taiun_shi[i]==8)) {ctx.fillText("夏の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==11 && taiun_shi[i]==12)) {ctx.fillText("冬の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==12 && taiun_shi[i]==11)) {ctx.fillText("秋の時代",x_start+i*7,y_start+35)};
+			};
+			
+			for (i=11; i<100; i++){;
+	　　　　　　　　ctx.fillStyle="black";
+			　　ctx.font = "italic 15px Arial";
+			   if ((taiun_shi[i-1]==2 && taiun_shi[i]==3)) {ctx.fillText("春の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==3 && taiun_shi[i]==2)) {ctx.fillText("冬の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==5 && taiun_shi[i]==6)) {ctx.fillText("夏の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==6 && taiun_shi[i]==5)) {ctx.fillText("春の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==8 && taiun_shi[i]==9)) {ctx.fillText("秋の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==9 && taiun_shi[i]==8)) {ctx.fillText("夏の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==11 && taiun_shi[i]==12)) {ctx.fillText("冬の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==12 && taiun_shi[i]==11)) {ctx.fillText("秋の時代",x_start+i*7,y_start+20)};
+			};
+			
+			ctx.lineWidth=10
+			ctx.strokeStyle = "#000000"; 
+			ctx.beginPath(); 
+			// 折れ線グラフを描く
+			ctx.moveTo(x_start,y_start+(y_max-ar_100nen[0][graph_shu])*graph_z);
+			if (max1==0 || max2==0 || max3==0 || min1==0 || min2==0 || min3==0){;            // 0歳が最高か最低の時のポイントを描く
+			     ctx.arc(x_start,y_start+(y_max-ar_100nen[0][graph_shu])*graph_z,2,0,2*Math.PI);
+				 ctx.arc(x_start,y_start+(y_max-ar_100nen[0][graph_shu])*graph_z,1,0,2*Math.PI);
+			   }else{};
+			for (i=1; i<101; i++){;
+			   ctx.lineTo(x_start+7*i,y_start+(y_max-ar_100nen[i][graph_shu])*graph_z);	               //　線を描く
+			   if (i==max1 || i==max2 || i==max3 || i==min1 || i==min2 || i==min3){;            // 折れ線をポイントを描く
+			     ctx.arc(x_start+7*i,y_start+(y_max-ar_100nen[i][graph_shu])*graph_z,2,0,2*Math.PI);
+				 ctx.arc(x_start+7*i,y_start+(y_max-ar_100nen[i][graph_shu])*graph_z,1,0,2*Math.PI);
+			   }else{ctx.arc(x_start+7*i,y_start+(y_max-ar_100nen[i][graph_shu])*graph_z,0.5,0,2*Math.PI)};
+			       
+            };
+			 
+			  
+			// 横軸目盛と縦軸
+            for (i=0; i<11; i++){;
+			   ctx.fillStyle = "black"; 
+			   ctx.moveTo(x_start+i*70,y_start);　　　　　　　　 
+			   ctx.lineTo(x_start+i*70,y_end);
+			   ctx.font = "italic 15px Arial";　　　　　　
+			   ctx.fillText(10*i,x_start+i*70-10,y_end+15);
+			};   
+						
+			// 横軸を描く（50間隔）とｙ軸目盛を描く
+			ctx.lineWidth=0.5;
+			for (i=0; i<(y_max-y_min)/50+1; i++){;
+			  ctx.moveTo(x_start,y_end-i*50*graph_z);
+			  ctx.lineTo(x_end,y_end-i*50*graph_z);
+			  // ｙ軸目盛を描く
+			  ctx.fillStyle = "black"; 
+			  ctx.fillText(y_min+i*50,x_start-30,y_end+5-i*50*graph_z);
+			};
+									
+			ctx.stroke();
+			
+			// 平均線を描く
+			ctx.strokeStyle = "#000000"; 
+			ctx.beginPath();
+			ctx.strokeStyle = "red"; 
+			ctx.moveTo(x_start,y_start+(y_max-ave)*graph_z);
+			ctx.lineTo(x_end,y_start+(y_max-ave)*graph_z);
+			
+			// 平均値を書く
+			ctx.fillStyle = "red";
+			ctx.fillText(ave,x_end+10,y_start+4+(y_max-ave)*graph_z);
+			
+	        ctx.stroke();
+			
+			//　別ウィンドウに描く
+			 var dataURl = canvas.toDataURL();
+			 window.open(dataURl, "toDataURL() image", "width=600, height=500");
+			// 本ウィンドウの図は消す 
+			 //ctx.clearRect(0,0,1000,1000);
+                			
+	    };
+		
+    /* 
+      // 総100年図表示
+     	if (canvas.getContext){
+            var ctx = canvas.getContext('2d');
+
+　　　　　　　　canvas.width = canvas.offsetWidth;
+         canvas.height = canvas.offsetHeight;
+			
+			ctx.clearRect(0,0,1000,1000);
+			
+            var y_start=70;               // ｙ軸上限
+			var y_end=y_start+420;　　　　　　　　　　　　　//　ｙ軸下限
+			var graph_h=1050;
+			var graph_z=(y_end-y_start)/(y_max-y_min)
+			var x_start=60;
+			var x_end=x_start+700;
+			var ave=Math.round(ttl_energy/101);
+			
+			// 最高値、最低値、総合計 
+			ctx.fillStyle="black";
+			ctx.font = "italic 11px Arial";
+			ctx.fillText("Total:"+ttl_energy,x_end-200,y_start-30);
+			ctx.fillText("Max(1):"+sort_energy[100]+":"+max1,x_end-100,y_start-30);
+			ctx.fillText("       (2):"+sort_energy[99]+":"+max2,x_end-100,y_start-20);
+			ctx.fillText("       (3):"+sort_energy[98]+":"+max3,x_end-100,y_start-10);
+			ctx.fillText("Min(1):"+sort_energy[0]+":"+min1,x_end-100,y_end+35);
+			ctx.fillText("      (2):"+sort_energy[1]+":"+min2,x_end-100,y_end+45);
+			ctx.fillText("      (3):"+sort_energy[2]+":"+min3,x_end-100,y_end+55);
+			
+			
+			
+			// 春夏秋冬の背景色を描画　
+			for (i=0; i<100; i++){;
+			   if (taiun_shi[i]==1 || taiun_shi[i]==2 || taiun_shi[i]==12) {ctx.fillStyle = 'rgba(67,135,233,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)};  //	冬
+			   if (taiun_shi[i]==3 || taiun_shi[i]==4 || taiun_shi[i]==5)  {ctx.fillStyle = 'rgba(0,255,65,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)};   //　春
+			   if (taiun_shi[i]==6 || taiun_shi[i]==7 || taiun_shi[i]==8)  {ctx.fillStyle = 'rgba(255,129,25,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)};   // 夏
+			   if (taiun_shi[i]==9 || taiun_shi[i]==10 || taiun_shi[i]==11)  {ctx.fillStyle = 'rgba(107,73,45,0.3)',ctx.fillRect(x_start+i*7,y_start,7,y_end-y_start)}; // 秋
+			};
+			
+			// 春夏秋冬表示を描く　
+			ctx.fillStyle="black";
+			ctx.font = "italic 15px Arial";
+			if (taiun_shi[0]==12 || taiun_shi[0]==1 || taiun_shi[0]==2) {ctx.fillText("冬の時代",x_start,y_start+20)};
+			if (taiun_shi[0]==3 || taiun_shi[0]==4 || taiun_shi[0]==5) {ctx.fillText("春の時代",x_start,y_start+20)};
+			if (taiun_shi[0]==6 || taiun_shi[0]==7 || taiun_shi[0]==8) {ctx.fillText("夏の時代",x_start,y_start+20)};
+			if (taiun_shi[0]==9 || taiun_shi[0]==10 || taiun_shi[0]==11) {ctx.fillText("秋の時代",x_start,y_start+20)};	
+
+			for (i=1; i<11; i++){;
+	　　　　　　　　ctx.fillStyle="black";
+			　　ctx.font = "italic 15px Arial";
+			   if ((taiun_shi[i-1]==2 && taiun_shi[i]==3)) {ctx.fillText("春の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==3 && taiun_shi[i]==2)) {ctx.fillText("冬の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==5 && taiun_shi[i]==6)) {ctx.fillText("夏の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==6 && taiun_shi[i]==5)) {ctx.fillText("春の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==8 && taiun_shi[i]==9)) {ctx.fillText("秋の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==9 && taiun_shi[i]==8)) {ctx.fillText("夏の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==11 && taiun_shi[i]==12)) {ctx.fillText("冬の時代",x_start+i*7,y_start+35)};
+			   if ((taiun_shi[i-1]==12 && taiun_shi[i]==11)) {ctx.fillText("秋の時代",x_start+i*7,y_start+35)};
+			};
+			
+			for (i=11; i<100; i++){;
+	　　　　　　　　ctx.fillStyle="black";
+			　　ctx.font = "italic 15px Arial";
+			   if ((taiun_shi[i-1]==2 && taiun_shi[i]==3)) {ctx.fillText("春の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==3 && taiun_shi[i]==2)) {ctx.fillText("冬の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==5 && taiun_shi[i]==6)) {ctx.fillText("夏の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==6 && taiun_shi[i]==5)) {ctx.fillText("春の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==8 && taiun_shi[i]==9)) {ctx.fillText("秋の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==9 && taiun_shi[i]==8)) {ctx.fillText("夏の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==11 && taiun_shi[i]==12)) {ctx.fillText("冬の時代",x_start+i*7,y_start+20)};
+			   if ((taiun_shi[i-1]==12 && taiun_shi[i]==11)) {ctx.fillText("秋の時代",x_start+i*7,y_start+20)};
+			};
+			
+			ctx.lineWidth=10
+			ctx.strokeStyle = "#000000"; 
+			ctx.beginPath(); 
+			// 折れ線グラフを描く
+			ctx.moveTo(x_start,y_start+(y_max-ar_100nen[0][1])*graph_z);
+			if (max1==0 || max2==0 || max3==0 || min1==0 || min2==0 || min3==0){;            // 0歳が最高か最低の時のポイントを描く
+			     ctx.arc(x_start,y_start+(y_max-ar_100nen[0][1])*graph_z,2,0,2*Math.PI);
+				 ctx.arc(x_start,y_start+(y_max-ar_100nen[0][1])*graph_z,1,0,2*Math.PI);
+			   }else{};
+			for (i=1; i<101; i++){;
+			   ctx.lineTo(x_start+7*i,y_start+(y_max-ar_100nen[i][1])*graph_z);	               //　線を描く
+			   if (i==max1 || i==max2 || i==max3 || i==min1 || i==min2 || i==min3){;            // 折れ線をポイントを描く
+			     ctx.arc(x_start+7*i,y_start+(y_max-ar_100nen[i][1])*graph_z,2,0,2*Math.PI);
+				 ctx.arc(x_start+7*i,y_start+(y_max-ar_100nen[i][1])*graph_z,1,0,2*Math.PI);
+			   }else{ctx.arc(x_start+7*i,y_start+(y_max-ar_100nen[i][1])*graph_z,0.5,0,2*Math.PI)};
+			       
+            };
+			 
+			  
+			// 横軸目盛と縦軸
+            for (i=0; i<11; i++){;
+			   ctx.fillStyle = "black"; 
+			   ctx.moveTo(x_start+i*70,y_start);　　　　　　　　 
+			   ctx.lineTo(x_start+i*70,y_end);
+			   ctx.font = "italic 15px Arial";　　　　　　
+			   ctx.fillText(10*i,x_start+i*70-10,y_end+15);
+			};   
+						
+			// 横軸を描く（50間隔）とｙ軸目盛を描く
+			ctx.lineWidth=0.5;
+			for (i=0; i<(y_max-y_min)/50+1; i++){;
+			  ctx.moveTo(x_start,y_end-i*50*graph_z);
+			  ctx.lineTo(x_end,y_end-i*50*graph_z);
+			  // ｙ軸目盛を描く
+			  ctx.fillStyle = "black"; 
+			  ctx.fillText(y_min+i*50,x_start-30,y_end+5-i*50*graph_z);
+			};
+									
+			ctx.stroke();
+			
+			// 平均線を描く
+			ctx.strokeStyle = "#000000"; 
+			ctx.beginPath();
+			ctx.strokeStyle = "red"; 
+			ctx.moveTo(x_start,y_start+(y_max-ave)*graph_z);
+			ctx.lineTo(x_end,y_start+(y_max-ave)*graph_z);
+			
+			// 平均値を書く
+			ctx.fillStyle = "red";
+			ctx.fillText(ave,x_end+10,y_start+4+(y_max-ave)*graph_z);
+			
+	        ctx.stroke();
+			
+			//　別ウィンドウに描く
+			 var dataURl = canvas.toDataURL();
+			 window.open(dataURl, "toDataURL() image", "width=600, height=500");
+			// 本ウィンドウの図は消す 
+			 //ctx.clearRect(0,0,1000,1000);
+
+
+                			
+	    };  
+ */       
+　　　		
+	};      //  if (canvas.getContext){ の終わり
+			
+
+     
+	
+	
+	};
+  
+
+};
+
+  
+  
+   
+
+
+        
+	
+	            
+//-->
+
+</script>
+    </div>
+    <p align="center">
+<script language="JavaScript1.1">
+<!--
+    /* テーブル作成 */
+	d_10kan=new Array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸");
+	d_12shi=new Array("子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥");
+    //d_10kan=new Array("癸","甲","乙","丙","丁","戊","己","庚","辛","壬","癸");
+	d_10kangg=new Array("　","木","木","火","火","土","土","金","金","水","水");
+    //d_12shi=new Array(" ","子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥");
+	d_12shigg=new Array("　","水","土","木","木","土","火","火","土","金","金","土","水");
+    d_10shu=new Array("　　","貫索","石門","鳳閣","調舒","祿存","司祿","車騎","牽牛","龍高","玉堂");
+	d_10urashu=new Array("　　","貫索","石門","龍高","玉堂","車騎","牽牛","祿存","司祿","鳳閣","調舒")
+    d_12jyuen=new Array("　　","天馳 1","天極 2","天報 3","天胡 4","天庫 5","天印 6","天恍 7","天堂 8","天貴 9","天南 10","天祿 11","天将 12");
+	d_12jyu=new Array("　　","馳","極","報","胡","庫","印","恍","堂","貴","南","祿","将");
+    d_12jyuenergy=new Array(" ","1","2","3","4","5","6","7","8","9","10","11","12");
+	d_gousan=new Array(" ","半会","支合","方三位","冲","刑","破","害","支合・破","刑・冲","刑・害","刑・破","支合・刑・破");
+	d_gogyo=new Array("","木","火","土","金","水");
+	
+	
+	/* 裏蔵干 */
+	d_10uraten=new Array(" ","癸","癸","戊","乙","乙","戊","己","丁","戊","辛","辛","甲");
+	d_10uratengg=new Array("　","水","水","土","木","木","土","土","火","土","金","金","木");
+	d_10urachi=new Array("　","癸","辛","丙","乙","癸","庚","己","乙","壬","辛","丁","甲");
+	d_10urachigg=new Array("　","水","金","火","木","水","金","土","木","水","金","金","木");
+	d_10urazou=new Array("　","癸","己","甲","乙","戊","丙","丁","己","庚","辛","戊","壬");
+	d_10urazougg=new Array("　","水","土","木","木","土","火","火","土","金","金","土","水");
+    /* 変数初期化 */　　
+    b_nengo="西暦";
+    b_y_bias=0;
+    today=new Date();
+//-->
+</script>
+                                </p>
+                                 <form method="post">
+								
+									  <div>
+									        <select id="selgraph" name="100graph">
+											  <option selected="selected" value="1">総100年図</option>
+											  <option value="2">守備　福</option>
+											  <option value="3">伝達　寿</option>
+											  <option value="4">魅力　禄</option>
+											  <option value="5">攻撃　官</option>
+											  <option value="6">習得　印</option>
+											</select>
+											
+											<input type="radio" name="radio" value="男" required>男
+											<input type="radio" name="radio" value="女" required>女
+
+											 <select onchange="chg_nengo(this)" name="nengo">
+                                      <option selected="selected" value="西暦">西暦</option>                                      
+                                    </select>
+									
+									<select name="y_inp">
+										<option value="1873">1873（明治６）</option>
+										<option value="1874">1874（明治７）</option>
+										<option value="1875">1875（明治８）</option>
+										<option value="1876">1876（明治９）</option>
+										<option value="1877">1877（明治１０）</option>
+										<option value="1878">1878（明治１１）</option>
+										<option value="1879">1879（明治１２）</option>
+										<option value="1880">1880（明治１３）</option>
+										<option value="1881">1881（明治１４）</option>
+										<option value="1882">1882（明治１５）</option>
+										<option value="1883">1883（明治１６）</option>
+										<option value="1884">1884（明治１７）</option>
+										<option value="1885">1885（明治１８）</option>
+										<option value="1886">1886（明治１９）</option>
+										<option value="1887">1887（明治２０）</option>
+										<option value="1888">1888（明治２１）</option>
+										<option value="1889">1889（明治２２）</option>
+										<option value="1890">1890（明治２３）</option>
+										<option value="1891">1891（明治２４）</option>
+										<option value="1892">1892（明治２５）</option>
+										<option value="1893">1893（明治２６）</option>
+										<option value="1894">1894（明治２７）</option>
+										<option value="1895">1895（明治２８）</option>
+										<option value="1896">1896（明治２９）</option>
+										<option value="1897">1897（明治３０）</option>
+										<option value="1898">1898（明治３１）</option>
+										<option value="1899">1899（明治３２）</option>
+										<option value="1900">1900（明治３３）</option>
+										<option value="1901">1901（明治３４）</option>
+										<option value="1902">1902（明治３５）</option>
+										<option value="1903">1903（明治３６）</option>
+										<option value="1904">1904（明治３７）</option>
+										<option value="1905">1905（明治３８）</option>
+										<option value="1906">1906（明治３９）</option>
+										<option value="1907">1907（明治４０）</option>
+										<option value="1908">1908（明治４１）</option>
+										<option value="1909">1909（明治４２）</option>
+										<option value="1910">1910（明治４３）</option>
+										<option value="1911">1911（明治４４）</option>
+										<option value="1912">1912（大正１）</option>
+										<option value="1913">1913（大正２）</option>
+										<option value="1914">1914（大正３）</option>
+										<option value="1915">1915（大正４）</option>
+										<option value="1916">1916（大正５）</option>
+										<option value="1917">1917（大正６）</option>
+										<option value="1918">1918（大正７）</option>
+										<option value="1919">1919（大正８）</option>
+										<option value="1920">1920（大正９）</option>
+										<option value="1921">1921（大正１０）</option>
+										<option value="1922">1922（大正１１）</option>
+										<option value="1923">1923（大正１２）</option>
+										<option value="1924">1924（大正１３）</option>
+										<option value="1925">1925（大正１４）</option>
+										<option value="1926">1926（昭和１）</option>
+										<option value="1927">1927（昭和２）</option>
+										<option value="1928">1928（昭和３）</option>
+										<option value="1929">1929（昭和４）</option>
+										<option value="1930">1930（昭和５）</option>
+										<option value="1931">1931（昭和６）</option>
+										<option value="1932">1932（昭和７）</option>
+										<option value="1933">1933（昭和８）</option>
+										<option value="1934">1934（昭和９）</option>
+										<option value="1935">1935（昭和１０）</option>
+										<option value="1936">1936（昭和１１）</option>
+										<option value="1937">1937（昭和１２）</option>
+										<option value="1938">1938（昭和１３）</option>
+										<option value="1939">1939（昭和１４）</option>
+										<option value="1940">1940（昭和１５）</option>
+										<option value="1941">1941（昭和１６）</option>
+										<option value="1942">1942（昭和１７）</option>
+										<option value="1943">1943（昭和１８）</option>
+										<option value="1944">1944（昭和１９）</option>
+										<option value="1945">1945（昭和２０）</option>
+										<option value="1946">1946（昭和２１）</option>
+										<option value="1947">1947（昭和２２）</option>
+										<option value="1948">1948（昭和２３）</option>
+										<option value="1949">1949（昭和２４）</option>
+										<option value="1950">1950（昭和２５）</option>
+										<option value="1951">1951（昭和２６）</option>
+										<option value="1952">1952（昭和２７）</option>
+										<option value="1953">1953（昭和２８）</option>
+										<option value="1954">1954（昭和２９）</option>
+										<option value="1955">1955（昭和３０）</option>
+										<option value="1956">1956（昭和３１）</option>
+										<option value="1957">1957（昭和３２）</option>
+										<option value="1958">1958（昭和３３）</option>
+										<option value="1959">1959（昭和３４）</option>
+										<option value="1960">1960（昭和３５）</option>
+										<option value="1961">1961（昭和３６）</option>
+										<option value="1962">1962（昭和３７）</option>
+										<option value="1963">1963（昭和３８）</option>
+										<option value="1964">1964（昭和３９）</option>
+										<option value="1965">1965（昭和４０）</option>
+										<option value="1966">1966（昭和４１）</option>
+										<option value="1967">1967（昭和４２）</option>
+										<option value="1968">1968（昭和４３）</option>
+										<option value="1969">1969（昭和４４）</option>
+										<option value="1970">1970（昭和４５）</option>
+										<option value="1971">1971（昭和４６）</option>
+										<option value="1972">1972（昭和４７）</option>
+										<option value="1973">1973（昭和４８）</option>
+										<option value="1974">1974（昭和４９）</option>
+										<option value="1975">1975（昭和５０）</option>
+										<option value="1976">1976（昭和５１）</option>
+										<option value="1977">1977（昭和５２）</option>
+										<option value="1978">1978（昭和５３）</option>
+										<option value="1979">1979（昭和５４）</option>
+										<option value="1980">1980（昭和５５）</option>
+										<option value="1981">1981（昭和５６）</option>
+										<option value="1982">1982（昭和５７）</option>
+										<option value="1983">1983（昭和５８）</option>
+										<option value="1984">1984（昭和５９）</option>
+										<option value="1985">1985（昭和６０）</option>
+										<option value="1986">1986（昭和６１）</option>
+										<option value="1987">1987（昭和６２）</option>
+										<option value="1988">1988（昭和６３）</option>
+										<option selected="selected" value="1989">1989（平成１）</option>
+										<option value="1990">1990（平成２）</option>
+										<option value="1991">1991（平成３）</option>
+										<option value="1992">1992（平成４）</option>
+										<option value="1993">1993（平成５）</option>
+										<option value="1994">1994（平成６）</option>
+										<option value="1995">1995（平成７）</option>
+										<option value="1996">1996（平成８）</option>
+										<option value="1997">1997（平成９）</option>
+										<option value="1998">1998（平成１０）</option>
+										<option value="1999">1999（平成１１）</option>
+										<option value="2000">2000（平成１２）</option>
+										<option value="2001">2001（平成１３）</option>
+										<option value="2002">2002（平成１４）</option>
+										<option value="2003">2003（平成１５）</option>
+										<option value="2004">2004（平成１６）</option>
+										<option value="2005">2005（平成１７）</option>
+										<option value="2006">2006（平成１８）</option>
+										<option value="2007">2007（平成１９）</option>
+										<option value="2008">2008（平成２０）</option>
+										<option value="2009">2009（平成２１）</option>
+										<option value="2010">2010（平成２２）</option>
+										<option value="2011">2011（平成２３）</option>
+										<option value="2012">2012（平成２４）</option>
+										<option value="2013">2013（平成２５）</option>
+										<option value="2014">2014（平成２６）</option>
+										<option value="2015">2015（平成２７）</option>
+										<option value="2016">2016（平成２８）</option>
+										<option value="2017">2017（平成２９）</option>
+										<option value="2018">2018（平成３０）</option>
+										<option value="2019">2019（平成３１）</option>
+										<option value="2020">2020（平成３２）</option>
+										<option value="2021">2021（平成３３）</option>
+										<option value="2022">2022（平成３４）</option>
+										<option value="2023">2023（平成３５）</option>
+										<option value="2024">2024（平成３６）</option>
+										<option value="2025">2025（平成３７）</option>
+										<option value="2026">2026（平成３８）</option>
+										<option value="2027">2027（平成３９）</option>
+										<option value="2028">2028（平成４０）</option>
+										<option value="2029">2029（平成４１）</option>
+										<option value="2030">2030（平成４２）</option>
+										<option value="2031">2031（平成３３）</option>
+										<option value="2032">2032（平成３４）</option>
+										<option value="2033">2033（平成３５）</option>
+										<option value="2034">2034（平成３６）</option>
+										<option value="2035">2035（平成３７）</option>
+										<option value="2036">2036（平成３８）</option>
+										<option value="2037">2037（平成３９）</option>
+										<option value="2038">2038（平成４０）</option>
+										<option value="2039">2039（平成４１）</option>
+										<option value="2040">2040（平成４２）</option>										
+									</select>年
+									
+									<select name="m_inp">
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+										<option value="5">5</option>
+										<option value="6">6</option>
+										<option value="7">7</option>
+										<option value="8">8</option>
+										<option value="9">9</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+									</select>月
+									
+									<select name="d_inp">
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+										<option value="5">5</option>
+										<option value="6">6</option>
+										<option value="7">7</option>
+										<option value="8">8</option>
+										<option value="9">9</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+										<option value="14">14</option>
+										<option value="15">15</option>
+										<option value="16">16</option>
+										<option value="17">17</option>
+										<option value="18">18</option>
+										<option value="19">19</option>
+										<option value="20">20</option>
+										<option value="21">21</option>
+										<option value="22">22</option>
+										<option value="23">23</option>
+										<option value="24">24</option>
+										<option value="25">25</option>
+										<option value="26">26</option>
+										<option value="27">27</option>
+										<option value="28">28</option>
+										<option value="29">29</option>
+										<option value="30">30</option>
+										<option value="31">31</option>
+									</select>日
+									
+                                    <input onclick="calc(this.form)" value="計算する" type="button"  class="btn btn-info">
+									 </div>
+                                </form></td>
+                            </tr>
+                          </tbody></table>
+                        <canvas id="100nengraph" width="820" height="600"></canvas>
+</div>

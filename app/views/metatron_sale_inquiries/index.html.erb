@@ -1,0 +1,43 @@
+<div id="inquiry-index">
+    <h3 class="my-reserved-title">メタトロン購入<br>お問合せ一覧</h3>
+    
+        <table class="table table-bordered table-striped inquiries-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">名前/メール</th>
+              <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">お問合せ内容</th>
+              <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">回答</th>
+              <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">処理</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @inquiries.each do |metatron_sale_inquiry| %>
+               <tr>
+                  <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3 center">
+                    <%= metatron_sale_inquiry.name %><br>
+                    <%= metatron_sale_inquiry.email %>
+                  </td>
+                  <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                     <%= link_to metatron_sale_inquiry.content, new_metatron_sale_inquiry_ms_inquiry_answer_path(metatron_sale_inquiry.id)  %><br><br>
+                     <%= metatron_sale_inquiry.created_at.strftime("%Y/%m/%d %H:%M") %>
+                  </td>
+                  <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                    <% i = 0 %>
+                    <% MsInquiryAnswer.where(metatron_sale_inquiry_id: metatron_sale_inquiry.id).each do |answer| %>
+                        <% if i > 0 %>
+                          <p>----------------</p>
+                        <% end %>  
+                        <% i += 1 %>
+                      <%= answer.comment %><br>
+                      <%= answer.created_at.strftime("%Y/%m/%d %H:%M") %>
+                    <% end %>
+                  </td>
+                  <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3 center">
+                    <%= link_to "削除", "/metatron_sale_inquiries/#{metatron_sale_inquiry.id}", method: "delete", class: "btn btn-danger", data: { confirm: "【確認】問合せ・回答を削除します" }%>
+                  </td>                  
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+</div>
+

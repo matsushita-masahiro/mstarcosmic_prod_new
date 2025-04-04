@@ -1,0 +1,44 @@
+<h3 class="paytitle">支払い方法選択</h3>
+
+<% case @user_type.to_i %>
+<% when 1 then   # 管理者テスト期間中のみ %>  
+<p class="test">-----   既存＆distributor  -----</p>
+    <%= link_to "9,000円（１回券）", "/payments/2/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "87,000円（回数券11枚）", "/payments/5/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "30,000円（病人5回券/月）", "/payments/4/new", :class => "btn btn-primary paytype" %>
+<p class="test">--------   新規&一般  ---------</p>
+    <%= link_to "10,000円（１回券）", "/payments/3/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "97,000円（回数券11枚）", "/payments/6/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "35,000円（病人5回券/月）", "/payments/11/new", :class => "btn btn-primary paytype" %> 
+<p class="test">--------   代理店A,B  ---------</p>
+    <%= link_to "18,000円（１回券）", "/payments/7/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "180,000円（回数券11枚）", "/payments/8/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "87,000円（回数券5枚）", "/payments/12/new", :class => "btn btn-primary paytype" %>
+<p class="test">--------    特別会員 ----------</p>
+    <%= link_to "特別会員無料", "/payments/10/new", :class => "btn btn-primary paytype" %>  
+<p class="test">---------    テスト  ----------</p>
+    <%= link_to "テスト", "/payments/99/new", :class => "btn btn-primary paytype" %>    
+<hr>
+<% when 2 then   # 既存＆distributor %>
+    <%= link_to "9,000円（１回券）", "/payments/2/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "87,000円（回数券11枚）", "/payments/5/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "30,000円（病人5回券/月）", "/payments/4/new", :class => "btn btn-primary paytype" %>
+<% when 3 then   # 新規&一般 %>
+    <%= link_to "10,000円（１回券）", "/payments/3/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "97,000円（回数券11枚）", "/payments/6/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "35,000円（病人5回券/月）", "/payments/11/new", :class => "btn btn-primary paytype" %>
+<% when 4 then   # 代理店A %>
+    <%= link_to "18,000円（１回券）", "/payments/7/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "180,000円（回数券11枚）", "/payments/8/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "87,000円（回数券5枚）", "/payments/12/new", :class => "btn btn-primary paytype" %>
+<% when 5 then   # 代理店B %>
+    <%= link_to "18,000円（１回券）", "/payments/7/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "180,000円（回数券11枚）", "/payments/8/new", :class => "btn btn-primary paytype" %>
+    <%= link_to "87,000円（回数券5枚）", "/payments/12/new", :class => "btn btn-primary paytype" %>
+<% when 6 then   # 特別会員 %>
+    <%= link_to "特別会員無料", "/payments/10/new", :class => "btn btn-primary paytype" %>
+<% when 99 then   # テスト %>
+    <%= link_to "テスト", "/payments/99/new", :class => "btn btn-primary paytype" %>    
+<% else %>
+    <%= link_to "支払い対象外", "/payments/#{@user_type.to_i}/new", :class => "btn btn-primary paytype" %>
+<% end  %>

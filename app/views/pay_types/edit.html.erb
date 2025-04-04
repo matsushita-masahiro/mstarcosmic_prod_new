@@ -1,0 +1,30 @@
+<div class="container edit">
+<h3>支払タイプ編集</h3>
+
+  <%= form_for @pay_type, :url => {:action => "update" }, html: { method: :put } do |f| %>
+  
+  <div class="field pay_name short">
+    <%= f.label :支払タイプ %><br />
+    <%= f.text_field :pay_name, required: true, :class => "form-control my-form", autocomplete: "pay_name" %>
+  </div>
+
+  <div class="field price short">
+    <%= f.label :金額 %><br />
+    <%= f.text_field :price, required: true, :class => "form-control my-form", autocomplete: "price" %>
+  </div>
+  
+    
+  <div class="field">
+     <%= f.label :Paypalのformタグhtml %><br />
+     <%= f.text_area :paypal_form, :size => "20x10", autofocus: true, required: true, :class => "form-control my-form", autocomplete: "paypal_form" %>
+  </div>
+  
+
+  <div class="actions">
+    <%= f.submit "更新", class:"btn btn-primary", data: { confirm: "本当に変更しても良いですか？"} %>
+    <%= link_to "削除", "/pay_types/#{@pay_type.id}", :method => "delete", data: { confirm: "本当に削除しても良いですか？"},  class:"btn btn-warning"  %>
+  </div>
+<% end %>
+
+<%= link_to "Back", :back %>
+</dir>

@@ -1,0 +1,124 @@
+<!--  カレンダー先週・来週 ボタン です--------->
+<div class="week-flex">
+ <div class="pre-week">
+   <% if @start_date > Date.today %>
+     <%= form_tag reserves_path, :method => "get" do %>
+      <input type="hidden" name="calender_start_date" value="<%= (@start_date - 7) %>" >
+      <%= button_tag :type => "submit", class: 'btn btn-info', :style => 'border-style: none;' do %>
+      <i class="fas fa-chevron-left"></i> 前週
+      <% end %>
+     <% end %>
+   <% end %>
+ </div>
+ <span style="margin: 0 auto; padding: 15px; font-size: 12px;">2回目以降の方は赤い２本線(<span style="color: red;">==</span>)は聖子はいませんが悠綺ができます
+通常より2000円安くなります
+ご予約希望者は聖子までLINEください</span>
+ <div class="next-week">
+   <% if @start_date <= (Date.today + 28) %>
+    <%= form_tag reserves_path, :method => "get" do %>
+      <input type="hidden" name="calender_start_date" value="<%= (@start_date + 7) %>" >
+      <%= button_tag :type => "submit", class: 'btn btn-info', :style => 'border-style: none;' do %>
+      翌週 <i class="fas fa-chevron-right"></i>
+      <% end %>
+    <% end %>
+   <% end %>
+ </div>
+</div>
+<!---　カレンダーボタン end --------------->
+<div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div class="table-responsive table-width reserve">
+        <table class="table table-bordered table-hover">
+          <thead class="thead-light reserves-calender" >
+            <tr>
+                <th scope="col"></th>
+              <% 7.times do |i| %>
+                  <% if (@start_date + i).wday.to_i == 0 || (@start_date + i).wday.to_i == 6 %>
+                    <th class="calender-date sanday-saturday" scope="col"><%= (@start_date + i).strftime("%m/%d") %></th>
+                  <% else %>
+                    <th class="calender-date weekday" scope="col"><%= (@start_date + i).strftime("%m/%d") %></th>
+                  <% end %>                  
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% 26.times do |t| %>    
+                <tr>
+                  <th class="calender-time" scope="row"><%= display_time(10 + t*0.5) %></th>
+                    <% 7.times do |k| %>
+                     <!-- カレンダーの左の列が本日じゃなければ  -->
+                      <% unless (@start_date+k) == Date.today %>
+                          <% if reserve = Reserve.find_by(reserved_date: (@start_date + k),reserved_space: (10+t*0.5)) %>
+                            <!-- 予約の備考最初の10バイトを切り取る-->
+                            <% if reserve.remarks %>
+                             <% remarks = reserve.remarks[0..13] %>
+                            <% else %>
+                             <% remarks = "" %>
+                            <% end %>
+                            
+                            <% if reserve.user_id == 0 %>
+                                <!-- 管理者なら休日を削除できる -->
+                                <% if User.find(current_user.id).user_type == "1" %>
+    
+                                  <td class="holiday"><%= link_to "==", "/reserves/#{reserve.id}", :method => "delete", data: { disable_with: "...", confirm: "#{reserve.reserved_date}⇨#{display_time(reserve.reserved_space.to_f)}の休みを削除しますか？" }, :class => "color-red" %></td>
+                                <% else %>
+                                  <td class="holiday">==</td>
+                                <% end %>
+                            <% else %>
+                              <!-- 予約が入っていて休日ではない場合 -->
+                                <% if User.find(current_user.id).user_type == "1" %>
+                                  <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(reserve.user_id).name %><br><%= User.find(reserve.user_id).tel %><br><%= User.find(reserve.user_id).introducer %><br><%= remarks %>", data-container="body">✖</td>
+                                <% else %>
+                                  <td>✖︎</td>
+                                <% end %>
+                            <% end %>   <!-- reserve.user_id == 0 end-->
+                          <% else %>   <!-- Reserve.find_by else -->
+                            <td>
+                              <%= link_to "◎", new_reserve_path(date: (@start_date + k).to_s,frame: (10+t*0.5).to_s, start_date: @start_date.to_s), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
+                            </td>
+                          <% end %>    <!-- Reserve.find_by end -->
+                      <!-- カレンダーの左の列が本日じゃなら  -->
+                      <% else %>   <!-- if  start_date == Date.today  else to start_date != Date.today -->
+                          <% if reserve = Reserve.find_by(reserved_date: (@start_date + k),reserved_space: (10+t*0.5)) %>
+                            <!-- 予約の備考最初の10バイトを切り取る-->
+                            <% if reserve.remarks %>
+                             <% remarks = reserve.remarks[0..13] %>
+                            <% else %>
+                             <% remarks = "" %>
+                            <% end %>
+                            
+                            <% if reserve.user_id == 0 %>
+                                <td class="holiday calender-today">==</td>
+                            <% else %>
+                              <!-- 予約が入っていて休日ではない場合 -->
+                                <% if User.find(current_user.id).user_type == "1" %>
+                                  <td class="table-frame  calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(reserve.user_id).name %><br><%= User.find(reserve.user_id).tel %><br><%= User.find(reserve.user_id).introducer %><br><%= remarks %>", data-container="body">✖</td>
+                                <% else %>
+                                  <td class="calender-today">✖︎</td>
+                                <% end %>
+                            <% end %>   <!-- reserve.user_id == 0 end-->
+                          <% else %>   <!-- Reserve.find_by else -->
+                            <td class="calender-today">◎</td>
+                          <% end %>    <!-- Reserve.find_by end --> 
+                      <% end %>    <!-- if  start_date == Date.today  end -->
+                    <% end %>   <!-- 7.times end -->
+                </tr>
+            <% end %>   <!-- 26.times end -->
+          </tbody>
+        </table>
+</div>
+
+<!-- mstarcosmicからcopy -->
+<div id="reserveModal" class="modal" onclick="closeModal(this)">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal(this)">&times;</span>
+        <div id="modal-form"></div>
+    </div>
+</div>
+
+
+
+
+
+
+
+

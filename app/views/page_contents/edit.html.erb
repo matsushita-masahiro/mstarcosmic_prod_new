@@ -1,0 +1,30 @@
+<div class="container">
+<h3>ページ別表示内容修正</h3>
+
+<%= form_for(@page_content) do |f| %>
+
+ <!-- <div class="field user_type">-->
+ <!--   <f.label :表示ページ %><br />-->
+ <!--   <f.select :area, PageContent.all.map{|t| [t.area, t.id]}, :include_blank => true %>-->
+　<!--</div>-->
+
+    
+  <div class="field name">
+    <h4><%= UserType.find_by(id: @page_content.user_type_id.to_i).type_name %></h4>
+  </div>
+  
+  
+  <div class="field">
+    <br />
+    <%= f.text_area :content, :size => "20x18", autofocus: true, required: true, :class => "form-control my-form", autocomplete: "content" %>
+  </div>
+
+ 
+  
+  <div class="actions">
+    <%= f.submit "更新", data: { confirm: "登録してOKですか？"}, class:"btn btn-primary" %>
+  </div>
+<% end %>
+
+
+</div>

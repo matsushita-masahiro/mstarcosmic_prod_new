@@ -1,0 +1,109 @@
+<div class="modal-dialog modal-lg" style="z-index: 10000;" >
+ <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">予約確認</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <p style="font-size: 10px; width: 80%; padding: 10px 0">
+          他の方と一緒になる可能性があります。貸切希望の方は、カレンダーで◎かどうかを確認し、備考欄に貸切希望と記入お願いします。貸切料5000円かかります。△は既に予約者がいます。
+          120分の場合は備考欄に２人分のお名前をフルネーム記入お願いします。
+          120分は同時施術ではなく連続施術です。
+        </p>
+      </div>   
+    <div class="container reserve-form">
+        <%= form_for @reserve do |f| %>
+          <%= f.hidden_field :staff_id, :value => @staff.id %>
+          <table class="table table-bordered modal-table">
+            <tbody>
+              <tr>
+                <th scope="row" style="background: #dcdcdc;">氏名</th>
+                <td><%= current_user.name %></td>
+          
+              </tr>
+              <tr>
+                <th scope="row">性別</th>
+                <td><%= Global::GENDER[current_user.gender] %></td>
+          
+              </tr>
+              <tr>
+                <th scope="row">電話</th>
+                <td><%= current_user.tel %></td>
+              </tr>
+              <tr>
+                <th scope="row">開始日時</th>
+                <td><%= @date.to_date.strftime("%Y年 %-m月 %-d日") %>(<%= Global::WEEKDAY[@date.to_date.wday] %>)　<%= display_time(@frame.to_f) %>〜</td>
+              </tr>
+              <tr>
+                <th scope="row">マシン</th>
+                <td><%= Staff.find_by(id: @staff.id).name %></td>
+              </tr>
+              <tr>
+                <th scope="row">予約枠</th>
+                <td>
+                  <!-- 2020/8/4 modify 21時以降表示される分数を変える（営業時間が23時までだから）-->
+
+                    <% if @frame.to_f <= 22.0 %>
+                      <label class="radio_text"><%= f.radio_button :frames, "60", checked: true %> 60分 (通常)</label><br>
+                    <% end %>
+                    <% if @frame.to_f <= 21.5 %>
+                      <label class="radio_text"><%= f.radio_button :frames, "90" %> 90分 (詳細)</label><br>
+                    <% end %>
+                    <% if @frame.to_f <= 21.0 %>
+                      <label class="radio_text"><%= f.radio_button :frames, "120" %> 120分 (２人枠)</label>
+                    <% end %>
+                </td>
+              </tr>     
+              <tr>
+                <th scope="row">備考</th>
+                <td><%= f.text_area :remarks, class: "form-control", :id => "message-text" %></td>
+              </tr>   
+            </tbody>
+          </table>        
+        
+
+                <%= f.hidden_field :reserved_date, :value => @date %>
+                <%= f.hidden_field :reserved_space, :value => @frame %>
+                <%= f.hidden_field :start_date, :value => @start_date %>
+                <%= f.hidden_field :user_id, :value => current_user.id %>
+        
+
+        
+      <div class="modal-footer">
+        <div>
+          <button type="button" class="btn btn-warning" data-bs-dismiss="modal">戻る</button>
+        </div>
+        <div>
+          <%= f.submit "予約確定", class: "btn btn-primary btn-reserve-confirm" %>
+        </div>
+
+      </div>        
+      <% end %>
+
+    </div>
+  </div>
+</div>
+
+<script>
+
+function nidoosi2(form) {
+    let elements = form.elements;
+    for (let i = 0; i < elements.length; i++) {
+            if (elements[i].type == 'submit') {
+             elements[i].disabled = true;
+            }
+    }
+} 
+
+
+$('#holiday').on('click', function(){
+    // 2重送信防止クラスのチェック
+    if ( $(this).hasClass('double_click') ){
+        return false;
+    }
+    $(this).text("処理中...");
+    // 2重送信防止クラス
+    $(this).addClass('double_click');
+});
+</script>
+

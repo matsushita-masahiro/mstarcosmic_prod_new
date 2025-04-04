@@ -1,0 +1,25 @@
+<div class="space-status">
+    <div class="staff-name">
+        <% if @machine == "h" %>
+          Holistic
+        <% elsif @machine == "w" %>
+          Wellbeing
+        <% elsif @machine == "e" %>
+          エステ（<%= Staff.find(StaffMachineRelation.find_by(machine: "e").staff_id).name %>）
+        <% elsif @machine == "b" %>
+          鍼・整体（<%= Staff.find(StaffMachineRelation.find_by(machine: "b").staff_id).name %>）
+        <% else %>
+          <% if @staff.id == 1 %>
+          算命学
+          <% elsif @staff.id == 5 %>
+          腸もみ・ファスティング・栄養指導
+          <% elsif @staff.id == 8 %>   <!-- さとう  -->
+          整体
+          <% elsif @staff.id == 10 || @staff.id == 11 %>    <!-- なるみ・みつこ  -->
+          エステ  
+          <% else %>
+          その他
+          <% end %>
+        <% end %>
+    </div>
+</div>

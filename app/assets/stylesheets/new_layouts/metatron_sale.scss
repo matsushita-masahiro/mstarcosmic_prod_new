@@ -1,0 +1,247 @@
+
+#metatron_sale {
+    
+    width: 100%;
+
+    
+    section.description {
+        
+        padding: 50px 20% 50px 20%;
+        
+        .title-1 {
+            margin-bottom: 50px;
+            text-align: center;
+            font-size: 1.5vw;
+            font-weight: 600;
+        }
+        
+        .merit-title {
+            margin-top: 50px;
+            font-weight: 600;
+        }
+        
+        ul {
+            padding-inline-start: 10px;
+        }
+        
+        ul > ol {
+            padding-inline-start: 0px;
+        }
+        
+        
+    }
+    
+    
+    
+    .metatron-description {
+        padding: 80px 20%;
+        display: block;
+        
+        img.description-img {
+            width: 100%;
+        }
+    }
+    
+    .description-word {
+        display: none;
+    }
+    
+    .chomomi_qa .chomomi_qa_table {
+        padding: 5px;
+        background: #d3d3d370;
+        border: solid 10px #d3d3d300;
+        margin: 20px 0;
+    }
+    
+    .chomomi_qa .chomomi_qa_table .tr {
+        border-bottom: 1px solid #80808038;
+        margin: 5px 0;
+    }
+    
+    .chomomi_qa .head {
+        width: 5%;
+        vertical-align: top;
+    }
+    
+    .chomomi_qa .content {
+        width: 95%;
+    }
+    
+    
+    section.reviews {
+        padding: 50px 20% 50px 20%;
+        
+        h4 {
+            margin-bottom: 15px;
+        }
+        
+        h4 > span {
+            
+            padding: 0 5px 5px 0;
+            border-bottom: 1px solid lightgray;
+        }
+        
+        .name {
+            font-weight: bold;
+        }
+        
+        ul {
+            list-style-type: none
+        }
+    }
+    
+ 
+    
+    
+
+}
+
+    
+    .metatron_sale_inquiry_link {
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        width: 200px;
+        height: 50px;
+        line-height: 50px;
+        border-radius: 10px;
+        text-align: center;
+        background: orange;
+        opacity: 1;
+        color: #fff;
+        z-index: 3;
+        
+    }
+    
+    .metatron_sale_inquiry_link:hover {
+        text-decoration: none;
+        color: #fff;
+        opacity: 0.8;
+    }   
+
+
+@media screen and (max-width: 768px) {
+    
+    .about-metatron-top-image {
+        display: none;
+    }
+    
+    .sp-about-metatron-top-image {
+        width: 100%;
+        display: block;
+    }    
+    
+    
+    
+    #metatron_sale {
+            
+      section.description {
+          
+        padding: 50px 10% 50px 10%;
+
+        .title-1 {
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .title-2 {
+            font-size: 6vw;
+            font-weight: 600;
+        }
+        
+        .features-topics {
+            display: block;
+            
+            div {
+                
+                width: 100%;
+                margin-bottom: 20px;
+                
+               .feature-topic-img {
+                    width: 100%;
+               }
+            }
+            
+            
+        }
+         
+
+
+      }
+        
+        section.metatron-features {
+
+            padding: 0 10%;
+            
+            
+            .title {
+                font-size: 5vw;
+                text-align: left;
+                padding: 50px 0 0px;
+            }  
+            
+            .img-area {
+                display: none;
+            }
+            
+            .features-image-area {
+                
+                display: block;
+                
+                div.metatron-feature-each {
+                    
+                    width: 100%;
+                    
+                    
+                    .title {
+                        font-size: 5vw;
+                        text-align: center;
+                    }
+
+                    
+                    .detail {
+                        display: none;
+                    }
+                    
+                    .sp-detail {
+                        display: block;
+                        color: #cdc8c8;
+                        padding-bottom: 30px;
+                    }
+                }
+            }
+        }
+        
+    .metatron-description {
+        
+        padding: 80px 10%;
+        
+        
+        .description {
+           display: none;
+        }
+        
+        .description-word {
+            display: block;
+        }
+
+    } 
+    
+    section.reviews {
+        padding: 50px 10% 50px 10%;
+        
+        
+        ul {
+            padding-left: 10px;
+        }
+
+    }    
+  
+        
+  }
+    
+
+    
+    
+}

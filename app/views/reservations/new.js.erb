@@ -1,0 +1,15 @@
+$("#user-modal").html("<%= escape_javascript(render 'form') %>")
+$("#user-modal").modal("show")
+
+<% if @date.present? %>
+    var dateField = document.getElementById("reserved_date");
+    dateField.value = '<%= @date %>';
+<% end %>
+var modal = document.getElementById("reserveModal");
+modal.style.display = 'block';
+
+
+if($('#error_explanation')[0]){
+    $(".modal").animate({scrollTop:0});
+}
+

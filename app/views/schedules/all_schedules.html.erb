@@ -1,0 +1,38 @@
+<div id="all_schedules">
+    <% if current_user.user_type == "1" %>
+      <div class="back-link"><%= link_to "<< 戻る", "/admin/staffs" %></div>
+    <% else %>
+      <div class="back-link"></div>
+    <% end %>
+    <div class="title">全スケジュール</div>
+    <%= render 'all_schedule_calender' %>
+</div>
+
+<style>
+
+    .back-link {
+        width: 60%;
+        margin: 0 auto;
+    }
+
+    .activate, .nonactivate {
+        color: black;
+        margin: 20px auto 0;
+        text-align: center;
+        width: 200px;
+        height: 40px;
+        background: lightgray;
+        line-height: 40px;
+        border-radius: 5px;
+    }
+    
+    .activate:hover, .nonactivate:hover {
+        opacity: 0.7;
+    }
+    
+    .nonactivate > a {
+        color: red;
+    }
+    
+</style>
+    

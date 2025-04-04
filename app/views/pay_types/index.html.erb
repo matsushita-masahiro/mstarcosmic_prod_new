@@ -1,0 +1,30 @@
+<div class="container">
+  <h3 class="page_content-title">タイプ一覧</h3>
+    <div class="text-right">
+      <%= link_to "新規登録", new_pay_type_path, :class => "btn btn-primary right" %>
+    </div>
+        <table class="table table-bordered table-schedule table-striped">
+          <thead>
+            <tr>
+              <th scope="col" class="col-xs-1">ID</th>
+              <th scope="col" class="col-xs-3">タイプ</th>
+              <th scope="col" class="col-xs-3">料金</th>
+              <th scope="col" class="col-xs-5">タグ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @pay_types.each do |pay_type| %>
+               <tr>
+                  <td class="center col-xs-1"><%= pay_type.id %></td>
+                  <td class="col-xs-3"><%= link_to pay_type.pay_name, edit_pay_type_path(pay_type.id) %></td>
+                  <td class="right col-xs-3"><%= pay_type.price %></td>
+                  <% if pay_type.paypal_form.present? %>
+                    <td class="col-xs-5"><%= pay_type.paypal_form.slice(0..20) %>......</td>
+                  <% else %>
+                    <td class="col-xs-5">未設定</td>
+                  <% end %>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+</div>

@@ -1,0 +1,16 @@
+===============================
+<%= @user.name %>様
+===============================
+
+      下記予約を承りました。
+
+      施術者：<%= Staff.find_by(id: @reserve.staff_id).name %>
+      内容：<%= @reserve.selected_machine %>
+      <%= @reserve.reserved_date.strftime("予約日時 %Y-%m-%d >> ") %><%= @reserved_space %>〜（<%=@frames.to_i*30%>分）
+      備考 <%= @reserve.remarks %>
+      -----------------------------------
+      m☆COSMIC 事務局
+      HP : https://www.mstarcosmic.com
+      email : <%= ENV['USER_EMAIL'] %>
+      鹿田聖子
+      -----------------------------------

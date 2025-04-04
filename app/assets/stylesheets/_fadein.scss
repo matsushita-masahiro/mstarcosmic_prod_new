@@ -1,0 +1,15 @@
+.fadein {
+//   最初は非表示 
+  transform: translateY(50px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 1s, opacity 1s, visibility 1s;
+
+}
+//  フェードイン時に入るクラス 
+.is-fadein {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+}
+

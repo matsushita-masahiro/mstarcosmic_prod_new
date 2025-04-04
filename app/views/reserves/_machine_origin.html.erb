@@ -1,0 +1,27 @@
+<div class="machine-select">
+  <!--<p>機械を選んでください <i class="fas fa-arrow-right"></i></p>-->
+  <div class="machine-select-area">
+      <% if @machine == "h" %>
+        <%= link_to "Wellbeingの空き状況", "/reserves/w/index", class: "btn btn-success", style: "max-width: none;" %>
+        <%= link_to "その他", "/reserves/o/index", class: "btn btn-primary", style: "max-width: none;" %>
+      <% elsif @machine == "w" %>
+        <%= link_to "Holisticの空き状況", "/reserves/h/index", class: "btn btn-warning", style: "max-width: none;" %>
+        <%= link_to "その他", "/reserves/o/index", class: "btn btn-primary", style: "max-width: none;" %>
+      <% elsif @machine == "o" || @machine == "s" %>
+        <%= link_to "Holisticの空き状況", "/reserves/h/index", class: "btn btn-warning", style: "max-width: none;" %>
+        <%= link_to "Wellbeingの空き状況", "/reserves/w/index", class: "btn btn-success", style: "max-width: none;" %>
+      <% end %>
+  </div>
+</div>
+
+
+<style>
+  .machine-select {
+    text-align: center;
+  }
+  .staff-select-area {
+     
+     /*padding: 16px 0 0 50%;*/
+  }
+
+</style>

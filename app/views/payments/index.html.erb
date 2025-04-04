@@ -1,0 +1,23 @@
+<div class="container">
+    <h2 class="my-reserved-title">お支払い一覧</h2>
+    
+        <table class="table table-bordered table-schedule table-striped">
+          <thead>
+            <tr>
+              <th scope="col">開始日</th>
+              <th scope="col">名前</th>
+              <th scope="col">処理</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @payments.each do |payment| %>
+                <%  logger.debug("------------------------------ html payment      = #{payment.id}--#{payment.pay_type}") %>
+               <tr>
+                  <td class="center"><%= link_to payment.created_at.strftime("%Y-%m-%d"), edit_payment_path(payment) %></td>
+                  <td class="center"><%= User.find_by(id: payment.user_id).name %></td>
+                  <td class="center"><%= link_to "削除", "payment_destroy/#{payment.id}", :method => "delete", data: { confirm: Global::PAY_DESTROY } %></td>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+</div>

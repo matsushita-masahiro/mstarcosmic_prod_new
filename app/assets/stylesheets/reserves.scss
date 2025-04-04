@@ -1,0 +1,316 @@
+// Place all the styles related to the reserves controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+
+// スタッフ選択
+
+
+   
+
+     .staff-select-area {
+        display: flex;
+        width: 60%;
+        margin: 0 auto;
+
+     }
+     
+    
+    .staff-select-area input[type="submit"]{
+        display: inline-block;
+        margin-right: 10px;
+        background: #0096886e;
+        border-radius: 5px;
+        border: 1px solid #0096886e;
+    }     
+ 
+
+ // 予約モーダル
+ 
+ .modal-title {
+     
+ }
+ 
+  .staff_select {
+   padding-right: 10px;
+ }
+ 
+
+ 
+ .modal-footer-holiday .modal-holiday {
+    display: inline-block;
+    float: left;
+  }
+  
+ #new_reserve > table > tbody  td  label.radio_text {
+    font-size: 10px;
+  }
+ 
+.container.reserve-form {
+    margin: 30px auto;
+    
+} 
+ 
+#new_reserve > table > tbody > tr > th {
+    background: #dcdcdc;
+}
+
+body > div > div.reserves {
+    margin-top: 150px;
+}
+
+#new_reserve > table th, #new_reserve > table td {
+  border: solid 1px gray;
+}
+
+// モーダルフッターボタン位置
+.modal-footer {
+    position: relative;
+}
+
+.modal-footer-holiday {
+    position: absolute;
+    left: 0;
+    top: 12px;
+}
+
+.modal-footer .btn {
+  color: white;
+  cursor: pointer;
+}
+
+.modal-footer .btn:hover {
+  color: white;
+  opacity: 0.7;
+}
+
+.modal-dialog {
+    z-index: 1500;
+}
+
+// カレンダータイトル
+.reserves > h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+// カレンダーヘッダー
+thead.reserves-calender {
+    z-index: 1000;
+    background: #808080;
+    color: white;
+}
+
+// カレンダー土日
+.sanday-saturday {
+  background: #000;
+}
+
+// カレンダー本日分
+
+.calender-today {
+  background: #f5f5f5;
+}
+
+
+
+
+//  flash 
+    body > div > div.float-right > p {
+      z-index: 1000;
+      // margin: 100px;
+      display: inline;
+      position: absolute;
+      right: 10px;
+      margin-left: 10px;
+     }
+ 
+ .float-right {
+    // width: 350px;
+    // font-size: 10px;
+ }
+
+
+#user-modal > div {
+    -webkit-z-index: 10;
+    z-index: 10;
+    width: 80vw;
+    margin: 100px auto; 
+}
+
+// body > div > div
+.reserves > div.table-responsive.table-width {
+    width: 60%;
+    margin: 0 auto;
+}
+
+
+body > div > div.reserves > div.table-responsive.table-width > table > tbody {
+    display: block;
+    height: 500px;
+    overflow: auto;
+}
+thead, tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+body > div > div.reserves > div.table-responsive.table-width > table > thead > tr > th {
+    padding: 1.2vw;
+    text-align: center;
+    font-weight: normal;
+}
+th.calender-date {
+    font-size: 2vw;
+}
+
+// body > div > div
+.reserves > div.table-responsive.table-width > table > tbody > tr > th {
+    text-align: center;
+    margin: 0 auto;
+    font-size: 2vw;
+    font-weight: normal;
+}
+
+// body > div > div
+.reserves > div.table-responsive.table-width > table > tbody > tr > td {
+    text-align: center;
+}
+
+// body > div > div
+.reserves > div.table-responsive.table-width > table > tbody > tr > td > a {
+    padding-top: 20px;
+    font-size: 20px;
+}
+
+// calender flex
+.week-flex {
+    width: 60%;
+    display: flex;
+    margin: 10px auto;
+}
+
+.space-status {
+  text-align: center;
+  width: 60%;
+  margin: 10px auto;
+  padding: 0 0 0 15px;
+}
+.space-status > div {
+  font-weight: 600;
+  font-size: 2rem;
+  padding-right: 30px;
+}
+
+// 翌週ボタン
+
+.next-week {
+    margin: 0 0 0 auto;
+}
+
+
+// holiday 赤
+div.reserves table td.holiday {
+    color: red;
+}
+
+  .reserve table th, .reserve table td {
+    width: 12.3%;
+  }
+  
+  
+#reserves {  
+  
+  thead {
+    //   width: 100%;
+    //   position: fixed;
+      z-index: 1000;
+      background: #696969;
+      color: white;
+  }
+  
+  .calender-note {
+      width: 60%;
+      margin:  20px auto;
+      font-size: 10px;
+  }
+  
+  #reserve_name, #reserve_name_kana, #reserve_email, #reserve_tel {
+      width: 100%;
+  }
+  
+  .calender-title {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.8rem;
+  }
+  
+}
+
+
+
+
+@media (max-width: 767.98px) {
+    
+    body > div > div.reserves {
+        margin-top: 80px;
+    }
+    
+    body > div > div.reserves > div.table-responsive.table-width {
+        width: 90%;
+        margin: 0 auto;
+    } 
+    
+
+    .week-flex {
+        width: 90%;
+    }
+    
+    #user-modal > div {
+        -webkit-z-index: 10;
+        z-index: 10;
+        width: 90vw;
+        margin: 100px auto; 
+    }   
+    
+    #new_reserve > div {
+        padding-right: 0;
+    }
+    
+    th.calender-date {
+        font-size: 3vw;
+    }
+    
+    .clickable {
+         cursor: pointer;
+      } 
+
+      
+    #user-modal > div > div {
+        width: 90%;
+    }
+    
+    // スタッフ選択
+
+    
+         .staff-select-area {
+            width: 90%;
+
+         }
+         
+   #reserves {
+      .calender-note {
+          width: 80%;
+          margin:  20px auto;
+          font-size: 10px;
+      }
+   }
+
+    
+    
+    
+
+
+        
+}

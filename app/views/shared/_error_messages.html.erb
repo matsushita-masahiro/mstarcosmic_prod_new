@@ -1,0 +1,10 @@
+<% if model.errors.any? %>
+  <div id="error_explanation" class="error_box">
+    <div class="alert">
+       <%= pluralize(model.errors.count, "個") %>のエラーがあります。
+        <% model.errors.full_messages.each do |msg| %>
+          <p><%= msg %></p>
+        <% end %>
+    </div>
+  </div>
+<% end %>

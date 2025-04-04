@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta content="text/html; charset=UTF-8" />
+</head>
+<body>
+      <p><%= @inquiry.name %>様</p>
+      <p>下記お問合せに対する回答です。</p>
+      名前:<%= @inquiry.name %><br>
+      メール:<%= @inquiry.email %><br>
+      電話:<%= @inquiry.phone %><br>
+      〒:<%= @inquiry.postcode %><br>
+      住所:<%= @inquiry.prefecture_name %><%= @inquiry.address_city %><br>
+      体験:<%= @inquiry.trial_flag? ? "希望する" : "希望しない" %><br>
+      購入相談:<%= @inquiry.buy_consult_flag? ? "希望する" : "希望しない" %><br>
+      HP作成相談:<%= @inquiry.hp_consult_flag? ? "希望する" : "希望しない" %><br>      
+      内容:<p><%= simple_format(@inquiry.content) %></p>
+      日時：<p><%= @inquiry.created_at.strftime("%Y/%m/%d %H:%M") %></p>
+      <hr style="border-top: 2px dashed black; margin-left: 1px; width: 100px;">
+      回答:<p><%= simple_format(@answer.comment) %></p>
+      <hr style="border-top: 2px dashed black; margin-left: 1px; width: 200px;">
+      <p>m☆COSMIC 事務局</p>
+      <p>HP : https://www.mstarcosmic.com</p>
+      <p>email : <%= ENV['USER_EMAIL'] %></p>
+      <p>鹿田聖子</p>
+   <hr />
+</body>
+</html>

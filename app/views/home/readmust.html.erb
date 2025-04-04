@@ -1,0 +1,24 @@
+<div class="container">
+
+<% if admin_user? %>
+    <% if PageContent.find_by(id: @page_id.to_i) %>
+      <% text = PageContent.find_by(id: @page_id.to_i).content %>
+      <%= simple_format(text) %> 
+    <% else %>
+      <h3 class="construction">建設中！！</h3>
+    <% end %>
+    <!--< PageContent.all.each do |pc| %>-->
+    <!--  <h3>< pc.area %></h3>-->
+    <!--  < simple_format(pc.content) %>-->
+    <!--  <hr>-->
+    <!--< end %>-->
+<% else %>
+    <% if PageContent.find_by(user_type_id: @user.user_type.to_i) %>
+      <% text = PageContent.find_by(user_type_id: @user.user_type.to_i).content %>
+      <%= simple_format(text) %> 
+    <% else %>
+      <h3 class="construction">建設中！！</h3>
+    <% end %>
+<% end %>
+
+</div>

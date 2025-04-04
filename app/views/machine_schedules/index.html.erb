@@ -1,0 +1,53 @@
+<div id="schedule-new">
+    <div class="title">出張登録（<%= @machine.name %>）</div>
+    <div style="text-align: center;">※<%= @machine.name.capitalize %>を持ち出す場合</div>
+    <%= render 'machine_schedule_calender' %>
+</div>
+
+
+
+
+
+
+
+
+
+<style>
+
+    #schedule-new > .title {
+         margin: 150px auto 0;
+    }
+    
+     @media (max-width: 767.98px) {
+        #schedule-new > .title {
+             margin: 100px auto 0;
+        }         
+     }
+
+    .activate, .nonactivate {
+        color: black;
+        margin: 20px auto 0;
+        text-align: center;
+        width: 200px;
+        height: 40px;
+        background: lightgray;
+        line-height: 40px;
+        border-radius: 5px;
+    }
+    
+    .activate:hover, .nonactivate:hover {
+        opacity: 0.7;
+    }
+    
+    .nonactivate > a {
+        color: red;
+    }
+    
+    .dismiss {
+        font-size: 12px;
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+</style>
+    

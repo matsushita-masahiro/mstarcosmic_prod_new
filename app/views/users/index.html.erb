@@ -1,0 +1,53 @@
+<div class="container">
+    <h2 class="my-reserved-title">お客様一覧</h2>
+<div id="page_top"><a href="#"></a></div>
+    
+<%= form_tag users_path, :method => 'get' do %> <%#　projects_pathはモデル名で読みかえること %>
+
+  <p>
+    <p>名前：<%= text_field_tag "search[name]", @user, :class => "form-control width-100 height-30 col-search" %></p>
+    <p>type：<%= select :search, :user_type, @user_types.map{|type_name, id| [type_name, id]}, :include_blank => true, :selected => @user_type %></p>
+    <%= submit_tag "検索", :name => nil, :class => "btn-search" %><span class="user-count">(<%= @users.count %>/<%= User.all.count-1 %>)</span>
+        
+ </p>
+<% end %>
+
+     <!--<div class="user-index-table-wrapper">-->
+     <div class="text-nowrap table-responsive">
+        <table class="table table-bordered table-schedule table-fixed">
+          <thead>
+            <tr>
+              <th scope="col" class="name">名前</th>
+              <th scope="col" class="email">メール</th>
+              <th scope="col" class="tel">電話</th>
+              <th scope="col" class="birthday">生年月日</th>
+              <th scope="col" class="gender">性別</th>
+              <th scope="col" class="introducer">紹介者</th>
+              <th scope="col" class="type">タイプ</th>
+              <th scope="col" class="delete">削除</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+               <tr>
+                  <td class="name"><%= link_to user.name, "/users/#{user.id}/edit" %></td>
+                  <td class="email"><a href="mailto:<%= user.email %>"><%= user.email %></a></td>
+                  <!--<td class="email"><= user.email %></td>-->
+                  <td class="tel"><%= user.tel %></td>
+                  <td class="birthday"><%= user.birthday %></td>
+                  <td class="gender"><%= Global::GENDER[user.gender] %></td>
+                  <td class="introducer"><%= user.introducer %></td>
+                  <% if user.user_type.present? %>
+                    <td class="type"><%= UserType.find(user.user_type).type_name %></td>
+                  <% else %>
+                    <td class="type">---</td>
+                  <% end %>
+<td class="delete"><%= link_to "削除", "users/#{user.id}", data: { confirm: "#{User.find_by(id: user.id).name}様を本当に削除しますか？" }, method: :delete %></td>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+        
+    </div>
+        
+</div>

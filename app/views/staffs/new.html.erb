@@ -1,0 +1,61 @@
+<div id="staff-new">
+    <h4>スタッフ登録</h4>
+        <% hash = {Holistic: "h", Wellbeing: "w", "その他": "o"} %>
+        <%= form_with model: @staff, url: "/admin/staffs" do |f| %>
+          <div>スタッフ名：<%= f.text_field :name, required: true, class: "form-control staff-input-width" %></div>
+          <div>スタッフ名漢字：<%= f.text_field :name_kanji, class: "form-control staff-input-width" %></div><br>
+          <div>
+              <% @users.each do |key, value| %>
+                <span style="display: inline-block; padding-right: 10px;"><%= f.radio_button :user_id, key %><%= value %></span>
+              <% end %>
+
+            <!--<ul style="text-align: left;">-->
+            <!--  < @users.each do |key, value| %>-->
+            <!--    <li style="list-style: none;"><= f.check_box :user_id, {checked: false, multiple: true}, key, nil %><= value %></li>-->
+            <!--  < end %>-->
+            <!--</ul>-->
+          </div>
+          <div>内容：
+            <%= f.fields_for :staff_machine_relations do |smr| %>
+                <div class="checkbox">
+                  <%= smr.radio_button :machine, "h", checked: true %>Holistic　
+                  <%= smr.radio_button :machine, "w" %>Wellbeing　
+                  <!--<= smr.radio_button :machine, "s" %>算命学　-->
+                  <br class="machine-select-br">
+                  <%= smr.radio_button :machine, "e" %>エステ　
+                  <%= smr.radio_button :machine, "b" %>鍼・整体　
+                  <%= smr.radio_button :machine, "o" %>その他
+                </div>
+            <% end %>
+          </div>
+          <div><%= f.submit "登録", class: "btn btn-primary" %></div>
+        <% end %>
+<hr>        
+</div>
+
+<div id="staff-edit">
+   <h4>担当マシン修正</h4>
+        <% hash = {Holistic: "h", Wellbeing: "w", "その他": "o"} %>
+
+        <%= form_with model: @staff_machine_relation, url: admin_staffs_staff_machine_relations_path, method: :patch do |g| %>
+          <ul style="list-style: none; padding-left: 0;">
+            <% @staffs.each do |staff| %>
+                   <li>
+                     <%= g.radio_button :staff_id, staff.id %>
+                     <label style="font-weight: normal; display: inline-block;"><%= "#{staff.name}..#{staff.staff_machines}" %></label>
+                     <!--<= g.label "#{staff.name}..#{staff.staff_machines}", {value: staff.id, style: "font-weight: normal; display: inline-block;"} %>-->
+                   </li>
+                   
+            <% end %>
+          </ul>
+          <div>※ 使用するマシンは全てチェックを。&#8595;
+            <!--<= g.fields_for :staff_machine_relations do |smr| %>-->
+                <div class="checkbox">
+                  <%= g.collection_check_boxes :machine, Machine.all, :short_word, :name, include_hidden: false %><br>
+                </div>
+            <!--< end %>-->
+          </div>
+          <div><%= g.submit "修正", class: "btn btn-success" %></div>
+        <% end %>  
+</div>
+

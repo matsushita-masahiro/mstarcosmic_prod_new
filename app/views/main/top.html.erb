@@ -1,0 +1,10 @@
+<div id="main-top" class="main-top">
+    <%= render 'layouts/main/price_banner' %>
+    <% if !user_signed_in? %><%= render 'layouts/main/new_customer_banner' %><% end %>
+    <%= render 'layouts/main/top_word' %>
+    <%= render 'layouts/main/features' %>
+    <%= render 'layouts/main/plan_price' %>
+    <!--<= render 'layouts/main/intestinal' %>-->
+    <%= render 'layouts/main/staffs' %>
+    <%= render 'layouts/main/access' %>
+</div>

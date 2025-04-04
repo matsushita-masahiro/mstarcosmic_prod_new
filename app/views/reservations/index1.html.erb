@@ -1,0 +1,98 @@
+<div class="container">
+    <h2 class="calendar-title">予約カレンダー１</h2>
+    <%= "18".to_f %>...<%= "18.5".to_f %>
+    
+        <table class="table table-bordered table-schedule table-headerfixed">
+          <thead>
+            <tr>
+              <th scope="col" class="table-date" style="color: black;"></th>
+            <% 13.times do |i| %>
+              <td scope="col" class="table-frame"><%= i+10 %>時</th>
+            <% end %>
+             
+            </tr>
+          </thead>
+          <tbody>
+            <% d = DateTime.now + 0.375 %>
+            <% logger.debug("------------------------------ date = #{d}") %>
+            <% 35.times do |i| %>
+              <% if i > 0 %>
+              <!-- 明日以降  -->
+              <% if (d+i).wday.to_i == 0 || (d+i).wday.to_i == 6 %>
+                <tr class="holiday">
+              <% else %>
+                <tr>
+              <% end %>
+                  <th scope="row" class="table-date"><%= (d+i).strftime("%-m/%d") %> (<%= Global::WEEKDAY[(d+i).wday.to_i] %>)</th>
+                  <% 13.times do |j| %>
+                    <% if @reserved = reserved_check((d+i),(j+10)) %>
+                     <!-- 予約があるframe  -->
+                      <!-- 管理者  -->
+                      <% if User.find(current_user.id).user_type == "1" %>
+                      <!-- 予約の備考最初の10バイトを切り取る-->
+                        <% if @reserved.remarks %>
+                         <% remarks = @reserved.remarks[0..13] %>
+                        <% else %>
+                         <% remarks = "" %>
+                        <% end %>
+                        <% logger.debug("~~~~~~~~~~~~~~~~~~~ html user_id = #{@reserved.user_id}") %>
+                        <% if @reserved.user_id == 0 %>
+                          <td  class="table-frame" align="center"><%= link_to "==", "/reservations/#{@reserved.id}", :method => "delete", data: { confirm: "#{@reserved.reserved_date}⇨#{@reserved.reserved_space}:00の休みを削除しますか？" }, :class => "color-red" %></td>
+                        <% else %>
+                        <!-- 管理者のみhoverで予約情報見れる -->
+                          <td  class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(@reserved.user_id).name %><br><%= User.find(@reserved.user_id).tel %><br><%= User.find(@reserved.user_id).introducer %><br><%= remarks %>", data-container="body">✖</td>
+                        <% end %>
+                    <!--  管理者 end  -->
+                      <% else %>
+                    <!-- 一般会員  --> 
+                        <% if @reserved.user_id == 0 %>
+                          <td  class="table-frame" style="color: red;" align="center">==</td>
+                        <% else %>
+                          <td  class="table-frame" align="center">✖</td>
+                        <% end %>
+                      <% end %>
+                     <!-- 一般会員　end  -->
+                    <% else %>
+                     <!-- 予約がないframe  -->
+                      <td align="center" class="table-frame"><%= link_to "◎", new_reservation_path(date: (d+i),frame: (j+10)), remote: true, class: "schedule open-modal" %></td>
+                      <div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+                    <% end %>
+                 <% end %>   <!-- 13.times end -->
+                </tr>
+              <% else %>
+              <!-- 今日  -->
+                <tr class="today">
+                  <th scope="row"><%= (d+i).strftime("%-m/%d") %> (<%= Global::WEEKDAY[(d+i).wday.to_i] %>)</th>
+                  <% 13.times do |j| %>
+                    <% if @reserved = reserved_check((d+i),(j+10)) %>
+                    <!-- 管理者のみ予約済み内容を吹き出しで表示 -->
+  　　　　　　　　　　          <% if User.find(current_user.id).user_type == "1" %>
+                      　<td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(@reserved.user_id).name %><br><%= User.find(@reserved.user_id).tel %>", data-container="body">✖️</td>
+                      <% else %>
+                        <% if @reserved.user_id == 0 %>
+                          <td class="holiday table-frame" align="center">︎=</td>
+                        <% else %>
+                          <td class="table-frame" align="center">✖︎</td>
+                        <% end %>
+                      <% end %>
+                    <% else %>
+                        <td class="table-frame" align="center">◎</td>
+                      <% end %>
+                    <% end %>
+                </tr>              
+              <% end %>
+
+             <% end %>
+          </tbody>
+        </table>
+        
+     <div id="reserveModal" class="modal" onclick="closeModal(this)">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal(this)">&times;</span>
+            <div id="modal-form"></div>
+        </div>
+    </div> 
+    
+</div>
+
+

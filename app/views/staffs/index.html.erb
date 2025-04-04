@@ -1,0 +1,38 @@
+<div id="staff-index">
+    <h3>出勤カレンダー入力・変更</h3>
+    <% if user_signed_in? && current_user.user_type == "1" %>
+      <%= link_to "スタッフ登録・変更", new_staff_path, class: "btn btn-primary" %><br>
+    <% end %>
+    <%= link_to "全スケジュール確認", all_schedules_path, class: "all-schedules" %>
+    
+    <ul class="staff-ul">
+      <% if current_user.user_type == "1" %>
+        <% @staffs.each do |staff| %>
+               <li><%= link_to staff.name, staff_schedules_path(staff) %></li>
+        <% end %>
+      <% elsif current_user.user_type == "10" && Staff.find_by(user_id: current_user.id) %>
+        <li><%= link_to Staff.find_by(user_id: current_user.id).name, staff_schedules_path(Staff.find_by(user_id: current_user.id)) %></li>
+      <% else %>
+        <li>スタッフ登録処理未完了です</li>
+      <% end %>
+    </ul>
+</div>
+
+<style>
+  #staff-index .all-schedules {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: green;
+  }
+  
+  .dismissal-link {
+    color: red;
+    margin-left: 50px;
+  }
+  
+  @media (max-width: 414px) {
+      #staff-index .all-schedules {
+        font-size: 15px;
+      }
+  }
+</style>

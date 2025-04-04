@@ -1,0 +1,36 @@
+<div id="inquiry" class="container">
+  <h3>お問い合わせ</h3>
+  <% logger.debug("-------------- inquiry new.html.erb") %>
+
+
+  <%= form_for @inquiry  do |f| %>
+  
+      
+    <div class="field name">
+      <%= f.label :氏名 %><br />
+      <%= f.text_field :name, autofocus: true, required: true, :class => "my-form", autocomplete: 'name' %>
+    </div>
+  
+    <div class="field">
+      <%= f.label :email %><br />
+      <%= f.email_field :email, required: true, :class => "form-control my-form", autocomplete: "email" %>
+    </div>
+    
+    <div class="field">
+        <%= f.label :お問合せ内容 %><br />
+        <%= f.text_area :content, :size => "20x10", required: true, :class => "my-form", autocomplete: "content" %>
+    </div>
+    
+    <%= recaptcha_tags %>
+    
+    <div class="actions">
+      <%= f.submit "送信", data: { confirm: "送信してOKですか？"}, class:"send-submit" %>
+    </div>
+  <% end %>
+  
+
+
+
+</div>
+
+

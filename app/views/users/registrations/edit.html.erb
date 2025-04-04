@@ -1,0 +1,119 @@
+<div class="container edit">
+<% if registration_completed?.size > 0 %>
+  <div style="color: red; font-size: 12px;">
+    <% registration_completed?.each do |error| %>
+      <span><%= error %>　</span>
+    <% end %><br>
+    登録してからご予約お願いします
+  </div>
+<% end %>
+<h3>登録・編集</h3>
+
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }, autocomplete: 'off') do |f| %>
+  <!--<= render "devise/shared/error_messages", resource: resource %>-->
+  <div class="errors-messages">
+    <% if @user.errors.any? %>
+      <div class="">
+        <ul class="errors-messages-ul">
+          <% @user.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+  <div class="field email">
+    <%= f.label :メールアドレス%>（必須）<br />
+    <%= f.email_field :email, autofocus: true, :class => "form-control my-form" %>
+  </div>
+
+  
+  <div class="field name">
+    <%= f.label :氏名 %>（必須）<br />
+    <%= f.text_field :name, required: true, :class => "form-control my-form", autocomplete: 'name' %>
+  </div>
+
+  <div class="field name_kana">
+    <%= f.label :氏名かな %>（必須）<br />
+    <%= f.text_field :name_kana, required: true, :class => "form-control my-form", autocomplete: "name_kana" %>
+  </div>
+
+  <div class="field tel">
+    <%= f.label :電話番号 %>（必須）<br />
+    <%= f.text_field :tel, required: true, :class => "form-control my-form", autocomplete: "tel" %>
+  </div>
+
+  <div class="field gender">
+    <%= f.label :性別 %>（必須）<br />
+    <%= f.radio_button :gender, "m", required: true %><span> 男性　</span>
+    <%= f.radio_button :gender, "f" %> 女性
+  </div>
+
+  <div class="field birthday">
+    <%= f.label :生年月日 %>（必須）<br />
+    <%= f.date_field :birthday, required: true, :class => "form-control my-form", autocomplete: "birthday" %>
+  </div>
+  
+  <!--<div class="field abo">-->
+  <!--   <span class="edit-abo">ABO</span>（必須）<br />-->
+  <!--  <= f.radio_button :abo, "abo" %><span> ABOの方　</span>-->
+  <!--  <= f.radio_button :abo, "other" %> ABO以外-->
+  <!--</div>-->
+
+  <div class="field introducer">
+    <%= f.label :紹介者 %>（必須）<br />
+    <%= f.text_field :introducer, required: true, :class => "form-control my-form", autocomplete: "introducer" %>
+  </div>
+  
+<!--管理者のみユーザータイプ変更できる-->
+  <% if current_user.user_type == "a" %>
+    <div class="field user_type">
+      <%= f.label :ユーザータイプ %><br />
+      <%= f.select :user_type, UserType.all.map{|t| [t.type_name, t.id]}, :include_blank => true %>
+    </div>
+  <% end %> 
+  
+  <div>--------------------------------</div>
+  <div class="field">
+    <%= f.label :password %> <i>（パスワードを変更したい場合）</i><em>最低 <%= @minimum_password_length %> 文字</em><br />
+    <%= f.password_field :password, autocomplete: "new-password", :class => "form-control my-form" %>
+    <% if @minimum_password_length %>
+
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password_confirmation %><br />
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", :class => "form-control my-form" %>
+  </div> 
+  
+
+
+  <div class="field password">
+    <%= f.label :current_password %> <i>(プロフィール内容変更するために必要です)</i><br />
+    <%= f.password_field :current_password, autocomplete: "current-password", :class => "form-control my-form" %>
+  </div>
+  
+  
+  
+
+  <div class="actions">
+    <%= f.submit "登録", class:"btn btn-primary" %>
+  </div>
+<% end %>
+
+
+<%= link_to "Back", :back %>
+</div>
+
+
+<style>
+  .errors-messages {
+    margin-top: 30px;
+    color: red;
+  }
+  
+  .errors-messages-ul {
+    padding-inline-start: 15px;
+  }
+</style>

@@ -1,0 +1,15 @@
+<div class="staff-select-area">
+    <% @staffs.each do |staff| %>
+      <% if staff.id != @staff.id %>
+        <% unless @machine == "o" && staff.id == 0 %>
+            <div>
+                <form action="/reserves/<%= @machine %>/index" method="get">
+                    <input type="hidden" value="<%= staff.id %>" name="staff_id" >
+                    <input type="submit" value="<%= staff.name %>">
+                </form>
+            </div>         
+        <% end %>
+      <% end %>
+    <% end %>
+</div>
+

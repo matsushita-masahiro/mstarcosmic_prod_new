@@ -1,0 +1,12 @@
+console.log("main price_list_select.js");
+
+$("#coupon-modal").html("<%= escape_javascript(render 'form_price_list_select') %>");
+
+
+$("#coupon-modal").modal("show");
+
+if($('#error_explanation')[0]){
+    $(".modal").animate({scrollTop:0});
+}
+
+

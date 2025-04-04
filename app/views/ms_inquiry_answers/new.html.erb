@@ -1,0 +1,93 @@
+<div class="metatron_sale_inquiry_answer">
+<h3 style="margin-bottom: 50px;">メタトロン購入<br>お問合せへの回答</h3>
+
+  <div class="field">
+    氏名<br />
+    <p><%= @inquiry.name %></p>
+  </div>
+  <hr>
+
+  <div class="field">
+    氏名かな<br />
+    <p><%= @inquiry.name_kana %></p>
+  </div>
+  <hr>
+  
+  <div class="field">
+    メール<br />
+    <p><%= @inquiry.email %></p>
+  </div>
+  <hr>
+
+  <div class="field">
+    電話番号<br />
+    <p><%= @inquiry.phone %></p>
+  </div>
+  <hr>
+
+  <div class="field">
+    郵便番号<br />
+    <p><%= @inquiry.postcode %></p>
+  </div>
+  <hr>
+
+  <div class="field">
+    住所<br />
+    <p><%= @inquiry.prefecture_name %><%= @inquiry.address_city %></p>
+  </div>
+  <hr>
+
+  <div class="field">
+    体験　<%= @inquiry.trial_flag? ? "希望する" : "希望しない" %>
+  </div>
+  <hr>
+
+  <div class="field">
+    購入相談　<%= @inquiry.buy_consult_flag? ? "希望する" : "希望しない" %>
+  </div>
+  <hr>
+
+  <div class="field">
+    HP作成相談　<%= @inquiry.hp_consult_flag? ? "希望する" : "希望しない" %>
+  </div>
+  <hr>
+
+  <div class="field">
+    お問合せ日時<br />
+    <p><%= @inquiry.created_at.strftime("%Y/%m/%d %H:%M") %></p>
+  </div>
+  <hr>
+
+  <div class="field">
+    内容<br />
+    <p><%= @inquiry.content %></p>
+  </div>
+  
+ <%= form_for([@inquiry, @answer]) do |f| %>
+
+      <%= f.hidden_field :metatron_sale_inquiry_id, :value => @inquiry.id %>
+
+      <div class="field">
+        <%= f.label :回答 %><br />
+        <%= f.text_area :comment, :size => "20x10", required: true, :class => "form-control my-form", autocomplete: 'name' %>
+      </div>
+     
+      <div class="actions">
+        <%= f.submit "回答する", data: { confirm: "回答してOKですか？"}, class:"btn btn-primary" %>
+      </div>
+　<% end %>
+
+
+</div>
+
+
+<style>
+  
+  .metatron_sale_inquiry_answer {
+    width: 100%;
+    padding: 50px 10%;
+    background: #d3d3d34d;
+  }
+  
+
+</style>

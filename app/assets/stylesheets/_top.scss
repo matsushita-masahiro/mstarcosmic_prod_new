@@ -1,0 +1,269 @@
+#sp-new-header {
+   display: none;
+}
+
+#new-header {
+    
+    display: block;
+
+    
+    text-align: center;
+    
+    .new-header {
+        position: fixed;
+        top: 0;        
+        display: flex;
+        list-style: none;
+        width: 100%;
+        height: 80px;
+        line-height: 80px;
+        background: #80808014;
+        margin-bottom: 0;
+        padding: 0 0 0 22%;
+        z-index: 10;
+        
+        li.logo {
+            margin-right: 3vw;
+        }
+        
+        li.not_image {
+            a {
+                text-decoration: none;
+                color: #000;
+                position: relative;
+                display: inline-block;
+                font-size: 0.7vw;
+                // width: 80px;
+    
+            }
+    
+            
+            a::after {
+              position: absolute;
+              top: 50px;
+              left: 0;
+              content: '';
+              width: 100%;
+              height: 1px;
+              background: #333;
+              transform: scale(0, 1);
+              transform-origin: left top;
+              transition: transform .3s;
+            }
+            
+            .dropdown > li > a::after {
+              background: #80808014;
+            }
+            
+            a:hover::after {
+              transform: scale(1, 1);
+            } 
+            
+            
+            
+            
+        }
+        
+        li {
+            margin: 0 1vw 0 0;
+            
+            a:hover {
+              opacity: 0.8; 
+            }
+                   
+            
+            
+        }
+        
+        img.logo {
+            height: 50px;
+        }
+        
+        .button {
+            height: auto;
+            width: 7vw;
+            object-fit: contain;
+        }
+        
+        // header dropdown 2021/12/11
+        
+            ul.dropdown {
+              padding-left: 0;
+              list-style: none;
+              width: 100%;
+              background: #fff;
+              z-index: 10;
+              margin: -1px;
+              // width: 60px;
+            }
+            
+            .dropdown li {
+                background: #fff;
+                height: 0px;
+                line-height: 40px;
+                overflow: hidden;
+                text-align: left;
+                padding: 0 10px;
+                transition: .3s;
+                width: 100%;
+            }
+            .dropdown li a {
+                border-top: 1px solid #9e9e9e94;
+                width: 100%;
+                
+            }
+            
+            
+          
+            .reserve_menu:hover > ul > li {
+                height: 40px;
+                cursor: pointer;
+                overflow: visible;
+            }
+            
+            .dropdown li:hover {
+              opacity: 0.8;
+            }
+          // dropdown end
+        
+   
+    }
+}
+
+
+   .sp-menu #open {
+      cursor: pointer;
+    }
+    
+    .sp-menu #open.hide {
+      display: none;
+    }
+    
+    .overlay {
+        height: calc(100vh - 50px);
+        z-index: 1000;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background: rgba(255, 255, 255, 0.95);
+        text-align: center;
+        // padding: 64px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .6s;
+    }
+    
+    .overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .overlay #close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+      }
+      
+    .overlay ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+  .overlay li {
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .3s, transform .3s;
+  }
+  
+  /*　遅らせて順番に表示 */
+  .overlay.show li {
+    opacity: 1;
+    transform: none;
+  }
+  
+  @for $i from 1 through 15 {
+     .overlay.show li:nth-child(#{$i}) {
+        transition-delay: #{$i/10}s;
+      }
+    }
+  
+
+  
+
+
+
+
+ @media (max-width: 792px) {
+     
+    
+     
+     #new-header {
+         display: none;
+     }
+     
+     #sp-new-header {
+         display: block;
+         height: 20vw;
+         
+         .logo-img {
+            height: 16vw;
+            width: 18vw;
+            padding: 3vw 0 0vw 3vw;
+         }
+         
+         .logo-img:hover {
+             cursor: pointer;
+         }
+     }
+     
+     ul.sp-new-header {
+         margin-top: 0;
+         display: grid;
+        // grid-template-columns: 55vw 15vw 15vw 15vw;
+         grid-template-columns: 20vw 20vw 20vw 20vw 20vw;
+         grid-row-gap: 0;
+         list-style: none;
+         margin-bottom: 0;
+         padding-left: 0;
+         height: 20vw;
+         
+         img {
+             width: 20vw;
+             height: 20vw;
+         }
+         
+         img:hover {
+             opacity: 0.8;
+         }
+     }
+    //  2025/4/4追加
+    .overlay .nav a {
+        font-size: 14px;
+        text-decoration: none;
+        color: #337ab7;
+    }
+    
+    .overlay .nav a:hover {
+        opacity: 0.7;
+    }
+     
+    //  toggle menu 2021/12/09
+       .nav {
+        //   2025/4/4
+           display: block;
+           margin-top: 15vw;
+           height: calc(100vh - 80px);
+       }
+       
+       #close {
+         width: 15vw;
+       }      
+     
+
+ }
+
+

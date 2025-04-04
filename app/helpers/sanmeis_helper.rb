@@ -1,0 +1,2 @@
+module SanmeisHelper
+end

@@ -1,0 +1,3 @@
+class MachineSchedule < ApplicationRecord
+    
+end

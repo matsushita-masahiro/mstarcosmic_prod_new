@@ -1,0 +1,43 @@
+<div class="container">
+
+    <h2 class="my-reserved-title">予約履歴</h2>
+      <!--< link_to "過去", reserves_my_reserved_past_path, :class => "btn btn-default active" %>-->
+    
+        <table class="table table-bordered table-schedule">
+          <thead>
+            <tr>
+              <th scope="col" class="col-xs-2 col-sm-2 col-md-2 col-lg-2">予約日付</th>
+              <th scope="col" class="col-xs-2 col-sm-2 col-md-2 col-lg-2">時間</th>
+              <th scope="col" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">スタッフ</th>
+              <th scope="col" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">Machine</th>
+               <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">備考</th> 
+              <% if User.find(current_user.id).user_type == "1" %>
+               <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">予約者</th>
+               <th scope="col" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">Action</th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% @reserves.each do |reserve| %>
+               <% user = User.find(reserve.user_id) %>
+               <tr>
+                  <td class="col-xs-2 col-sm-2 col-md-2 col-lg-2"><%= reserve.reserved_date %></td>
+                  <td class="col-xs-2 col-sm-2 col-md-2 col-lg-2"><%= display_time(reserve.reserved_space.to_f) %>（<%= Reserve.where(root_reserve_id: reserve.id).count*30 %>分）</td>
+                  <td class="col-xs-1 col-sm-1 col-md-1 col-lg-1"><%= Staff.find_by(id: reserve.staff_id).name %></td>
+                  <td class="col-xs-1 col-sm-1 col-md-1 col-lg-1"><%= reserve.machine %></td>
+                  <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3"><%= reserve.remarks %></td>
+                  <% if User.find(current_user.id).user_type == "1" %>
+                    <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3" style="color: <%= user.new_customer? ? "blue" : "black"%>"><%= user.name %></td>
+                    <td class="col-xs-1 col-sm-1 col-md-1 col-lg-1"><%= link_to "削除", "/reserves/#{reserve.id}", :method => "delete", data: { confirm: "#{reserve.reserved_date}⇨#{reserve.reserved_space}:00の予約を削除しますか？" } %></td>
+                  <% end %>
+               </tr>
+            <% end %>
+          </tbody>
+        </table>
+        
+         
+
+    
+</div>
+
+

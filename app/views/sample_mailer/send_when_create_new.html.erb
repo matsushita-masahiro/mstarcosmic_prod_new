@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta content="text/html; charset=UTF-8" />
+</head>
+<body>
+      <div><%= @user.name %>様</div>
+      <div>mStarCOSMICをご利用ありがとうございます。</div>
+      <div>下記の内容でご予約承りました。</div>
+      <p>施術者：<%= Staff.find_by(id: @reserve.staff_id).name %></p>
+      <p>内容：<%= @reserve.selected_machine %></p>
+      <p><%= @reserve.reserved_date.strftime("予約日時 %Y-%m-%d >> ") %><%= @reserved_space %>〜（<%= @frames.to_i*30 %>分）</p>
+      <p>＜備考＞<br>
+         <%= @reserve.remarks %>
+      </p>
+      <p>
+        ＜住所＞<br>
+        〒150-0043<br>東京都渋谷区道玄坂1-17-9-402<br>ヴェラハイツ道玄坂
+      </p>
+      <p>
+        ＜アクセス＞<br>
+        ①渋谷駅からマークシティの４階を進み、道玄坂の上に出るまでまっすぐ外に進みます。<br>
+        ②途中、和光、ファミマ、サブウェイがあったらあっています。<br>
+        ③外に出たら、すぐ左の横断歩道を松屋方面に渡ってください。<br>
+        ④そのまま道なりに進み、喫茶店シャルマン、不動産屋オンエステート、焼肉神宮の隣です。<br>
+        ⑤ポストがいっぱい並んでる奥にエレベーターがあります。
+      </p>
+      
+      <hr style="border-top: 2px dashed black; margin-left: 1px; width: 200px;">
+
+      <p>HP : https://www.mstarcosmic.com</p>
+      <p>email : <%= ENV['USER_EMAIL'] %></p>
+      <p>mStarCOSMIC</p>
+      <hr />
+</body>
+</html>

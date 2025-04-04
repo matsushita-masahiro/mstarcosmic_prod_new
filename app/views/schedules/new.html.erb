@@ -1,0 +1,67 @@
+<div class="schedule-new">
+    <div>
+        
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+          <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">10:00</th>
+                <th scope="col">10:30</th>
+                <th scope="col">11:00</th>
+                <th scope="col">11:30</th>
+                <th scope="col">12:00</th>
+                <th scope="col">12:30</th>
+                <th scope="col">13:00</th>
+                <th scope="col">13:30</th>
+                <th scope="col">14:00</th>
+                <th scope="col">14:30</th>
+                <th scope="col">15:00</th>
+                <th scope="col">15:30</th>
+                <th scope="col">16:00</th>
+                <th scope="col">16:30</th>
+                <th scope="col">17:00</th>
+                <th scope="col">17:30</th>
+                <th scope="col">18:00</th>
+                <th scope="col">18:30</th>
+                <th scope="col">19:00</th>
+                <th scope="col">19:30</th>
+                <th scope="col">20:00</th>
+                <th scope="col">20:30</th>
+                <th scope="col">21:00</th>
+                <th scope="col">21:30</th>
+                <th scope="col">22:00</th> 
+                <th scope="col">22:30</th> 
+              </tr>
+            </thead>
+              <tbody>
+                <%= form_tag "/users/#{current_user.id}/schedules" do  %>
+                    <% 31.times do |i| %>
+                      <tr>
+                          <th scope="row" class="day"><%= i+1 %></th>
+                          <% 26.times do |j| %>
+                           <td><%= check_box_tag "schedule[#{i+1}][#{j+1}][]", checked = false, :id => "schedule#{i+1}" %></td>
+                          <% end %>
+                      </tr>
+                    <% end %>
+                  <%= submit_tag "決定" %>
+                <% end %>
+            </tbody>
+      </table>
+    </div>
+    
+    <!--<= form.check_box オブジェクト名, プロパティ名 [, オプション, checked_value = "1", unchecked_value = "0"] %>-->
+
+    
+  
+  <!--<= render 'schedule/calender' %>-->
+</div>
+
+
+<style>
+    th.day {
+        background: gray;
+    }
+
+</style>

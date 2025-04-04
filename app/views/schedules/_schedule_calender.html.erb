@@ -1,0 +1,108 @@
+<!--  カレンダー先週・来週 ボタン です--------->
+<div class="week-flex">
+ <div class="pre-week">
+   <% if @start_date > Date.today %>
+     <%= form_tag "/admin/staffs/#{@staff.id}/schedules", :method => "get" do %>
+      <input type="hidden" name="calender_start_date" value="<%= (@start_date - 7) %>" >
+      <%= button_tag :type => "submit", class: 'btn btn-info', :style => 'border-style: none;' do %>
+      <i class="fas fa-chevron-left"></i> 前週
+      <% end %>
+     <% end %>
+   <% end %>
+ </div>
+
+ <div class="next-week">
+   <% if @start_date <= (Date.today + 70) %>
+    <%= form_tag "/admin/staffs/#{@staff.id}/schedules", :method => "get" do %>
+      <input type="hidden" name="calender_start_date" value="<%= (@start_date + 7) %>" >
+      <%= button_tag :type => "submit", class: 'btn btn-info', :style => 'border-style: none;' do %>
+      翌週 <i class="fas fa-chevron-right"></i>
+      <% end %>
+    <% end %>
+   <% end %>
+ </div>
+</div>
+<!---　カレンダーボタン end --------------->
+<!--<div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>-->
+<%= form_tag staff_schedules_path(@staff), method: "post" do %>
+  <div class="table-responsive table-width schedule">
+          <table class="table table-bordered table-hover">
+            
+            <thead class="thead-light schedules-calender" >
+              <tr class="schedule-submit-tr">
+                <th><%= submit_tag "スケジュール登録", class: "btn btn-success" %></th>
+                <td>️</td><td></td><td></td><td></td><td></td>
+                <td class="allChecked">全選択　<input type="checkbox" name="allChecked" id="all_check"></td>
+                <td></td>
+                <style>
+                     .allChecked {
+                       padding-left: 300px;
+                     }
+                </style>
+              </tr>
+              <tr class="thead-dates" id="thead-dates">
+                <th scope="col"></th>
+                <% 7.times do |i| %>
+                    <% if (@start_date + i).wday.to_i == 0 || (@start_date + i).wday.to_i == 6 %>
+                      <th class="calender-date sanday-saturday week-<%= i %>" scope="col">
+                         <%= (@start_date + i).strftime("%m/%d") %>
+                           <% unless (@start_date+i) == Date.today  %>
+                            <div><input type="checkbox" name="day_allChecked" id="day_allChecked_<%= i %>"></div>
+                           <% end %>
+                      </th>
+                    <% else %>
+                      <th class="calender-date weekday week-<%= i %>" scope="col">
+                         <%= (@start_date + i).strftime("%m/%d") %>
+                           <% unless (@start_date+i) == Date.today  %>
+                            <div><input type="checkbox" name="day_allChecked" id="day_allChecked_<%= i %>" ></div>
+                           <% end %>
+                      </th>
+                    <% end %> 
+  
+                <% end %>
+              </tr>
+            </thead>
+            <tbody id="boxes">
+               <input type="hidden" name="calender_start_date" value="<%= @start_date %>" >
+                <% 26.times do |t| %>
+                  
+                    <tr>
+                      <th class="calender-time" scope="row"><%= display_time(10 + t*0.5) %></th>
+                        <% 7.times do |k| %>
+                          <!--カレンダーの左の列が本日じゃなければ  -->
+                          <% unless (@start_date+k) == Date.today %>
+                              <td class="week-<%= k %>">
+                                <% unless Schedule.find_by(staff_id: @staff.id, schedule_date: (@start_date + k), schedule_space: (10+t*0.5)) %>
+                                  <input type="checkbox" value="<%= (@start_date + k).to_s %>&<%= (10+t*0.5).to_s %>&1 %>" name="staff[schedule][]" class="day_check_<%= k %>">
+                                <% else %>
+                                  <!--<input type="checkbox" checked>-->
+                                  <input type="checkbox" checked name="staff[schedule][]" value="<%= (@start_date + k).to_s %>&<%= (10+t*0.5).to_s %>&0 %>" class="day_check_<%= k %>">
+                                <% end %>
+                                
+                                <!--<= link_to "ま", new_reserve_path(date: (@start_date + k).to_s,frame: (10+t*0.5).to_s, start_date: @start_date.to_s), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>-->
+                              </td>
+                           <!--カレンダーの左の列が本日じゃなら  -->
+                          <% else %>   <!-- if  start_date == Date.today  else to start_date != Date.today -->
+                              <td class="calender-today">◎</td>
+                          <% end %>    <!-- if  start_date == Date.today  end -->
+                        <% end %>   <!-- 7.times end -->
+                    </tr>
+                <% end %>   <!-- 26.times end -->
+                  <div class="schedule-submit">
+                    
+                  </div>
+            </tbody>
+            
+          </table>
+  </div>
+<% end %>  <!-- form_tag end  -->
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,39 @@
+// Place all the styles related to the paymants controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+.paytype {
+    display: block;
+    max-width: 280px;
+}
+
+h3.paytitle {
+    margin-top: 120px;
+    text-align: center;
+}
+
+.cancel {
+    float: right;
+}
+
+p.test {
+    text-align: center;
+}
+
+// pay_select
+
+.bought-coupon {
+    width: 80%;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.bought-coupon > .title {
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.bought-coupon {
+    font-size: 12px;
+}
+
