@@ -4,8 +4,10 @@
         <!--<div class="top-word"></div>-->
         <div class="top-word">すべての人の身体の悩みをメタトロンは解決に導きます。</div>
         <div class="description-area">
-           <% text = PageContent.find_by(id: 1).content %>
-           <%= simple_format(text) %>
+           <% if !PageContent.find_by(id: 1).nil? %>
+               <% text = PageContent.find_by(id: 1).content %>
+               <%= simple_format(text) %>
+           <% end %>
         </div>
     </div>
     <div class="publish-area">
