@@ -173,6 +173,7 @@ GEM
     jbuilder (2.13.0)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
+    jp_prefecture (1.1.2)
     json (2.10.2)
     kamal (2.5.3)
       activesupport (>= 7.0)
@@ -428,6 +429,7 @@ DEPENDENCIES
   google-analytics-rails
   importmap-rails
   jbuilder
+  jp_prefecture
   kamal
   meta-tags
   pg
