@@ -13,7 +13,6 @@
 @import "pay_types";
 @import "payments";
 @import "reservations";
-@import "reserves";
 @import "sanmeis";
 @import "schedules";
 @import "staff_machine_relations";
@@ -22,7 +21,8 @@
 @import "users";
 @import "top";
 @import "tooltip";
-
+@import "reserves";
+@import "new_reserves";
 @import "new_layouts/about_metatron";
 @import "new_layouts/fasting";
 @import "new_layouts/metatron_sale";

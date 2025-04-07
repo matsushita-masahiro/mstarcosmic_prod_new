@@ -38,7 +38,7 @@
 <div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div class="table-responsive table-width reserve">
         <table class="table table-bordered table-hover">
-          <thead class="thead-light reserves-calender" >
+          <thead class="bg-light reserves-calender" >
             <tr>
                 <th scope="col"></th>
               <% 7.times do |i| %>
@@ -147,6 +147,26 @@
           </tbody>
         </table>
 </div>
+
+<style>
+    #reserves > div.table-responsive.table-width.reserve > table > thead > tr > th {
+    background-color: #9e9e9e;
+    color: #fff;
+}
+
+#reserves > div.table-responsive.table-width.reserve > table > thead > tr > th.sanday-saturday {
+    background-color: #000000ad;
+}
+
+#reserves > div.table-responsive.table-width.reserve > table > tbody > tr > th.calender-time {
+    font-size: 2vw;
+}
+
+#reserves > div.table-responsive.table-width.reserve > table > tbody > tr > td > a {
+    text-decoration: none;
+    color: #337ab7;
+}
+</style>
 
 
 
