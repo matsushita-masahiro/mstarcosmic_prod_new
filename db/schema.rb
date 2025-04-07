@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_04_175508) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
   create_table "answers", force: :cascade do |t|
     t.integer "inquiry_id"
     t.integer "user_id"
@@ -68,9 +68,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_04_175508) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "ms_inquiry_answers", force: :cascade do |t|
+    t.integer "metatron_sale_inquiry_id"
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["metatron_sale_inquiry_id"], name: "index_ms_inquiry_answers_on_metatron_sale_inquiry_id"
+  end
+
   create_table "page_contents", force: :cascade do |t|
     t.text "content"
     t.integer "user_type_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "price"
+    t.string "pay_type"
+    t.text "remarks"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -188,6 +205,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_04_175508) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "ms_inquiry_answers", "metatron_sale_inquiries"
   add_foreign_key "schedules", "staffs"
   add_foreign_key "schedules", "users"
   add_foreign_key "staff_machine_relations", "staffs"

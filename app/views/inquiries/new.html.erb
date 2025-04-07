@@ -2,35 +2,43 @@
   <h3>お問い合わせ</h3>
   <% logger.debug("-------------- inquiry new.html.erb") %>
 
+<% if flash[:alert] %>
+  <div class="alert"><%= flash[:alert] %></div>
+<% end %>
 
-  <%= form_for @inquiry  do |f| %>
-  
-      
+
+
+<% if @inquiry && @inquiry.errors.any? %>
+  <ul class="error-messages">
+    <% @inquiry.errors.full_messages.each do |msg| %>
+      <li><%= msg %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+
+  <%= form_with model: @inquiry, local: true do |f| %>
     <div class="field name">
-      <%= f.label :氏名 %><br />
-      <%= f.text_field :name, autofocus: true, required: true, :class => "my-form", autocomplete: 'name' %>
+      <%= f.label :name, "氏名" %><br />
+      <%= f.text_field :name, autofocus: true, required: true, class: "my-form", autocomplete: 'name' %>
     </div>
-  
+
     <div class="field">
       <%= f.label :email %><br />
-      <%= f.email_field :email, required: true, :class => "form-control my-form", autocomplete: "email" %>
+      <%= f.email_field :email, required: true, class: "form-control my-form", autocomplete: "email" %>
     </div>
-    
+
     <div class="field">
-        <%= f.label :お問合せ内容 %><br />
-        <%= f.text_area :content, :size => "20x10", required: true, :class => "my-form", autocomplete: "content" %>
+      <%= f.label :content, "お問合せ内容" %><br />
+      <%= f.text_area :content, size: "20x10", required: true, class: "my-form", autocomplete: "content" %>
     </div>
-    
-    <%= recaptcha_tags %>
-    
+
+    <div class="field recaptcha">
+      <%= recaptcha_tags %>
+    </div>
+
     <div class="actions">
-      <%= f.submit "送信", data: { confirm: "送信してOKですか？"}, class:"send-submit" %>
+      <%= f.submit "送信", data: { confirm: "送信してOKですか？" }, class: "send-submit" %>
     </div>
   <% end %>
-  
-
-
-
 </div>
-
-

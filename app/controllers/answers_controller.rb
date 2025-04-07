@@ -1,12 +1,14 @@
 class AnswersController < ApplicationController
   
   before_action :spam_check, only: [:create]
-  before_action :authenticate_admin_user?, only: [:new, :index, :create]
+  before_action :authenticate_admin_user?, only: [:new, :create]
   
   layout 'main/main'
+  
   def new
     @inquiry = Inquiry.find(params[:inquiry_id])
     @answer = Answer.new(inquiry_id: @inquiry.id)
+    logger.debug("answer new @inquiry.id = #{@inquiry.id}")
   end
   
   # def index

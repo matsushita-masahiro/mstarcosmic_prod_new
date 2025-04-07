@@ -6,8 +6,7 @@ class ReservesController < ApplicationController
     before_action :authenticate_user!, except: [:new_cust, :new_cust_other, :new, :create]
     before_action :redirect_edit_user, oniy: [:index]
     before_action :calender_start_day, only: [:staff, :index, :destroy, :delete, :new_cust, :new_cust_other] 
-    before_action :reject_reserve, only: [:create]
-    skip_forgery_protection only: [:new]
+    before_action :reject_reserve_new, only: [:create]
 
     def new
         if user_signed_in?
@@ -411,17 +410,40 @@ class ReservesController < ApplicationController
     
     
     # 0:00-9:00の間に予約された時はエラー処理 
-    def reject_reserve
-      # 予約入力時刻がDate.todayがreserved_dateの前日で15:00以前なら予約不可にする
-      if params[:reserve][:reserved_date].to_date-1 == Date.today && Time.now.in_time_zone("Tokyo").hour >= 15
-        logger.debug("-------------- 0:00-9:00? #{Time.now.in_time_zone("Tokyo").hour}:#{Time.now.in_time_zone("Tokyo").min}")
-        logger.debug("-------------- reject_reserve reserved_date = #{params[:reserve][:reserved_date].to_date}..今=#{Time.now.in_time_zone("Tokyo")}")
-        flash[:alert] = "15時を過ぎると翌日の予約はできません"
-        redirect_back(fallback_location: root_path)
+    # def reject_reserve
+    #   # 予約入力時刻がDate.todayがreserved_dateの前日で15:00以前なら予約不可にする
+    #   if params[:reserve][:reserved_date].to_date-1 == Date.today && Time.now.in_time_zone("Tokyo").hour >= 15
+    #     logger.debug("-------------- 0:00-9:00? #{Time.now.in_time_zone("Tokyo").hour}:#{Time.now.in_time_zone("Tokyo").min}")
+    #     logger.debug("-------------- reject_reserve reserved_date = #{params[:reserve][:reserved_date].to_date}..今=#{Time.now.in_time_zone("Tokyo")}")
+    #     flash[:alert] = "15時を過ぎると翌日の予約はできません"
+    #     redirect_back(fallback_location: root_path)
+    #   else
+    #     logger.debug("-------------- accept_reserve reserved_date = #{params[:reserve][:reserved_date].to_date}..今=#{Time.now.in_time_zone("Tokyo")}")
+    #   end
+    # end
+    
+    # 翌日の予約は15時以降は不可,当日予約不可
+    def reject_reserve_new
+      tokyo_time = Time.now.in_time_zone("Tokyo")
+      reserved_date = params[:reserve][:reserved_date].to_date rescue nil
+    
+      if reserved_date.present?
+        if ( reserved_date == Date.tomorrow  && tokyo_time.hour >= 15 )
+          logger.debug("-------------- reject_reserve reserved_date = #{reserved_date}..今=#{tokyo_time}")
+          flash[:alert] = "15時を過ぎると翌日の予約はできません"
+          redirect_back(fallback_location: root_path)
+        elsif ( reserved_date == Date.tomorrow - 1 ) 
+          flash[:alert] = "当日の予約はできません"
+          redirect_back(fallback_location: root_path)          
+        else
+          logger.debug("-------------- accept_reserve reserved_date = #{reserved_date}..今=#{tokyo_time}.. Date.tommrow = #{Date.tomorrow}")
+        end
       else
-        logger.debug("-------------- accept_reserve reserved_date = #{params[:reserve][:reserved_date].to_date}..今=#{Time.now.in_time_zone("Tokyo")}")
+        flash[:alert] = "予約日が不正です"
+        redirect_back(fallback_location: root_path)
       end
     end
+    
     
     
     # calender3用

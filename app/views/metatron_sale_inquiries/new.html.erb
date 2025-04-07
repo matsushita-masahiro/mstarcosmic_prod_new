@@ -24,6 +24,10 @@
       <%= f.label :電話番号 %><br />
       <%= f.text_field :phone, autofocus: true, required: true, :class => "form-control my-form", autocomplete: 'phone' %>
     </div>
+      <!-- エラーメッセージ表示用 -->
+    <p id="zipcode-error" style="color: red; display: none; font-size: 0.9em; margin-bottom: 5px;">
+      該当する住所が見つかりませんでした
+    </p>
     
     <div class="field name">
       <%= f.label :郵便番号 %><br />
