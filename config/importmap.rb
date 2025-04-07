@@ -14,6 +14,7 @@ pin "price_banner"
 pin "scroll_top"
 pin "zipcodeAPI"
 pin "all_schedule_check"
+pin "tooltip"
 
 
 

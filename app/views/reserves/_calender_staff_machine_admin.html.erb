@@ -72,20 +72,20 @@
                                   <% else %>
                                    <% remarks = "" %>
                                   <% end %>
-                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(reserve[1][0].user_id).name %><br><%= User.find(reserve[1][0].user_id).tel %><br><%= User.find(reserve[1][0].user_id).new_customer_display %><br><%= User.find(reserve[1][0].user_id).introducer %><br><%= Staff.find_by(id: reserve[1][0].staff_id).name %><br><%= reserve[1][0].machine %><br><%= remarks %>", data-container="body">✖</td>
+                                    <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= User.find(reserve[1][0].user_id).name %><br><%= User.find(reserve[1][0].user_id).tel %><br><%= User.find(reserve[1][0].user_id).new_customer_display %><br><%= User.find(reserve[1][0].user_id).introducer %><br><%= Staff.find_by(id: reserve[1][0].staff_id).name %><br><%= reserve[1][0].machine %><br><%= remarks %>">✖</td>
                               <% elsif reserve[1].count === 2 %>
                                      <% #logger.debug("tooltip 2") %>
                                      <!-- 予約の備考最初の10バイトを切り取る-->
                                     <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                     <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
-                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">✖</td>
+                                    <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">✖</td>
                               <% elsif reserve[1].count === 3 %>
                                      <% #logger.debug("tooltip 3") %>
                                      <!-- 予約の備考最初の10バイトを切り取る-->
                                     <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                     <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][1].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
                                     <% tooltip_content3 = "#{User.find(reserve[1][2].user_id).name}<br>#{User.find(reserve[1][2].user_id).tel}<br>#{User.find(reserve[1][1].user_id).new_customer_display}<br>#{User.find(reserve[1][2].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][2].staff_id).name}<br>#{reserve[1][2].machine}<br>#{reserve[1][2].remarks[0..13]}" %>
-                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">✖</td>
+                                    <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">✖</td>
                               <% else %>
                                     <td>==</td>
                               <% end %>
@@ -97,13 +97,13 @@
                               <% if reserve[1].present? %>
                                 <% if reserve[1].count === 1 %>
                                     <% tooltip_content = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks}" %>
-                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title=<%= tooltip_content %> data-container="body">
+                                    <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title=<%= tooltip_content %> data-container="body">
                                        <%= link_to "◎", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
                                     </td>
                                 <% elsif reserve[1].count === 2 %>
                                     <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                     <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
-                                    <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
+                                    <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
                                         <%= link_to "◎", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>
                                     </td>
                                 <% end %>
@@ -127,20 +127,20 @@
                                  <% else %>
                                    <% if reserve[1].count === 1 %>
                                         <% tooltip_content = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks}" %>
-                                        <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title=<%= tooltip_content %> data-container="body">
+                                        <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title=<%= tooltip_content %> data-container="body">
                                            <%= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                         </td> 
                                    <% elsif reserve[1].count === 2 %>
                                         <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                         <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
-                                        <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
+                                        <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
                                            <%= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                        </td>
                                     <% elsif reserve[1].count >= 3 %>
                                         <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                         <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
                                         <% tooltip_content3 = "#{User.find(reserve[1][2].user_id).name}<br>#{User.find(reserve[1][2].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][2].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][2].staff_id).name}<br>#{reserve[1][2].machine}<br>#{reserve[1][2].remarks[0..13]}" %>
-                                        <td class="table-frame" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">
+                                        <td class="table-frame" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">
                                            <%= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                        </td>                                      
                                    <% end %>
@@ -177,20 +177,20 @@
                                   <% else %>
                                    <% remarks = "" %>
                                   <% end %>
-                                    <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= User.find(reserve[1][0].user_id).name %><br><%= User.find(reserve[1][0].user_id).tel %><br><%= User.find(reserve[1][0].user_id).introducer %><br><%= Staff.find(@staff.id).name %><br><%= reserve[1][0].machine %><br><%= remarks %>", data-container="body">✖</td>
+                                    <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= User.find(reserve[1][0].user_id).name %><br><%= User.find(reserve[1][0].user_id).tel %><br><%= User.find(reserve[1][0].user_id).introducer %><br><%= Staff.find(@staff.id).name %><br><%= reserve[1][0].machine %><br><%= remarks %>">✖</td>
                               <% elsif reserve[1].count === 2 %>
                                      <% #logger.debug("tooltip 2") %>
                                      <!-- 予約の備考最初の10バイトを切り取る-->
                                     <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                     <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
-                                    <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">✖</td>
+                                    <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">✖</td>
                               <% elsif reserve[1].count === 3 %>
                                      <% #logger.debug("tooltip 3") %>
                                      <!-- 予約の備考最初の10バイトを切り取る-->
                                     <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                     <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
                                     <% tooltip_content3 = "#{User.find(reserve[1][2].user_id).name}<br>#{User.find(reserve[1][2].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][2].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][2].staff_id).name}<br>#{reserve[1][2].machine}<br>#{reserve[1][2].remarks[0..13]}" %>
-                                    <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">✖</td>
+                                    <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">✖</td>
                               <% end %>
                                <% #logger.debug("||||||||||||||||||||  = reserved") %>
                              
@@ -199,13 +199,13 @@
                               <% if reserve[1].present? %>
                                 <% if reserve[1].count === 1 %>
                                     <% tooltip_content = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks}" %>
-                                    <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title=<%= tooltip_content %> data-container="body">
+                                    <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title=<%= tooltip_content %> data-container="body">
                                        <%= link_to "◎", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                     </td>
                                 <% elsif reserve[1].count === 2 %>
                                     <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                     <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
-                                    <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
+                                    <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
                                         <%= link_to "◎", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                     </td>
                                 <% end %>
@@ -226,20 +226,20 @@
                                  <% else %>
                                    <% if reserve[1].count === 1 %>
                                         <% tooltip_content = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks}" %>
-                                        <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title=<%= tooltip_content %> data-container="body">
+                                        <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title=<%= tooltip_content %> data-container="body">
                                            <%= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                         </td> 
                                    <% elsif reserve[1].count === 2 %>
                                         <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                         <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
-                                        <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
+                                        <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %>" data-container="body">
                                            <%= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                        </td>
                                    <% elsif reserve[1].count >= 3 %>
                                         <% tooltip_content1 = "#{User.find(reserve[1][0].user_id).name}<br>#{User.find(reserve[1][0].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][0].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][0].staff_id).name}<br>#{reserve[1][0].machine}<br>#{reserve[1][0].remarks[0..13]}" %>
                                         <% tooltip_content2 = "#{User.find(reserve[1][1].user_id).name}<br>#{User.find(reserve[1][1].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][1].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][1].staff_id).name}<br>#{reserve[1][1].machine}<br>#{reserve[1][1].remarks[0..13]}" %>
                                         <% tooltip_content3 = "#{User.find(reserve[1][2].user_id).name}<br>#{User.find(reserve[1][2].user_id).tel}<br>#{User.find(reserve[1][0].user_id).new_customer_display}<br>#{User.find(reserve[1][2].user_id).introducer}<br>#{Staff.find_by(id: reserve[1][2].staff_id).name}<br>#{reserve[1][2].machine}<br>#{reserve[1][2].remarks[0..13]}" %>
-                                        <td class="table-frame calender-today" align="center" id="reserved" data-toggle="tooltip" data-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">
+                                        <td class="table-frame calender-today" align="center" id="reserved" data-bs-toggle="tooltip" data-bs-html="true" title="<%= tooltip_content1 %><hr><%= tooltip_content2 %><hr><%= tooltip_content3 %>" data-container="body">
                                            <%= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id,format: :js), remote: true, data: { turbo: false,frame: "#{10+t*0.5}", date: (@start_date + k).to_s} %>
                                        </td>                                       
                                    <% end %>
@@ -263,6 +263,7 @@
           </tbody>
         </table>
 </div>
+
 
 
 

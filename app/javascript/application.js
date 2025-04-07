@@ -14,18 +14,12 @@ import "price_banner"
 import "scroll_top"
 import "zipcodeAPI"
 import "all_schedule_check"
+import "tooltip"
 
 $(function () {
   console.log("✅ jQuery is working!");
 });
 
-
-
-    
-
-// const open = document.getElementById('open');
-// const overlay = document.querySelector('.overlay');
-// const close = document.getElementById('close');
 
 
 
