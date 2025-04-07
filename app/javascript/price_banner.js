@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (documentHeight - scrollPosition <= footerHeight) {
         topBtn.css({
           // position: "absolute",
-          bottom: footerHeight + 10
+          opacity: 0,
+          visibility: "hidden"
         });
       } else {
         topBtn.css({
