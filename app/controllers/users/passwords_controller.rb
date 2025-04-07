@@ -9,9 +9,15 @@ class Users::PasswordsController < Devise::PasswordsController
   end
 
   # POST /resource/password
-  # def create
-  #   super
-  # end
+  def create
+    logger.debug("password controller create")
+    super do |resource|
+      if resource.errors.any?
+        # "ユーザ は保存されませんでした" というメッセージが含まれている場合、それを削除
+        resource.errors.delete(:base)
+      end
+    end
+  end
 
   # GET /resource/password/edit?reset_password_token=abcdef
   # def edit

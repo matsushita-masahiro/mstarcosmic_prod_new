@@ -12,6 +12,10 @@ ja:
     models:
       user: "ユーザ"
   devise:
+    password_resets:
+      no_token: '無効なリンクです。再度リクエストしてください。'
+      send_instructions: 'パスワードリセットのリンクを送信しました。'
+      invalid_email: '入力されたメールアドレスは登録されていません。'
     confirmations:
       new:
         resend_confirmation_instructions: "アカウント確認メール再送"
@@ -32,6 +36,7 @@ ja:
         instruction: "アカウントのロックを解除するには下のリンクをクリックしてください。"
         message: "ログイン失敗が繰り返されたため、アカウントはロックされています。"
     passwords:
+      email_not_found: '指定されたメールアドレスは登録されていません。'
       edit:
         change_my_password: "パスワードを変更する"
         change_your_password: "パスワードを変更"

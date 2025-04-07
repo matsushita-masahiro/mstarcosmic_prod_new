@@ -1,14 +1,11 @@
 <% if resource.errors.any? %>
   <div id="error_explanation">
-    <h2>
-      <%= I18n.t("errors.messages.not_saved",
-                 count: resource.errors.count,
-                 resource: resource.class.model_name.human.downcase)
-       %>
-    </h2>
-    <ul>
-      <% resource.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
+    <!--<h2>< pluralize(resource.errors.count, "error") %> prohibited this user from being saved:</h2>-->
+    <ul style="color: red; font-size: 12px;">
+      <% resource.errors.full_messages.each do |msg| %>
+        <% unless msg.include?("ユーザ は保存されませんでした") %>
+          <li><%= msg %></li>
+        <% end %>
       <% end %>
     </ul>
   </div>
