@@ -55,14 +55,32 @@ class StaffsController < ApplicationController
   
   def destroy
     @staff = Staff.find(params[:id])
+    logger.debug("解任対象staff= #{@staff.name}")
     @schedules = @staff.schedules
     @staff_machine_relations = @staff.staff_machine_relations
     logger.debug("^^^^^^^ @staff_machine_relation count= #{@staff_machine_relations.count}")
     @schedules.destroy_all
     @staff_machine_relations.destroy_all
     # reserve情報にstaff_idがあるので、物理削除せずに解任フラグをtrueにする
-    @staff.update(dismiss_flag: true)
-    redirect_to "/admin/staffs"
+    if @staff.update(dismiss_flag: true)
+     flash[:notice] = "スタッフ解任しました"
+     redirect_to "/admin/staffs"
+   else
+     flash[:alert] = "スタッフ解任できませんでした"
+     redirect_back(fallback_location: root_path)
+   end
+  end
+  
+  def update
+    @staff = Staff.find(params[:id])
+    logger.debug("就任対象staff= #{@staff.name}")
+    if @staff.update(dismiss_flag: false)
+     flash[:notice] = "再度スタッフ就任しました"
+     redirect_to "/admin/staffs"      
+    else
+     flash[:alert] = "スタッフ就任できませんでした"
+     redirect_back(fallback_location: root_path)      
+    end
   end
   
   

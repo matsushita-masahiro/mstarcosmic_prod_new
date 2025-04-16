@@ -1,5 +1,5 @@
 class Staff < ApplicationRecord
-    belongs_to :user
+    # belongs_to :user
     has_many :reserves
     has_many :staff_machine_relations
     accepts_nested_attributes_for :staff_machine_relations

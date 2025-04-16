@@ -8,7 +8,11 @@
     <ul class="staff-ul">
       <% if current_user.user_type == "1" %>
         <% @staffs.each do |staff| %>
+            <% if staff.dismiss_flag == false %>
                <li><%= link_to staff.name, staff_schedules_path(staff) %></li>
+            <% else %>
+               <li><%= link_to staff.name, staff_schedules_path(staff), class: "dismissal-link" %></li>
+            <% end %>
         <% end %>
       <% elsif current_user.user_type == "10" && Staff.find_by(user_id: current_user.id) %>
         <li><%= link_to Staff.find_by(user_id: current_user.id).name, staff_schedules_path(Staff.find_by(user_id: current_user.id)) %></li>
@@ -27,7 +31,7 @@
   
   .dismissal-link {
     color: red;
-    margin-left: 50px;
+    /*margin-left: 50px;*/
   }
   
   @media (max-width: 414px) {

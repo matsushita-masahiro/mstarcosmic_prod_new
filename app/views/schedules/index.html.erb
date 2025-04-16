@@ -12,9 +12,26 @@
     <% end %>
     <%= render 'schedule_calender' %>
     <% if admin_user? %>
-        <div class="dismiss"><%= link_to "スタッフを解任", "/admin/staffs/#{@staff.id}", method: :delete, class: "btn btn-danger", data: { confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも削除されますが本当に解任されますか？
-    ？" } %></div>
-        <div class="dismiss">※スタッフ解任すると、全ての出勤カレンダーも削除されます。</div>
+            <div class="dismiss">
+                <% if @staff.dismiss_flag == false %>
+                      <%= link_to "スタッフを解任",
+                          "/admin/staffs/#{@staff.id}",
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも削除されますが本当に解任されますか？"
+                          },
+                          class: "btn btn-danger" %>
+                 <% else %>
+                      <%= link_to "再度スタッフにする",
+                          "/admin/staffs/#{@staff.id}",
+                          data: {
+                            turbo_method: :patch,
+                            turbo_confirm: "【確認】『#{@staff.name}』を再度スタッフに就任させますか？"
+                          },
+                          class: "btn btn-primary" %>                 
+                 <% end %>
+            </div>
+            <div class="dismiss">※スタッフ解任すると、全ての出勤カレンダーも削除されます。</div>
     <% end %>
 </div>
 
