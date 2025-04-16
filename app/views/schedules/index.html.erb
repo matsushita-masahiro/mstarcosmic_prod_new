@@ -32,10 +32,20 @@
                  <% end %>
             </div>
             <div class="dismiss">※スタッフ解任すると、全ての出勤カレンダーも削除されます。</div>
-    <% end %>
+            <div class="dismiss">
+                      <%= link_to "スタッフ解雇",
+                          "/admin/staffs/#{@staff.id}",
+                          data: {
+                            turbo_method: :post,
+                            turbo_confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも予約も削除されますが本当に完全解雇されますか？"
+                          },
+                          class: "btn btn-danger staff-fire" %>                
+            </div>
+    <% end %>    <!--  admin_user? end -->
 </div>
 
 <style>
+
     .activate, .nonactivate {
         color: black;
         margin: 20px auto 0;

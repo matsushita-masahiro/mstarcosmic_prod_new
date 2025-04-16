@@ -83,6 +83,17 @@ class StaffsController < ApplicationController
     end
   end
   
+  def fire 
+    @staff = Staff.find(params[:id])
+    if @staff.destroy
+      flash[:notice] = "スタッフ完全解雇しました"
+      redirect_to "/admin/staffs"      
+    else
+      flash[:alert] = "スタッフ解雇できませんでした"
+      redirect_back(fallback_location: root_path)      
+    end
+  end
+  
   
   private 
     def staff_params

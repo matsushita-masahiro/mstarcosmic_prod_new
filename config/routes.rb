@@ -66,13 +66,10 @@ Rails.application.routes.draw do
 
    
    scope :admin do
+      post "/staffs/:id" => "staffs#fire"
       resources :staffs do
          resources :schedules
-         # collection do 
-         #    patch :staff_machine_relations
-         # end
       end
-      
    end
    
    
