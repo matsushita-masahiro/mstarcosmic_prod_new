@@ -8,6 +8,7 @@ pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
 # config/importmap.rb にこれがあるか確認
 
+pin "fetch_patch", to: "fetch_patch.js"
 pin "modal"
 pin "fadein"
 pin "price_banner"

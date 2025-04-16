@@ -23,8 +23,7 @@
             </li>
             <li><%= link_to destroy_user_session_path, data: { turbo_method: :delete } do %><img src="/new-images/logout.png" class="button"><% end %></li>
         <% else %>
-            <!--<li class="not_image"><= link_to "ログイン", new_user_session_path %></li>-->
-            <li><%= link_to new_user_session_path do %><img src="/new-images/yoyaku_link.png" class="button"><% end %></li>
+            <li><%= link_to new_user_session_path, data: { turbo: false } do %><img src="/new-images/yoyaku_link.png" class="button"><% end %></li>
             <!--<li><= link_to new_user_registration_path do %><img src="/new-images/signup_button.png" class="button">< end %></li>-->
             <!--<li><= link_to new_user_session_path do %><img src="/new-images/login_button.png" class="button">< end %></li>-->
         <% end %>
@@ -47,8 +46,8 @@
             <li></li>
             <li><%= link_to destroy_user_session_path, data: { turbo_method: :delete } do %><img src="/new-images/logout_sp.png" class="button"><% end %></li>
         <% else %>
-            <li><%= link_to new_user_session_path do %><img src="/new-images/sp-login.png" class="button"><% end %></li>
-            <li><%= link_to new_user_session_path do %><img src="/new-images/yoyakusp.jpg" class="button"><% end %></li>
+            <li><%= link_to new_user_session_path, data: { turbo: false } do %><img src="/new-images/sp-login.png" class="button"><% end %></li>
+            <li><%= link_to new_user_session_path, data: { turbo: false } do %><img src="/new-images/yoyakusp.jpg" class="button"><% end %></li>
         <% end %>
         <% if !user_signed_in? || (user_signed_in? && !admin_user?) %>
            <li><%= link_to new_inquiry_path do %><img src="/new-images/sp-inquiry.png" class="button"><% end %></li>
@@ -69,7 +68,7 @@
             <% else %>
               <!--<li><a href="/users/sign_in">ご予約</a></li>-->
               <!--<li><a href="/users/sign_in">ログイン</a></li>-->
-              <li><%= link_to new_user_session_path do %><img src="/new-images/yoyaku_link.png" class="button"><% end %></li>
+              <li><%= link_to new_user_session_path, data: { turbo: false } do %><img src="/new-images/yoyaku_link.png" class="button"><% end %></li>
               <!--<li><a href="/users/sign_up">新規登録</a></li>-->
             <% end %>
 

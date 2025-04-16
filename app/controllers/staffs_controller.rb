@@ -57,7 +57,7 @@ class StaffsController < ApplicationController
     @staff = Staff.find(params[:id])
     @schedules = @staff.schedules
     @staff_machine_relations = @staff.staff_machine_relations
-    
+    logger.debug("^^^^^^^ @staff_machine_relation count= #{@staff_machine_relations.count}")
     @schedules.destroy_all
     @staff_machine_relations.destroy_all
     # reserve情報にstaff_idがあるので、物理削除せずに解任フラグをtrueにする

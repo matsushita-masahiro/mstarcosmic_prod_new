@@ -1,36 +1,40 @@
 # frozen_string_literal: true
 
 class Users::SessionsController < Devise::SessionsController
-  # before_action :configure_sign_in_params, only: [:create]
   layout 'main/main'
-  
+  respond_to :html, :turbo_stream
+
   # GET /resource/sign_in
-  # def new
-  #   super
-  # end
+  def new
+    respond_to do |format|
+      format.html { super }
+      format.turbo_stream { render :new }
+    end
+  end
 
   # POST /resource/sign_in
-  # def create
-  #   super
-  # end
+  def create
+    logger.debug("session create 通過")
+    respond_to do |format|
+      format.html { super }
+      format.turbo_stream { head :ok }  # ← 成功したよ、的なレスポンスだけ返す（またはredirectでも可）
+    end
+  end
+
 
   # DELETE /resource/sign_out
-  # def destroy
-  #   super
-  # end
-
-  # protected
-  
-  def after_sign_out_path_for(resource)
-      root_path
+  def destroy
+    respond_to do |format|
+      format.html { super }
+      format.turbo_stream { redirect_to after_sign_out_path_for(resource_name), status: :see_other }
+    end
   end
-  
-  def after_sign_in_path_for(resource)
-      root_path
-  end  
 
-  # If you have extra params to permit, append them to the sanitizer.
-  # def configure_sign_in_params
-  #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
-  # end
+  def after_sign_out_path_for(resource_or_scope)
+    root_path
+  end
+
+  def after_sign_in_path_for(resource_or_scope)
+    root_path
+  end
 end

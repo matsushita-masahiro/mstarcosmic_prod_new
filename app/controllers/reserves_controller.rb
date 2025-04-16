@@ -425,18 +425,20 @@ class ReservesController < ApplicationController
     # 翌日の予約は15時以降は不可,当日予約不可
     def reject_reserve_new
       tokyo_time = Time.now.in_time_zone("Tokyo")
+      today = Time.now.in_time_zone("Tokyo").to_date
+      logger.debug("今の時間 = #{tokyo_time}")
       reserved_date = params[:reserve][:reserved_date].to_date rescue nil
     
       if reserved_date.present?
-        if ( reserved_date == Date.tomorrow  && tokyo_time.hour >= 15 )
+        if ( reserved_date == ( today + 1 )  && tokyo_time.hour >= 15 )
           logger.debug("-------------- reject_reserve reserved_date = #{reserved_date}..今=#{tokyo_time}")
           flash[:alert] = "15時を過ぎると翌日の予約はできません"
           redirect_back(fallback_location: root_path)
-        elsif ( reserved_date == Date.tomorrow - 1 ) 
+        elsif ( reserved_date == today ) 
           flash[:alert] = "当日の予約はできません"
           redirect_back(fallback_location: root_path)          
         else
-          logger.debug("-------------- accept_reserve reserved_date = #{reserved_date}..今=#{tokyo_time}.. Date.tommrow = #{Date.tomorrow}")
+          logger.debug("-------------- accept_reserve reserved_date = #{reserved_date}..今=#{tokyo_time}.. today = #{today}")
         end
       else
         flash[:alert] = "予約日が不正です"
