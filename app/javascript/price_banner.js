@@ -1,4 +1,4 @@
-console.log("price_banner.js");
+// console.log("price_banner.js");
 
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof $ !== "undefined") {

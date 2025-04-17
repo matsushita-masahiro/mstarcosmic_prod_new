@@ -1,5 +1,5 @@
 // app/javascript/controllers/tooltip.js
-console.log("tooltip.js");
+// console.log("tooltip.js");
 
 // app/javascript/tooltip.js
 document.addEventListener("turbo:load", function() {

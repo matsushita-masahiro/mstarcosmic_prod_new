@@ -1,6 +1,6 @@
 document.addEventListener("turbo:load", function() {
 
-          console.log("================== schedule check 通過");
+          // console.log("================== schedule check 通過");
            
           // 全選択 --------------------------------------------------------------
           

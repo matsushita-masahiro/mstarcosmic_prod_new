@@ -3,14 +3,14 @@ require "rails/all"
 
 # ✅ 追加（ForceHtmlForTurbo）
 require_relative "../app/middleware/force_html_for_turbo"
-
+require_relative "../app/middleware/force_html_accept_middleware" 
 Bundler.require(*Rails.groups)
 
 module MstarcosmicNew
   class Application < Rails::Application
     config.load_defaults 8.0
     config.i18n.default_locale = :ja
-
+    config.middleware.insert_before ActionDispatch::Executor, ForceHtmlAcceptMiddleware
     # ✅ middleware を先頭に挿入
     config.middleware.insert_before 0, ForceHtmlForTurbo
     # 他設定

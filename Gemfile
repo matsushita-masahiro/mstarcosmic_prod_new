@@ -84,7 +84,7 @@ gem 'rails-i18n'
 gem 'seed-fu'
 
 gem 'rails_12factor', group: :production
-gem 'devise'
+gem "devise", "~> 4.9.2"
 # Use ActiveModel has_secure_password
 gem 'bcrypt'
 gem 'devise-i18n'

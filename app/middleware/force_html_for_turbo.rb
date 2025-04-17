@@ -5,7 +5,8 @@ class ForceHtmlForTurbo
   end
 
   def call(env)
-    if env["HTTP_ACCEPT"]&.include?("vnd.turbo-stream.html")
+    # SafariやCloud9環境の Accept を text/html に書き換え
+    if env["HTTP_ACCEPT"] && env["HTTP_ACCEPT"].include?("application/xhtml+xml")
       env["HTTP_ACCEPT"] = "text/html"
     end
     @app.call(env)

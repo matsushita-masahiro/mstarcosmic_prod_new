@@ -1,5 +1,5 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
-console.log("📦 application.js loaded");
+// console.log("📦 application.js loaded");
 
 import jQuery from "jquery";
 window.$ = window.jQuery = jQuery;
@@ -20,15 +20,15 @@ import "zipcodeAPI"
 import "all_schedule_check"
 import "tooltip"
 
-$(function () {
-  console.log("✅ jQuery is working!");
-});
+// $(function () {
+//   console.log("✅ jQuery is working!");
+// });
 
-console.log("JavaScript is working!");
+// console.log("JavaScript is working!");
 
-$(document).ready(function () {
-  console.log("jQuery is working!");
-});
+// $(document).ready(function () {
+//   console.log("jQuery is working!");
+// });
 
 let pagetop = $('#page_top');
 pagetop.hide();

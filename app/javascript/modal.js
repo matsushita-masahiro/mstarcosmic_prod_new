@@ -13,4 +13,4 @@ function closeModal(elem) {
     
 }
 
-console.log("modal.js");
+// console.log("modal.js");

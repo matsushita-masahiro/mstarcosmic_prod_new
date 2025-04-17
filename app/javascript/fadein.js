@@ -1,4 +1,4 @@
-console.log("fadein.js");
+// console.log("fadein.js");
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof $ !== "undefined") {
     $(window).on("scroll", function () {

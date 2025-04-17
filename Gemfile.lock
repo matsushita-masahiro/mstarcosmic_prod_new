@@ -117,9 +117,8 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
-    devise-i18n (1.13.0)
-      devise (>= 4.9.0)
-      rails-i18n
+    devise-i18n (1.10.3)
+      devise (>= 4.8.0)
     devise-i18n-views (0.3.7)
     dotenv (3.1.7)
     dotenv-rails (3.1.7)
@@ -421,7 +420,7 @@ DEPENDENCIES
   carrierwave
   cssbundling-rails (~> 1.4)
   debug
-  devise
+  devise (~> 4.9.2)
   devise-i18n
   devise-i18n-views
   dotenv-rails

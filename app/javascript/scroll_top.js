@@ -1,4 +1,4 @@
-console.log("scroll_top.js");
+// console.log("scroll_top.js");
 
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof $ !== "undefined") {
