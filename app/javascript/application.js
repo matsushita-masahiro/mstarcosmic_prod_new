@@ -19,6 +19,8 @@ import "scroll_top"
 import "zipcodeAPI"
 import "all_schedule_check"
 import "tooltip"
+import "recaptcha_reload"
+
 
 // $(function () {
 //   console.log("✅ jQuery is working!");

@@ -16,6 +16,8 @@ pin "scroll_top"
 pin "zipcodeAPI"
 pin "all_schedule_check"
 pin "tooltip"
+pin "recaptcha_reload", to: "recaptcha_reload.js"
+
 
 
 

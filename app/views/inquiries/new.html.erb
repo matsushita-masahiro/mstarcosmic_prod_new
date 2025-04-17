@@ -15,9 +15,9 @@
     <% end %>
   </ul>
 <% end %>
+  <%= form_with model: @inquiry, local: true, data: { turbo: false } do |f| %>
 
-
-  <%= form_with model: @inquiry, local: true do |f| %>
+  <!--<= form_with model: @inquiry, local: true do |f| %>-->
     <div class="field name">
       <%= f.label :name, "氏名" %><br />
       <%= f.text_field :name, autofocus: true, required: true, class: "my-form", autocomplete: 'name' %>
@@ -34,8 +34,9 @@
     </div>
 
     <div class="field recaptcha">
-      <%= recaptcha_tags %>
+      <%= recaptcha_tags(noscript: false) %>
     </div>
+    <div>チェックが入らない時は画面の再読み込みをしてください</div>
 
     <div class="actions">
       <%= f.submit "送信", data: { confirm: "送信してOKですか？" }, class: "send-submit" %>
