@@ -54,7 +54,7 @@
                 <td>
                   <!-- 2023/9/8 modify 全予約 新規は60分のみ-->
 
-                      <label class="radio_text"> 60分</label><br>
+                      <label class="radio_text"> 90分</label><br>
 
                 </td>
               </tr>     
@@ -72,7 +72,8 @@
                 <%= f.hidden_field :user_id, :value => current_user.id %>
                 <%= f.hidden_field :staff_id, :value => @staff.id %>
                 <%= f.hidden_field :machine, :value => @machine %>
-                <%= f.hidden_field :frames, :value => "60" %>
+                <!-- 2025/4/27 modifed for 90分-->
+                <%= f.hidden_field :frames, :value => "90" %>
         
 
         
