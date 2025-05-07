@@ -117,7 +117,7 @@
                             
                            <% elsif reserve[0] == 1 %>
                               <!--reservable_one ここ  reserve[1].count = <%= reserve[1].count %> -->
-                             <% logger.debug("||||||||||||||||||||  = reservable_one at 本日ではない start #{reserve[1].count}") %>                            
+                             <% #logger.debug("||||||||||||||||||||  = reservable_one at 本日ではない start #{reserve[1].count}") %>                            
                                  <% if reserve[1].count === 0 %>
                                    <td>
                                       <!--<= link_to "◯", new_reserve_path(machine: @machine, date: (@start_date + k).to_s, frame: (10+t*0.5).to_s, start_date: @start_date.to_s, staff_id: @staff.id), { :remote => true, "data-frame" => "#{10+t*0.5}", "data-date" => "#{@start_date + k}"} %>-->
@@ -161,7 +161,7 @@
                       <!-- カレンダーの左の列が本日なら  -->
                           <% reserve = new_reserve_availability_20230824(@machine, @staff, (@start_date + k), (10+t*0.5)) %>
                          <!-- 出勤簿が書かれて無い場合　-->
-                            <% logger.debug("¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥ #{reserve}") %>
+                            <% #logger.debug("¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥ #{reserve}") %>
                             <% if reserve[0] == -1 %>
                               <td class="holiday calender-today">==</td>
                               <% #logger.debug("||||||||||||||||||||  = non_scheduled 本日です") %>

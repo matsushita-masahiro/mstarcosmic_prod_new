@@ -61,7 +61,7 @@
                          <!-- 出勤簿が書かれて無い場合 -->
                             <% if reserve[0] == -1 %>
                               <td class="holiday calender-today">==</td>
-                              <% logger.debug("||||||||||||||||||||  = non_scheduled 本日ではない") %>
+                              <% #logger.debug("||||||||||||||||||||  = non_scheduled 本日ではない") %>
                          <!-- すでに予約が入っている場合 -->
                             <% elsif reserve[0] == 0 %>
                               <% if reserve[1].count === 1 %>
@@ -81,7 +81,7 @@
                               <% else %>
                                     <td>==</td>
                               <% end %>
-                               <% logger.debug("||||||||||||||||||||  = reserved reserve[1].count = #{reserve[1].count}") %>
+                               <% #logger.debug("||||||||||||||||||||  = reserved reserve[1].count = #{reserve[1].count}") %>
                              
                         <!-- 2件予約可能  -->
                           <% elsif reserve[0] == 2 %>
@@ -102,7 +102,7 @@
                                 </td>                          
                               <% end %>
                           
-                             <% logger.debug("||||||||||||||||||||  = reservable_two") %>
+                             <% #logger.debug("||||||||||||||||||||  = reservable_two") %>
                         <!-- 1件予約可能 <%=  reserve[0] %> -->     
                            <% elsif reserve[0] == 1 %>
                                  <% if reserve[1].present? %>
@@ -116,11 +116,11 @@
                                  <% end %>
                           
                           
-                             <% logger.debug("||||||||||||||||||||  = reservable_one") %>                            
+                             <% #logger.debug("||||||||||||||||||||  = reservable_one") %>                            
 
                           <% elsif reserve[0] == -1 %> 
                              <td class="holiday calender-today">==</td>
-                             <% logger.debug("||||||||||||||||||||  = non_scheduled") %>
+                             <% #logger.debug("||||||||||||||||||||  = non_scheduled") %>
                           <% end %>                      
 
                       
