@@ -474,7 +474,9 @@ class ReservesController < ApplicationController
                # 出勤している全スタッフ数(active_staff_count)
                 # 鹿田が出勤していて算命学の予約入ってない場合はプラス1
                 if Schedule.find_by(schedule_date: date, schedule_space: space, staff_id: 1) && !Reserve.find_by(reserved_date: date, reserved_space: space, staff_id: 1, machine: "o")
-                  active_staff_count = Schedule.where(schedule_date: date, schedule_space: space).count + 1
+                  # active_staff_count = Schedule.where(schedule_date: date, schedule_space: space).count + 1
+                  # 2025/5/7 鹿田が出勤しててても鹿田も１人として考える
+                  active_staff_count = Schedule.where(schedule_date: date, schedule_space: space).count
                 else
                   active_staff_count = Schedule.where(schedule_date: date, schedule_space: space).count
                 end

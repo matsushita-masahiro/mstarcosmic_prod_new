@@ -47,9 +47,8 @@
               <tr>
                 <th scope="row">予約枠</th>
                 <td>
-                  <!-- 2023/9/8 modify 全予約 新規は60分のみ-->
-                  <!-- 2025/4/27 modify 全予約 新規は90分のみ-->
-                      <label class="radio_text"> 90分</label><br>
+                  <!-- 2025/5/2 modify 全予約 新規は60分のみ-->
+                      <label class="radio_text"> 60分</label><br>
 
                 </td>
               </tr>     
@@ -66,7 +65,7 @@
                 <%= f.hidden_field :start_date, :value => @start_date %>
                 <%= f.hidden_field :staff_id, :value => 0 %>
                 <%= f.hidden_field :machine, :value => @machine %>
-                <%= f.hidden_field :frames, :value => "90" %>
+                <%= f.hidden_field :frames, :value => "60" %>
         
 
         

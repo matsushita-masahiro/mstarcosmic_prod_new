@@ -628,12 +628,12 @@ module ReservesHelper
               # 新規顧客
               result = [value[0], reserved_infos]
             end
-            # logger.debug("~~~~~~~~~~~~~~~~~~~ result not error = #{result}")        
+            logger.debug("~~~~~~~~~~~~~~~~~~~ result not error = #{result[0]} result[1].count = #{result[1].count}")        
         else
-            # logger.debug("~~~~~~~~~~~~~~~~~~~ result error value = #{value}") 
+            logger.debug("~~~~~~~~~~~~~~~~~~~ result error value = #{value}") 
           # 該当ないのErrorなので,予約不可にする
             result = [-1,reserved_infos]
-            # logger.debug("~~~~~~~~~~~~~~~~~~~ result error = #{result}")          
+            logger.debug("~~~~~~~~~~~~~~~~~~~ result error = #{result}")          
         end
       else
         if machine == "e" || (machine == "o" && staff.id == StaffMachineRelation.body_staff_id) # エステか成美か　（今後成美以外のエステスタッフが増えればif分に追加必要）

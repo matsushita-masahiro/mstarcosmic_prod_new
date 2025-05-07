@@ -49,15 +49,21 @@
                   <% end %>
                 </td>
               </tr>
+              
               <tr>
                 <th scope="row">予約枠</th>
                 <td>
-                  <!-- 2023/9/8 modify 全予約 新規は60分のみ-->
-
-                      <label class="radio_text"> 90分</label><br>
-
+                  <!-- 2025/5/2 modify 管理者は30分も選択できる,それ以外は60分だけ-->
+                  <% if user_signed_in? && admin_user? %>
+                      <label class="radio_text"><%= f.radio_button :frames, "30", checked: true %> 30分</label><br>
+                      <label class="radio_text"><%= f.radio_button :frames, "60", checked: true %> 60分</label>
+                  <% else %>
+                      <label class="radio_text"><%= f.radio_button :frames, "60", checked: true %> 60分</label>
+                  <% end %>
                 </td>
               </tr>     
+              <tr>
+              
               <tr>
                 <th scope="row">備考</th>
                 <td><%= f.text_area :remarks, class: "form-control", :id => "message-text" %></td>
@@ -72,8 +78,6 @@
                 <%= f.hidden_field :user_id, :value => current_user.id %>
                 <%= f.hidden_field :staff_id, :value => @staff.id %>
                 <%= f.hidden_field :machine, :value => @machine %>
-                <!-- 2025/4/27 modifed for 90分-->
-                <%= f.hidden_field :frames, :value => "90" %>
         
 
         
