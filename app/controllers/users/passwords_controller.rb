@@ -14,7 +14,8 @@ class Users::PasswordsController < Devise::PasswordsController
     super do |resource|
       if resource.errors.any?
         # "ユーザ は保存されませんでした" というメッセージが含まれている場合、それを削除
-        resource.errors.delete(:base)
+        # resource.errors.delete(:base)
+        logger.debug("Password reset errors: #{resource.errors.full_messages}")
       end
     end
   end
