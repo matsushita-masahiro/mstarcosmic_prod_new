@@ -50,7 +50,7 @@ class UsersController < ApplicationController
         end
       end
     else 
-      flash[:notice]  = "更新できませんでした"
+      flash[:notice]  = "更新できませんでしたよ"
       render "users/edit"     
     end
   end

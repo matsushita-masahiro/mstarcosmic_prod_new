@@ -8,7 +8,9 @@ class User < ApplicationRecord
   validates :email, presence: true
   validates :name, presence: true
   validates :name_kana, presence: true, on: :update
-  validates_format_of :name_kana, with: /\A[ぁ-んー－]+\z/, message: "は平仮名で入力してください", on: :update
+  # validates_format_of :name_kana, with: /\A[ぁ-んー－]+\z/, message: "は平仮名で入力してください", on: :update
+  validates_format_of :name_kana, with: /\A[ぁ-んー－\s　]+\z/, message: "は平仮名とスペースで入力してください", on: :update
+
   validates :tel, presence: true, on: :update
   validates :tel, numericality: true, on: :update
   validates :birthday, presence: true, on: :update
