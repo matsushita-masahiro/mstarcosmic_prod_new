@@ -4,15 +4,11 @@
 @import "fadein";
 @import "home";
 @import "inquiries";
-@import "machine_schedules";
 @import "main";
 @import "meishikis";
-@import "metatron_sale_inquiries";
-@import "ms_inquiry_answers";
 @import "page_contents";
 @import "pay_types";
 @import "payments";
-@import "reservations";
 @import "sanmeis";
 @import "schedules";
 @import "staff_machine_relations";
@@ -22,7 +18,6 @@
 @import "top";
 @import "tooltip";
 @import "reserves";
-@import "new_reserves";
 @import "new_layouts/about_metatron";
 @import "new_layouts/fasting";
 @import "new_layouts/metatron_sale";
@@ -31,6 +26,17 @@
 @import "new_layouts/special_treatment";
 @import "new_layouts/staffs";
 @import "new_layouts/woman";
+
+// 2025-08-01
+@import "new_reserve_layouts/calendar";
+@import "new_reserve_layouts/devise";
+@import "new_reserve_layouts/new_reserves";
+@import "new_reserve_layouts/staff_schedules";
+@import "new_reserve_layouts/business_trips";
+@import "new_reserve_layouts/admin/new_reserves";
+
+
+  
 
 
 

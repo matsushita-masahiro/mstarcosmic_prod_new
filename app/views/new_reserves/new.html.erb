@@ -1,0 +1,86 @@
+<div class="reserve-form-container">
+  <div class="form-header">
+    <h1>予約フォーム</h1>
+    <%= link_to "← カレンダーに戻る", calendar_path(date: @date), class: "btn btn-secondary" %>
+  </div>
+
+  <div class="reservation-info">
+    <h3>予約情報</h3>
+    <p><strong>日付:</strong> <%= @date.strftime("%Y年%m月%d日 (%a)") %></p>
+    <p><strong>時間:</strong> <%= @time_display %></p>
+  </div>
+
+  <%= form_with model: @new_reserve, url: confirm_new_reserves_path, local: true, class: "reserve-form" do |form| %>
+    <%= form.hidden_field :date, value: @date %>
+    <%= form.hidden_field :start_time_slot, value: @time_slot %>
+
+    <% if @new_reserve.errors.any? %>
+      <div class="error-messages">
+        <h4><%= pluralize(@new_reserve.errors.count, "error") %> prohibited this reservation from being saved:</h4>
+        <ul>
+          <% @new_reserve.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= form.label :staff_id, "担当スタッフ", class: "form-label" %>
+      <%= form.select :staff_id, 
+          options_from_collection_for_select(@available_staff, :id, :name), 
+          { prompt: "スタッフを選択してください" }, 
+          { class: "form-control", required: true } %>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :duration, "施術時間", class: "form-label" %>
+      <%= form.select :duration, 
+          options_for_select([
+            ["30分", "thirty_minutes"],
+            ["60分", "sixty_minutes"]
+          ], @new_reserve.duration), 
+          { prompt: "時間を選択してください" }, 
+          { class: "form-control", required: true } %>
+    </div>
+
+    <% unless user_signed_in? %>
+      <div class="customer-info">
+        <h4>お客様情報</h4>
+        
+        <div class="form-group">
+          <%= form.label :customer_name, "お名前", class: "form-label" %>
+          <%= form.text_field :customer_name, class: "form-control", required: true %>
+        </div>
+
+        <div class="form-group">
+          <%= form.label :customer_gender, "性別", class: "form-label" %>
+          <%= form.select :customer_gender, 
+              options_for_select([
+                ["男性", "customer_male"],
+                ["女性", "customer_female"],
+                ["その他", "customer_other"]
+              ], @new_reserve.customer_gender), 
+              { prompt: "性別を選択してください" }, 
+              { class: "form-control", required: true } %>
+        </div>
+
+        <div class="form-group">
+          <%= form.label :customer_tel, "電話番号", class: "form-label" %>
+          <%= form.telephone_field :customer_tel, class: "form-control", required: true %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= form.label :notes, "備考", class: "form-label" %>
+      <%= form.text_area :notes, rows: 4, class: "form-control", 
+          placeholder: "ご要望やご質問がございましたらご記入ください" %>
+    </div>
+
+    <div class="form-actions">
+      <%= form.submit "予約内容を確認", class: "btn btn-primary btn-large" %>
+      <%= link_to "キャンセル", calendar_path(date: @date), class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>

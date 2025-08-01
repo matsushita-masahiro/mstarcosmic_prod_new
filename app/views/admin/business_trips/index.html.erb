@@ -1,0 +1,86 @@
+<div class="business-trip-container">
+  <div class="main-content">
+    <div class="page-title">
+      <h1>出張登録</h1>
+    </div>
+
+
+
+    <% if @selected_machine %>
+      <!-- 週ナビゲーション -->
+      <div class="week-navigation">
+        <% if @start_date > Date.current %>
+          <%= link_to "前週", admin_business_trips_path(machine_id: @selected_machine.id, date: @start_date - 1.week), class: "week-nav-btn", data: { turbo: false } %>
+        <% else %>
+          <div class="week-nav-spacer"></div>
+        <% end %>
+        <span class="week-range">
+          <%= @start_date.strftime("%m/%d") %> - <%= (@start_date + 6.days).strftime("%m/%d") %>
+        </span>
+        <% if @start_date < Date.current + 4.weeks %>
+          <%= link_to "翌週", admin_business_trips_path(machine_id: @selected_machine.id, date: @start_date + 1.week), class: "week-nav-btn", data: { turbo: false } %>
+        <% else %>
+          <div class="week-nav-spacer"></div>
+        <% end %>
+      </div>
+
+      <!-- 出張スケジュールフォーム -->
+      <%= form_with url: bulk_update_admin_business_trips_path, method: :patch, local: true, class: "business-trip-form" do |form| %>
+        <%= form.hidden_field :machine_id, value: @selected_machine.id %>
+        <%= form.hidden_field :date, value: @start_date %>
+        
+        <div class="business-trip-grid">
+          <div class="business-trip-header-row">
+            <div class="time-header">時間</div>
+            <% @dates.each do |date| %>
+              <div class="date-header <%= 'today' if date == Date.current %>">
+                <div class="date-number"><%= date.strftime("%m/%d") %></div>
+                <div class="day-name <%= 'weekend' if date.wday == 0 || date.wday == 6 %>">
+                  <%= %w[日 月 火 水 木 金 土][date.wday] %>
+                </div>
+                <div class="day-controls">
+                  <button type="button" class="day-all-btn" onclick="toggleDayAll('<%= date %>', true)">全選択</button>
+                  <button type="button" class="day-clear-btn" onclick="toggleDayAll('<%= date %>', false)">全解除</button>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="business-trip-scroll-container">
+            <% @time_slots.each do |time_data| %>
+              <% slot = time_data[:slot] %>
+              <div class="time-row">
+                <div class="time-label">
+                  <%= time_data[:time] %>
+                </div>
+                <% @dates.each do |date| %>
+                  <% is_on_trip = @weekly_business_trips[date][slot] %>
+                  <div class="business-trip-cell">
+                    <label class="checkbox-container">
+                      <input type="checkbox" 
+                             name="business_trips[<%= date %>][<%= slot %>]" 
+                             value="1" 
+                             <%= 'checked' if is_on_trip %>
+                             data-date="<%= date %>"
+                             data-slot="<%= slot %>">
+                      <span class="checkmark trip-checkmark"></span>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <%= form.submit "出張スケジュールを保存", class: "btn btn-primary btn-large" %>
+          <%= link_to "キャンセル", calendar_path, class: "btn btn-secondary" %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty-state">
+        <p>マシンが登録されていません。</p>
+      </div>
+    <% end %>
+  </div>
+</div>

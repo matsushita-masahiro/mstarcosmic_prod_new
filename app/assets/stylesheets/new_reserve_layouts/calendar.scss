@@ -1,0 +1,1672 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f5f5;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.calendar-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: #333;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 24px;
+}
+
+.logo-text {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-menu,
+.auth-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logout-btn,
+.login-btn {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.menu-btn {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.main-content {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-top: 70px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.page-title h1 {
+  font-size: 24px;
+  color: #333;
+  margin: 0;
+}
+
+.reserve-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #00bcd4;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.service-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.service-title h2 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+  font-weight: bold;
+}
+
+.week-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+  position: relative;
+}
+
+.week-range {
+  font-size: 18px;
+  color: #333;
+  font-weight: bold;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.week-nav-btn {
+  background-color: transparent;
+  color: #2196F3;
+  border: 2px solid #2196F3;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.week-nav-btn:hover {
+  background-color: #2196F3;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.week-nav-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+}
+
+.calendar-grid {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  order: 2;
+}
+
+.calendar-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+}
+
+.calendar-header-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  background-color: #666;
+  color: white;
+}
+
+.time-header {
+  background-color: #666;
+}
+
+.date-header {
+  padding: 15px 5px;
+  text-align: center;
+  border-right: 1px solid #555;
+  font-size: 12px;
+}
+
+.date-header.today {
+  background-color: #00bcd4;
+}
+
+.date-header:last-child {
+  border-right: none;
+}
+
+.date-number {
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.day-name {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.day-name.weekend {
+  color: #f44336;
+  font-weight: bold;
+  opacity: 1;
+}
+
+.time-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.time-row:last-child {
+  border-bottom: none;
+}
+
+.time-label {
+  padding: 15px 10px;
+  background-color: #f8f8f8;
+  border-right: 1px solid #e0e0e0;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-cell {
+  padding: 15px 5px;
+  border-right: 1px solid #e0e0e0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+}
+
+.time-cell:last-child {
+  border-right: none;
+}
+
+.status-link {
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.status-excellent {
+  color: transparent;
+  /* HTMLの○文字を非表示 */
+  font-size: 14px;
+  font-weight: bold;
+  border: 2px solid #2196F3;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.status-excellent::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #2196F3;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.status-good {
+  color: transparent;
+  /* HTMLの○文字を非表示 */
+  font-size: 14px;
+  font-weight: bold;
+  border: 2px solid #2196F3;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-unavailable {
+  color: #f44336;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.status-no-staff {
+  color: #f44336;
+  font-size: 14px;
+  font-weight: normal;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.status-no-staff::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 1px;
+  background-color: #f44336;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.status-no-staff::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 1px;
+  background-color: #f44336;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.status-link:hover .status-excellent,
+.status-link:hover .status-good {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* モーダルスタイル */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 0;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 45vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-50px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+/* PCサイズでモーダルの高さを1.8倍に */
+@media (min-width: 769px) {
+  .modal-content {
+    max-height: 81vh;
+    /* 45vh × 1.8 = 81vh */
+    margin: 5% auto;
+    /* 上下マージンも調整 */
+  }
+}
+
+.modal.show .modal-content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #495057;
+  font-size: 24px;
+}
+
+.close {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+}
+
+.modal-body {
+  padding: 15px;
+}
+
+.reservation-info {
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.reservation-info h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.reservation-info p {
+  margin: 8px 0;
+  color: #495057;
+}
+
+.reserve-form {
+  margin: 0;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #495057;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: #dc3545;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.customer-info {
+  border-top: 2px solid #dee2e6;
+  padding-top: 20px;
+  margin-top: 30px;
+}
+
+.customer-info h4 {
+  margin-bottom: 20px;
+  color: #495057;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.btn-large {
+  padding: 15px 30px;
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 15px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .page-title h1 {
+    font-size: 20px;
+  }
+
+  .service-title h2 {
+    font-size: 24px;
+  }
+
+  .calendar-header-row {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+
+  .time-row {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+
+  .time-label {
+    padding: 10px 5px;
+    font-size: 10px;
+  }
+
+  .time-cell {
+    padding: 10px 2px;
+    min-height: 40px;
+  }
+
+  .status-excellent,
+  .status-good {
+    width: 25px;
+    height: 25px;
+    font-size: 16px;
+  }
+
+  .date-header {
+    padding: 10px 2px;
+    font-size: 10px;
+  }
+
+  .modal-content {
+    margin: 10% auto;
+    width: 95%;
+    max-height: 80vh;
+  }
+
+  .modal-header {
+    padding: 15px 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+/* 
+管理者用tooltip */
+.admin-tooltip {
+  cursor: help;
+}
+
+.admin-tooltip-popup {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 10000;
+  max-width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.tooltip-reserve {
+  margin-bottom: 8px;
+}
+
+.tooltip-reserve:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  align-items: center;
+}
+
+.tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-label {
+  font-weight: 600;
+  color: #ccc;
+  min-width: 50px;
+  font-size: 11px;
+}
+
+.tooltip-value {
+  font-weight: 400;
+  text-align: right;
+  flex: 1;
+  margin-left: 8px;
+}
+
+.tooltip-value.member {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.tooltip-value.non-member {
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.tooltip-divider {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 8px 0;
+}
+
+/* 予約
+確認ページのスタイル */
+.confirm-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.confirm-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.confirm-header h1 {
+  color: #495057;
+  margin-bottom: 10px;
+}
+
+.confirmation-details {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.confirmation-details h3 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  color: #495057;
+  text-align: center;
+}
+
+.detail-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.detail-section h4 {
+  margin-bottom: 15px;
+  color: #6c757d;
+  font-size: 1.1em;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-section .label {
+  font-weight: bold;
+  color: #495057;
+  min-width: 120px;
+}
+
+.detail-section .value {
+  color: #212529;
+  text-align: right;
+  flex: 1;
+}
+
+.notes-content {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+  margin-top: 10px;
+}
+
+.confirm-form {
+  text-align: center;
+}
+
+.confirm-form .form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.confirm-form .btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.confirm-form .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.confirm-form .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.confirm-form .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.confirm-form .btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.confirm-form .btn-outline {
+  background-color: transparent;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+
+.confirm-form .btn-outline:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+.confirm-form .btn-large {
+  padding: 15px 30px;
+  font-size: 18px;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+}
+
+.confirm-btn:hover {
+  background-color: #1e7e34;
+}
+
+@media (max-width: 768px) {
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .detail-section .value {
+    text-align: left;
+  }
+
+  .confirm-form .form-actions {
+    flex-direction: column;
+  }
+
+  .confirmation-details {
+    padding: 20px;
+  }
+}
+
+/* 
+Grid Layout for Calendar */
+.calendar-header-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(7, 1fr);
+  background-color: #666;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #555;
+}
+
+.time-row-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(7, 1fr);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.time-row-grid:last-child {
+  border-bottom: none;
+}
+
+.time-header {
+  padding: 15px 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  border-right: 1px solid #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.date-header {
+  padding: 10px 5px;
+  text-align: center;
+  font-size: 12px;
+  border-right: 1px solid #555;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.date-header:last-child {
+  border-right: none;
+}
+
+.date-header.today {
+  background-color: #00bcd4;
+}
+
+.time-label {
+  padding: 15px 10px;
+  background-color: #f8f8f8;
+  border-right: 1px solid #e0e0e0;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  min-height: 50px;
+}
+
+.time-cell {
+  padding: 15px 5px;
+  border-right: 1px solid #e0e0e0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+}
+
+.time-cell:last-child {
+  border-right: none;
+}
+
+/* 管理者メニュー
+ボタン */
+.admin-menu-btn {
+  background-color: #28a745 !important;
+  color: white !important;
+  text-decoration: none !important;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.admin-menu-btn:hover {
+  background-color: #1e7e34 !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.admin-menu-btn:visited {
+  color: white !important;
+  text-decoration: none !important;
+}
+
+/* 出張登録ボタン */
+.business-trip-btn {
+  background-color: #e91e63 !important;
+}
+
+.business-trip-btn:hover {
+  background-color: #c2185b !important;
+}
+
+* ヘッダー・ナビゲーション（Bootstrap対応） * .header {
+  background-color: #333 !important;
+}
+
+.navbar-brand.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.navbar-brand.logo:hover {
+  color: white !important;
+}
+
+.logo-icon {
+  font-size: 24px;
+}
+
+.logo-text {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* 管理者メニューボタン（Bootstrap nav-link対応） */
+.nav-link.admin-menu-btn {
+  background-color: #28a745 !important;
+  color: white !important;
+  text-decoration: none !important;
+  font-size: 14px;
+  padding: 8px 16px !important;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  margin: 0 5px;
+}
+
+.nav-link.admin-menu-btn:hover {
+  background-color: #1e7e34 !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.nav-link.admin-menu-btn:visited {
+  color: white !important;
+  text-decoration: none !important;
+}
+
+/* 出張登録ボタン */
+.nav-link.business-trip-btn {
+  background-color: #e91e63 !important;
+}
+
+.nav-link.business-trip-btn:hover {
+  background-color: #c2185b !important;
+}
+
+/* ログイン・ログアウトボタン */
+.nav-link.logout-btn,
+.nav-link.login-btn {
+  color: white !important;
+  text-decoration: none !important;
+  font-size: 14px;
+  padding: 8px 16px !important;
+}
+
+.nav-link.logout-btn:hover,
+.nav-link.login-btn:hover {
+  color: #ccc !important;
+  text-decoration: none !important;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 767px) {
+  .navbar-nav {
+    text-align: center;
+    padding-top: 10px;
+  }
+
+  .nav-link.admin-menu-btn {
+    display: block;
+    margin: 5px auto;
+    text-align: center;
+    max-width: 250px;
+  }
+
+  .nav-link.logout-btn,
+  .nav-link.login-btn {
+    display: block;
+    margin: 5px auto;
+    text-align: center;
+    max-width: 150px;
+  }
+}
+
+/* レスポンシ
+ブヘッダー */
+.header {
+  background-color: #333;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 24px;
+}
+
+.logo-text {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* ハンバーガーメニューボタン */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.mobile-menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 3px 0;
+  transition: 0.3s;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* ヘッダーアクション */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-menu,
+.auth-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  .header-actions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #333;
+    flex-direction: column;
+    padding: 20px;
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .header-actions.active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .user-menu,
+  .auth-menu {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .admin-menu-btn {
+    display: block;
+    text-align: center;
+    margin: 5px 0;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .logout-btn,
+  .login-btn {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    margin: 5px 0;
+  }
+}
+
+/*
+ 週ナビゲーション（カレンダー用） */
+.container-wrapper .week-navigation {
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+  position: relative;
+  width: 100%;
+}
+
+.container-wrapper .week-range {
+  font-size: 18px;
+  color: #333;
+  font-weight: bold;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.container-wrapper .week-nav-btn {
+  background-color: transparent;
+  color: #2196F3;
+  border: 2px solid #2196F3;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.container-wrapper .week-nav-btn:hover {
+  background-color: #2196F3;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.container-wrapper .week-nav-spacer {
+  width: 70px;
+  height: 40px;
+}
+
+/* カレンダーページ専用スタイル */
+.container-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 80px;
+}
+
+.container-wrapper .week-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px 0;
+  width: 800px;
+  position: relative;
+}
+
+.container-wrapper .week-navigation .week-range {
+  font-size: 18px;
+  color: #333;
+  font-weight: bold;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.container-wrapper .week-navigation .week-nav-btn {
+  background-color: transparent;
+  color: #2196F3;
+  border: 2px solid #2196F3;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.container-wrapper .week-navigation .week-nav-btn:hover {
+  background-color: #2196F3;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+// ここから
+
+
+    .table-wrapper {
+    width: 800px;
+    height: 80vh;
+    background-color: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    }
+
+    .table-header {
+    flex-shrink: 0;
+    background-color: #ccc;
+    border-bottom: 2px solid #999;
+    }
+
+    .table-body {
+    flex: 1;
+    overflow-y: auto;
+    }
+
+    .table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 3px solid #ccc;
+    }
+
+    .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #ccc;
+    font-weight: 600;
+    border: 1px solid #ccc;
+    }
+
+    .table-mask {
+    position: sticky;
+    top: 0;
+    height: 1px;
+    background-color: #fff;
+    z-index: 3;
+    }
+
+    .table th,
+    .table td {
+    border: 1px solid #ccc;
+    padding: 0.25rem;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.95rem;
+    aspect-ratio: 1 / 1;
+    height: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }
+
+    /* 列幅比率 */
+    .table th:nth-child(1),
+    .table td:nth-child(1) {
+    width: 11.1%;
+    }
+
+    .table th:nth-child(n+2),
+    .table td:nth-child(n+2) {
+    width: 11.1%;
+    }
+
+
+/* レスポンシブ対応 */
+@media (max-width: 1000px) {
+  .container-wrapper .week-navigation {
+    width: 600px;
+  }
+
+  .table-wrapper {
+    width: 600px;
+  }
+
+  .table th,
+  .table td {
+    height: 66px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container-wrapper .week-navigation {
+    width: 500px;
+  }
+
+  .table-wrapper {
+    width: 500px;
+  }
+
+  .table th,
+  .table td {
+    height: 55px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container-wrapper .week-navigation {
+    width: 400px;
+  }
+
+  .table-wrapper {
+    width: 400px;
+  }
+
+  .table th,
+  .table td {
+    height: 44px;
+  }
+}
+
+@media (max-width: 400px) {
+  .container-wrapper .week-navigation {
+    width: 380px;
+  }
+
+  .table-wrapper {
+    width: 380px;
+  }
+
+  .table th,
+  .table td {
+    height: 42px;
+  }
+}
+
+/* カレンダー固有のスタイル */
+.container-wrapper .today {
+  background-color: #e3f2fd !important;
+}
+
+.container-wrapper .weekend {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.container-wrapper .status-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container-wrapper .status-excellent {
+  color: transparent;
+  font-size: 0;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #2196F3;
+  border-radius: 50%;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.container-wrapper .status-excellent::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background-color: #2196F3;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.container-wrapper .status-good {
+  color: transparent;
+  font-size: 0;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #2196F3;
+  border-radius: 50%;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.container-wrapper .status-unavailable {
+  color: #f44336;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.container-wrapper .status-no-staff {
+  color: #999;
+  font-size: 14px;
+}
+
+/* カレンダー用モーダルスタイル */
+.container-wrapper .modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.container-wrapper .modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 0;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.container-wrapper .modal-header {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.container-wrapper .modal-header h2 {
+  margin: 0;
+  color: #495057;
+  font-size: 24px;
+}
+
+.container-wrapper .close {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.container-wrapper .close:hover,
+.container-wrapper .close:focus {
+  color: #000;
+  text-decoration: none;
+}
+
+.container-wrapper .modal-body {
+  padding: 20px;
+}
+
+.container-wrapper .reservation-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.container-wrapper .reservation-info h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.container-wrapper .reservation-info p {
+  margin: 8px 0;
+  color: #495057;
+}
+
+.container-wrapper .form-group {
+  margin-bottom: 15px;
+}
+
+.container-wrapper .form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #495057;
+}
+
+.container-wrapper .form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.container-wrapper .form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.container-wrapper .customer-info {
+  border-top: 2px solid #dee2e6;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.container-wrapper .customer-info h4 {
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.container-wrapper .form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.container-wrapper .btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.container-wrapper .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.container-wrapper .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.container-wrapper .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.container-wrapper .btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.container-wrapper .btn-large {
+  padding: 15px 30px;
+  font-size: 18px;
+}

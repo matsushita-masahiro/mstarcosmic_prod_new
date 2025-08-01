@@ -1,0 +1,156 @@
+/* 管理画面 - 新規予約一覧のスタイル */
+
+.admin-new-reserves {
+    .table-wrapper {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .table-header {
+        background-color: #6c757d;
+        overflow-x: auto;
+    }
+
+    .table-header table {
+        margin-bottom: 0;
+        min-width: 800px;
+        width: 100%;
+    }
+
+    .table-header th {
+        background-color: #b9b9b9 !important;
+        color: white !important;
+        border-bottom: 1px solid #dee2e6;
+        padding: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .table-body {
+        height: 60vh;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    .table-body table {
+        margin-bottom: 0;
+        min-width: 800px;
+        width: 100%;
+    }
+
+    .table-body tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.075);
+    }
+
+    .table-body td {
+        padding: 0.75rem;
+        vertical-align: top;
+        white-space: nowrap;
+    }
+
+    /* スマホサイズでの調整 */
+    @media (max-width: 768px) {
+        .table-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .table-header {
+            overflow: hidden;
+        }
+
+        .table-header table {
+            width: 700px !important;
+            min-width: 700px;
+            table-layout: fixed;
+        }
+
+        .table-header th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background-color: #6c757d !important;
+            width: 140px;
+            min-width: 140px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header th:nth-child(2) {
+            width: 120px;
+            min-width: 120px;
+        }
+
+        .table-header th:nth-child(3) {
+            width: 150px;
+            min-width: 150px;
+        }
+
+        .table-header th:nth-child(4) {
+            width: 200px;
+            min-width: 200px;
+        }
+
+        .table-header th:nth-child(5) {
+            width: 90px;
+            min-width: 90px;
+        }
+
+        .table-body {
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+
+        .table-body table {
+            width: 700px !important;
+            min-width: 700px;
+            table-layout: fixed;
+        }
+
+        .table-body td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+            background-color: white !important;
+            width: 140px;
+            min-width: 140px;
+            border-right: 2px solid #dee2e6;
+            white-space: normal;
+            box-shadow: 3px 0 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-body td:nth-child(2) {
+            width: 120px;
+            min-width: 120px;
+            white-space: normal;
+        }
+
+        .table-body td:nth-child(3) {
+            width: 150px;
+            min-width: 150px;
+            white-space: normal;
+        }
+
+        .table-body td:nth-child(4) {
+            width: 200px;
+            min-width: 200px;
+            white-space: normal;
+        }
+
+        .table-body td:nth-child(5) {
+            width: 90px;
+            min-width: 90px;
+            white-space: normal;
+        }
+
+        /* ストライプ効果を固定列にも適用 */
+        .table-body tbody tr:nth-of-type(odd) td:first-child {
+            background-color: #f8f9fa !important;
+        }
+
+        /* ホバー効果を固定列にも適用 */
+        .table-body tbody tr:hover td:first-child {
+            background-color: #e9ecef !important;
+        }
+    }
+}

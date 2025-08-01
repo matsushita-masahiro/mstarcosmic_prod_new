@@ -22,6 +22,9 @@ class User < ApplicationRecord
   has_many :payments, :dependent => :destroy
   has_many :schedules, :dependent => :destroy
   has_one :staff, :dependent => :destroy
+
+  # 新システム用 2025/08/1
+  has_many :new_reserves, class_name: "NewReserve", dependent: :destroy
   
   
   def self.search(search) #self.でクラスメソッドとしている
@@ -60,5 +63,25 @@ class User < ApplicationRecord
       return "既存"
     end
   end
+
+  def admin?
+    user_type == '1'
+  end
+
+  # enum user_type: {
+  #   unset: "0",
+  #   admin: "1",
+  #   member: "2",
+  #   referral_member: "3",
+  #   general: "4",
+  #   site_member: "5",
+  #   special: "6",
+  #   other: "7",
+  #   staff: "10",
+  #   provisional: "11",
+  #   test: "99"
+  # }
+
+
 
 end
