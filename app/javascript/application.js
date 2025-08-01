@@ -1,15 +1,11 @@
-// Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
-// console.log("📦 application.js loaded");
-
-import jQuery from "jquery";
-window.$ = window.jQuery = jQuery;
+import "jquery"; // ✅ ← 必ず入れる（importmapを使用している場合）
 
 import Rails from "@rails/ujs";
 Rails.start();
-window.Rails = Rails;  // ← グローバル登録（必要なら）
-import "fetch_patch" // ✅ 必ず turbo-rails より先に入れる
+window.Rails = Rails;
+
+import "fetch_patch"
 import "@hotwired/turbo-rails"
-// あなたのJSたち
 
 import "controllers"
 import "modal"
@@ -20,35 +16,36 @@ import "zipcodeAPI"
 import "all_schedule_check"
 import "tooltip"
 import "recaptcha_reload"
+import "calendar"
+import "new_staff_schedules"
+import "business_trips"
 
-
-// $(function () {
-//   console.log("✅ jQuery is working!");
-// });
-
-// console.log("JavaScript is working!");
-
-// $(document).ready(function () {
-//   console.log("jQuery is working!");
-// });
-
-let pagetop = $('#page_top');
-pagetop.hide();
-$(window).scroll(function () {
-  if ($(this).scrollTop() > 500) {
-    pagetop.fadeIn();
-  } else {
-    pagetop.fadeOut();
-  }
-});
-pagetop.click(function () {
-  console.log("================== page top clicked");
-  $('body,html').animate({ scrollTop: 0 }, 700);
-  return false;
-});
-
+// jQueryの動作確認
 document.addEventListener("turbo:load", function () {
-  $('#access_link').on('click', () => {
+  if (typeof $ !== "undefined") {
+    console.log("🚀 jQuery is ready!");
+  } else {
+    console.error("❌ jQuery is not loaded!");
+  }
+
+  let pagetop = $('#page_top');
+  pagetop.hide();
+
+  $(window).off('scroll.pagetop').on('scroll.pagetop', function () {
+    if ($(this).scrollTop() > 500) {
+      pagetop.fadeIn();
+    } else {
+      pagetop.fadeOut();
+    }
+  });
+
+  pagetop.off('click').on('click', function () {
+    console.log("page top clicked");
+    $('body,html').animate({ scrollTop: 0 }, 700);
+    return false;
+  });
+
+  $('#access_link').off('click').on('click', () => {
     let speed = 500;
     let position = $('#access').offset().top;
     $('body,html').animate({ scrollTop: position }, speed, 'swing');
@@ -57,38 +54,3 @@ document.addEventListener("turbo:load", function () {
     return false;
   });
 });
-
-// modal.js
-function closeModal(elem) {
-  var modal = document.getElementById('reserveModal');
-
-  window.addEventListener('click', function (e) {
-    if (e.target == modal) {
-      modal.style.display = 'none';
-    }
-  });
-
-  if (elem.className == "close") {
-    modal.style.display = 'none';
-  }
-}
-
-// 🔥 Turbo fetch を完全 override
-// import * as Turbo from "@hotwired/turbo-rails"
-
-// console.log("🔥 Overriding Turbo.fetchWithTurboHeaders");
-
-// Turbo.fetchWithTurboHeaders = function (url, options = {}) {
-//   const modifiedHeaders = new Headers(options?.headers || {});
-//   const accept = modifiedHeaders.get("Accept");
-
-//   if (accept && accept.includes("vnd.turbo-stream.html")) {
-//     console.log("💥 Turbo Accept overridden: turbo-stream → text/html");
-//     modifiedHeaders.set("Accept", "text/html");
-//   }
-
-//   return fetch(url, {
-//     ...options,
-//     headers: modifiedHeaders
-//   });
-// };

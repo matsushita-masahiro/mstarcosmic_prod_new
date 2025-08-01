@@ -1,0 +1,96 @@
+<div class="staff-schedule-container">
+  <div class="main-content">
+    <div class="page-title">
+      <h1>スタッフ出勤スケジュール登録</h1>
+    </div>
+
+    <!-- スタッフ選択 -->
+    <div class="staff-selector">
+      <label for="staff-select">スタッフを選択:</label>
+      <select id="staff-select" onchange="changeStaff(this.value)">
+        <% @staffs.each do |staff| %>
+          <option value="<%= staff.id %>" <%= 'selected' if @selected_staff&.id == staff.id %>>
+            <%= staff.name %> (<%= staff.staff_type_i18n %>)
+          </option>
+        <% end %>
+      </select>
+    </div>
+
+    <% if @selected_staff %>
+      <!-- 週ナビゲーション -->
+      <div class="week-navigation">
+        <% if @start_date > Date.current %>
+          <%= link_to "前週", new_staff_schedules_path(staff_id: @selected_staff.id, date: @start_date - 1.week), class: "week-nav-btn", data: { turbo: false } %>
+        <% else %>
+          <div class="week-nav-spacer"></div>
+        <% end %>
+        <span class="week-range">
+          <%= @start_date.strftime("%-m/%-d") %> - <%= (@start_date + 6.days).strftime("%-m/%-d") %>
+        </span>
+        <% if @start_date < Date.current + 4.weeks %>
+          <%= link_to "翌週", new_staff_schedules_path(staff_id: @selected_staff.id, date: @start_date + 1.week), class: "week-nav-btn", data: { turbo: false } %>
+        <% else %>
+          <div class="week-nav-spacer"></div>
+        <% end %>
+      </div>
+
+      <!-- スケジュールフォーム -->
+      <%= form_with url: bulk_update_new_staff_schedules_path, method: :patch, local: true, class: "schedule-form" do |form| %>
+        <%= form.hidden_field :staff_id, value: @selected_staff.id %>
+        <%= form.hidden_field :date, value: @start_date %>
+        
+        <div class="schedule-grid">
+          <div class="schedule-header-row">
+            <div class="time-header">時間</div>
+            <% @dates.each do |date| %>
+              <div class="date-header <%= 'today' if date == Date.current %>">
+                <div class="date-number"><%= date.strftime("%-m/%d") %></div>
+                <div class="day-name <%= 'weekend' if date.wday == 0 || date.wday == 6 %>">
+                  <%= %w[日 月 火 水 木 金 土][date.wday] %>
+                </div>
+                <div class="day-controls">
+                  <button type="button" class="day-all-btn" onclick="toggleDayAll('<%= date %>', true)">全選択</button>
+                  <button type="button" class="day-clear-btn" onclick="toggleDayAll('<%= date %>', false)">全解除</button>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="schedule-scroll-container">
+            <% @time_slots.each do |time_data| %>
+              <% slot = time_data[:slot] %>
+              <div class="time-row">
+                <div class="time-label">
+                  <%= time_data[:time] %>
+                </div>
+                <% @dates.each do |date| %>
+                  <% is_working = @weekly_schedules[date][slot] %>
+                  <div class="schedule-cell">
+                    <label class="checkbox-container">
+                      <input type="checkbox" 
+                             name="schedules[<%= date %>][<%= slot %>]" 
+                             value="1" 
+                             <%= 'checked' if is_working %>
+                             data-date="<%= date %>"
+                             data-slot="<%= slot %>">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <%= form.submit "スケジュールを保存", class: "btn btn-primary btn-large" %>
+          <%= link_to "キャンセル", calendar_path, class: "btn btn-secondary" %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty-state">
+        <p>スタッフが登録されていません。</p>
+      </div>
+    <% end %>
+  </div>
+</div>

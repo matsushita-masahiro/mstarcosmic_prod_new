@@ -1,0 +1,73 @@
+<div class="reserves-index-container">
+  <div class="index-header">
+    <h1>予約履歴</h1>
+    <div class="header-actions">
+      <%= link_to "新しい予約", new_calendar_path, class: "btn btn-primary" %>
+      <%= link_to "カレンダー", new_calendar_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <% if @new_reserves.any? %>
+    <div class="reserves-list">
+      <% @new_reserves.each do |new_reserve| %>
+        <div class="reserve-card <%= 'past' if new_reserve.date < Date.current %>">
+          <div class="reserve-header">
+            <div class="reserve-id">#<%= new_reserve.id.to_s.rjust(6, '0') %></div>
+            <div class="reserve-status">
+              <% if new_reserve.date < Date.current %>
+                <span class="status-badge completed">完了</span>
+              <% elsif new_reserve.date == Date.current %>
+                <span class="status-badge today">本日</span>
+              <% else %>
+                <span class="status-badge upcoming">予約済み</span>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="reserve-info">
+            <div class="info-row">
+              <span class="label">日時:</span>
+              <span class="value">
+                <%= new_reserve.date.strftime("%Y年%m月%d日 (%a)") %>
+                <%= Schedule.time_slot_to_time(new_reserve.start_time_slot) %>〜
+                <% if new_reserve.duration == "sixty_minutes" %>
+                  (60分)
+                <% else %>
+                  (30分)
+                <% end %>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">スタッフ:</span>
+              <span class="value"><%= new_reserve.staff.name %></span>
+            </div>
+            <% if new_reserve.notes.present? %>
+              <div class="info-row">
+                <span class="label">備考:</span>
+                <span class="value notes-preview">
+                  <%= truncate(new_reserve.notes, length: 50) %>
+                </span>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="reserve-actions">
+            <%= link_to "詳細", new_reserve_path(new_reserve), class: "btn btn-outline btn-sm" %>
+            <% if new_reserve.date > Date.current %>
+              <%= link_to "キャンセル", new_reserve_path(new_reserve), method: :delete,
+                  data: { confirm: "本当に予約をキャンセルしますか？" },
+                  class: "btn btn-danger btn-sm" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>予約履歴がありません</h3>
+      <p>まだ予約をされていません。カレンダーから予約を作成してください。</p>
+      <%= link_to "予約を作成", new_calendar_path, class: "btn btn-primary btn-large" %>
+    </div>
+  <% end %>
+</div>
