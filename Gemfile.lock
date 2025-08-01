@@ -129,10 +129,10 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
-    excon (1.2.5)
+    excon (1.2.7)
       logger
     ffi (1.17.1-x86_64-linux-gnu)
-    fog-aws (3.30.0)
+    fog-aws (3.32.0)
       base64 (~> 0.2.0)
       fog-core (~> 2.6)
       fog-json (~> 1.1)
@@ -200,10 +200,10 @@ GEM
     matrix (0.4.2)
     meta-tags (2.22.1)
       actionpack (>= 6.0.0, < 8.1)
-    mime-types (3.6.2)
+    mime-types (3.7.0)
       logger
-      mime-types-data (~> 3.2015)
-    mime-types-data (3.2025.0402)
+      mime-types-data (~> 3.2025, >= 3.2025.0507)
+    mime-types-data (3.2025.0520)
     mini_magick (5.2.0)
       benchmark
       logger
@@ -226,7 +226,7 @@ GEM
       net-protocol
     net-ssh (7.3.0)
     nio4r (2.7.4)
-    nokogiri (1.18.7-x86_64-linux-gnu)
+    nokogiri (1.18.8-x86_64-linux-gnu)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     ostruct (0.6.1)
