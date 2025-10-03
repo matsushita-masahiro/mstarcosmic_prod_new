@@ -76,5 +76,11 @@ ReserveAlgorithm.seed(:id,
   {:id => 74, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 1, :num_of_machines => 1, :num_of_reseve_for_new => 1, :num_of_reseve_for_old => 0, :available_for_new => 0, :available_for_old => 0},
   {:id => 75, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 1, :num_of_machines => 1, :num_of_reseve_for_new => 0, :num_of_reseve_for_old => 1, :available_for_new => 0, :available_for_old => 0},
   {:id => 76, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 0, :num_of_machines => 2, :num_of_reseve_for_new => 0, :num_of_reseve_for_old => 1, :available_for_new => 0, :available_for_old => 0},
-  {:id => 77, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 0, :num_of_machines => 2, :num_of_reseve_for_new => 1, :num_of_reseve_for_old => 1, :available_for_new => 0, :available_for_old => 0}
+  {:id => 77, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 0, :num_of_machines => 2, :num_of_reseve_for_new => 1, :num_of_reseve_for_old => 1, :available_for_new => 0, :available_for_old => 0},
+  {:id => 78, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 2, :num_of_machines => 2, :num_of_reseve_for_new => 0, :num_of_reseve_for_old => 0, :available_for_new => 2, :available_for_old => 2},
+  {:id => 79, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 2, :num_of_machines => 2, :num_of_reseve_for_new => 1, :num_of_reseve_for_old => 0, :available_for_new => 0, :available_for_old => 1},
+  {:id => 80, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 2, :num_of_machines => 2, :num_of_reseve_for_new => 0, :num_of_reseve_for_old => 1, :available_for_new => 1, :available_for_old => 1},
+  {:id => 81, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 2, :num_of_machines => 2, :num_of_reseve_for_new => 0, :num_of_reseve_for_old => 2, :available_for_new => 0, :available_for_old => 0},
+  {:id => 82, :num_staffs_for_new => 1, :num_staffs_for_nonnew => 2, :num_of_machines => 2, :num_of_reseve_for_new => 1, :num_of_reseve_for_old => 1, :available_for_new => 0, :available_for_old => 0}
+ 
   )

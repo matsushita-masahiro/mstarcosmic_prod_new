@@ -601,7 +601,11 @@ module ReservesHelper
         # 新規客対応可能スタッフ配列
         new_customer_able_staffs_arr = Staff.where(new_customer_flag: true, dismiss_flag: false, active_flag: true).pluck(:id)
         attendances_arr_of_new_customer = attendances_arr & new_customer_able_staffs_arr # 重複を取得
-        # logger.debug("~~~~~~~~~~~~~~~~~~~ attendances_arr_of_new_customer = #{attendances_arr_of_new_customer}") 
+        if date == "2025-10-07"
+          logger.debug("~~~~~~~~~~~~~~~~~~~ attendances_arr_of_new_customer = #{attendances_arr_of_new_customer}") 
+        else
+          logger.debug("~~~~~~~~~~~~~~~~~~~ #{date} attendances_arr_of_new_customer = #{attendances_arr_of_new_customer} can_staffs_arr = #{can_staffs_arr} attendances_arr = #{attendances_arr} new_customer_able_staffs_arr = #{new_customer_able_staffs_arr}" ) 
+        end
         # 新規対応不可スタッフ配列
         new_customer_unable_staffs_arr = Staff.where(new_customer_flag: false, dismiss_flag: false, active_flag: true).pluck(:id)
         attendances_arr_of_unable_new_customer = attendances_arr & new_customer_unable_staffs_arr # 重複を取得
@@ -620,6 +624,8 @@ module ReservesHelper
         
         
         # 例　value = [0,1] <= 新規カレンダー表示は0で✖️　既存カレンダーは1で△
+          logger.debug("======================= date = #{date} --- #{[attendances_arr_of_new_customer.size, attendances_arr_of_unable_new_customer.size, number_of_holistic, num_of_reseve_for_new, num_of_reseve_for_old]}")
+
         if value = reserve_algorithms_hash[[attendances_arr_of_new_customer.size, attendances_arr_of_unable_new_customer.size, number_of_holistic, num_of_reseve_for_new, num_of_reseve_for_old]]
             if user_signed_in?
               # 既存顧客と管理者
@@ -630,7 +636,7 @@ module ReservesHelper
             end
             # logger.debug("~~~~~~~~~~~~~~~~~~~ result not error = #{result[0]} result[1].count = #{result[1].count}")        
         else
-            # logger.debug("~~~~~~~~~~~~~~~~~~~ result error value = #{value}") 
+            logger.debug("~~~~~~~~~~~~~~~~~~~ date = #{date} result error value = #{value}") 
           # 該当ないのErrorなので,予約不可にする
             result = [-1,reserved_infos]
             # logger.debug("~~~~~~~~~~~~~~~~~~~ result error = #{result}")          
@@ -694,6 +700,7 @@ module ReservesHelper
         end  # メタトロン以外の予約アルゴリズム end 
 
       end  # 全アルゴリズム end
+      
       
       return result
       
@@ -1108,7 +1115,7 @@ module ReservesHelper
         ReserveAlgorithm.all.each do |ra|
             hash.store([ra.num_staffs_for_new, ra.num_staffs_for_nonnew, ra.num_of_machines, ra.num_of_reseve_for_new, ra.num_of_reseve_for_old], [ra.available_for_new, ra.available_for_old])
         end
-        # logger.debug("ReserveAlgorithm hash = #{hash}")
+        logger.debug("ReserveAlgorithm reserve_algorithms_hash = #{hash}")
         return hash
       end
     
