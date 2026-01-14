@@ -17,7 +17,6 @@ class User < ApplicationRecord
   # validates :introducer, presence: true, on: :update
   validates :gender, presence: true, on: :update
   
-  has_many :reservations, :dependent => :destroy
   has_many :reserves, :dependent => :destroy
   has_many :payments, :dependent => :destroy
   has_many :schedules, :dependent => :destroy
