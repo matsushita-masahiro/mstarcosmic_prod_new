@@ -1,0 +1,86 @@
+<div class="reserve-detail-container">
+  <div class="detail-header">
+    <h1>予約詳細</h1>
+    <%= link_to "← 予約一覧に戻る", new_reserves_path, class: "btn btn-secondary" %>
+  </div>
+
+  <div class="reserve-details">
+    <div class="status-badge success">
+      予約確定
+    </div>
+
+    <div class="detail-section">
+      <h3>予約情報</h3>
+      <div class="detail-row">
+        <span class="label">予約番号:</span>
+        <span class="value">#<%= @new_reserve.id.to_s.rjust(6, '0') %></span>
+      </div>
+      <div class="detail-row">
+        <span class="label">日付:</span>
+        <span class="value"><%= @new_reserve.date.strftime("%Y年%m月%d日 (%a)") %></span>
+      </div>
+      <div class="detail-row">
+        <span class="label">開始時間:</span>
+        <span class="value"><%= Schedule.time_slot_to_time(@new_reserve.start_time_slot) %></span>
+      </div>
+      <div class="detail-row">
+        <span class="label">施術時間:</span>
+        <span class="value">
+          <%= @new_reserve.duration == "thirty_minutes" ? "30分" : "60分" %>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">担当スタッフ:</span>
+        <span class="value"><%= @new_reserve.staff.name %></span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>お客様情報</h3>
+      <div class="detail-row">
+        <span class="label">お名前:</span>
+        <span class="value"><%= @new_reserve.customer_display_name %></span>
+      </div>
+      <div class="detail-row">
+        <span class="label">性別:</span>
+        <span class="value">
+          <% if @new_reserve.user %>
+            <%= @new_reserve.user.gender == "male" ? "男性" : @new_reserve.user.gender == "female" ? "女性" : "その他" %>
+          <% else %>
+            <%= @new_reserve.customer_gender == "customer_male" ? "男性" : @new_reserve.customer_gender == "customer_female" ? "女性" : "その他" %>
+          <% end %>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">電話番号:</span>
+        <span class="value"><%= @new_reserve.customer_display_tel %></span>
+      </div>
+    </div>
+
+    <% if @new_reserve.notes.present? %>
+      <div class="detail-section">
+        <h3>備考</h3>
+        <div class="notes-content">
+          <%= simple_format(@new_reserve.notes) %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="detail-section">
+      <h3>予約日時</h3>
+      <div class="detail-row">
+        <span class="label">作成日時:</span>
+        <span class="value"><%= @new_reserve.created_at.strftime("%Y年%m月%d日 %H:%M") %></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <% if @new_reserve.date > Date.current %>
+      <%= link_to "予約をキャンセル", @new_reserve, method: :delete, 
+          confirm: "本当に予約をキャンセルしますか？", 
+          class: "btn btn-danger" %>
+    <% end %>
+    <%= link_to "カレンダーに戻る", calendar_path, class: "btn btn-primary" %>
+  </div>
+</div>

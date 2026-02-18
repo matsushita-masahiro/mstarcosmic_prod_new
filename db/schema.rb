@@ -10,13 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_31_220923) do
   create_table "answers", force: :cascade do |t|
     t.integer "inquiry_id"
     t.integer "user_id"
     t.text "comment"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "business_trips", force: :cascade do |t|
+    t.integer "new_machine_id", null: false
+    t.date "date"
+    t.integer "time_slot"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["new_machine_id"], name: "index_business_trips_on_new_machine_id"
   end
 
   create_table "coupons", force: :cascade do |t|
@@ -74,6 +83,47 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["metatron_sale_inquiry_id"], name: "index_ms_inquiry_answers_on_metatron_sale_inquiry_id"
+  end
+
+  create_table "new_machines", force: :cascade do |t|
+    t.string "name"
+    t.integer "total_count"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "new_reserves", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "new_staff_id", null: false
+    t.date "date"
+    t.integer "start_time_slot"
+    t.integer "duration"
+    t.text "notes"
+    t.string "customer_name"
+    t.integer "customer_gender"
+    t.string "customer_tel"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["new_staff_id"], name: "index_new_reserves_on_new_staff_id"
+    t.index ["user_id"], name: "index_new_reserves_on_user_id"
+  end
+
+  create_table "new_schedules", force: :cascade do |t|
+    t.date "date"
+    t.integer "time_slot"
+    t.boolean "working"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "new_staff_id", null: false
+    t.index ["new_staff_id"], name: "index_new_schedules_on_new_staff_id"
+  end
+
+  create_table "new_staffs", force: :cascade do |t|
+    t.string "name"
+    t.integer "staff_type"
+    t.boolean "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "page_contents", force: :cascade do |t|
@@ -201,11 +251,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
     t.boolean "registration_status", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "abo_flag", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "business_trips", "new_machines"
   add_foreign_key "ms_inquiry_answers", "metatron_sale_inquiries"
+  add_foreign_key "new_reserves", "new_staffs"
+  add_foreign_key "new_schedules", "new_staffs"
   add_foreign_key "schedules", "staffs"
   add_foreign_key "schedules", "users"
   add_foreign_key "staff_machine_relations", "staffs"

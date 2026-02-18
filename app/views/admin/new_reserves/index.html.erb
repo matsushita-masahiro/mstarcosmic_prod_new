@@ -1,0 +1,104 @@
+<div class="admin-new-reserves container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h4 class="mb-4">新規予約一覧</h4>
+      
+      <% if @new_reserves.any? %>
+        <div class="table-wrapper">
+          <!-- 固定ヘッダー -->
+          <div class="table-header">
+            <table class="table table-bordered" style="margin-bottom: 0;">
+              <thead>
+                <tr>
+                  <th>予約日時</th>
+                  <th>指名スタッフ</th>
+                  <th>備考</th>
+                  <th>予約者</th>
+                  <th>削除</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          
+          <!-- スクロール可能なボディ -->
+          <div class="table-body">
+            <table class="table table-bordered table-striped table-hover" style="margin-bottom: 0;">
+              <tbody>
+                <% @new_reserves.each do |reserve| %>
+                  <tr>
+                    <td>
+                      <%= reserve.date.strftime('%Y年%m月%d日') %>
+                      <small class="text-muted d-block">
+                        (<%= %w[日 月 火 水 木 金 土][reserve.date.wday] %>)
+                      </small>
+                      <div class="mt-1">
+                        <%= NewSchedule.time_slot_to_time(reserve.start_time_slot) %>〜
+                        <% case reserve.duration %>
+                        <% when 'thirty_minutes', 1 %>
+                          <small class="badge bg-success ms-1">30分</small>
+                        <% when 'sixty_minutes', 2 %>
+                          <small class="badge bg-primary ms-1">60分</small>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td>
+                      <strong><%= reserve.new_staff.name %></strong>
+                    </td>
+                    <td>
+                      <% if reserve.notes.present? %>
+                        <%= simple_format(h(reserve.notes), {}, wrapper_tag: "div", class: "mb-0") %>
+                      <% else %>
+                        <span class="text-muted">-</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <strong><%= reserve.customer_display_name %></strong>
+                      <div class="small text-muted">
+                        <%= reserve.customer_display_tel %>
+                      </div>
+                      <div class="mt-1">
+                        <% if reserve.user %>
+                          <small class="badge bg-primary">会員</small>
+                        <% else %>
+                          <small class="badge bg-secondary">非会員</small>
+                        <% end %>
+                        <% case reserve.customer_display_gender %>
+                        <% when 'male', 'customer_male' %>
+                          <small class="badge bg-info">男性</small>
+                        <% when 'female', 'customer_female' %>
+                          <small class="badge bg-warning">女性</small>
+                        <% else %>
+                          <small class="badge bg-secondary">その他</small>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td>
+                      <%= link_to '削除', admin_new_reserve_path(reserve), 
+                          method: :delete,
+                          class: 'btn btn-sm btn-secondary',
+                          data: { confirm: '本当に削除しますか？' } %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="mt-3">
+          <p class="text-muted">
+            <i class="fas fa-info-circle"></i>
+            合計 <%= @new_reserves.count %> 件の予約があります
+          </p>
+        </div>
+        
+      <% else %>
+        <div class="alert alert-info text-center">
+          <i class="fas fa-calendar-times fa-3x mb-3"></i>
+          <h4>予約がありません</h4>
+          <p class="mb-0">現在、新規予約はありません。</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

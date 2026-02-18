@@ -1,5 +1,6 @@
 # Pin npm packages by running ./bin/importmap
-pin "jquery", to: "https://ga.jspm.io/npm:jquery@3.6.0/dist/jquery.js"
+pin "jquery", to: "https://code.jquery.com/jquery-3.7.1.min.js", preload: true
+
 
 pin "application"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
@@ -17,6 +18,9 @@ pin "zipcodeAPI"
 pin "all_schedule_check"
 pin "tooltip"
 pin "recaptcha_reload", to: "recaptcha_reload.js"
+pin "calendar", to: "calendar.js"
+pin "new_staff_schedules", to: "new_staff_schedules.js"
+pin "business_trips", to: "business_trips.js"
 
 
 
