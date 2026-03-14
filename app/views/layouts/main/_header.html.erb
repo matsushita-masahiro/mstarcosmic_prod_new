@@ -3,7 +3,7 @@
         <li class="logo"><a href="/"><img src="/new-images/logo.png" class="logo"></a></li>
         <li class="not_image"><a href="/">HOME</a></li>
         <li class="not_image"><a href="/about_metatron">メタトロンとは</a></li>
-        <li class="not_image"><%= link_to "料金表", price_list_select_path, { :remote => true } %></li>
+        <li class="not_image"><a href="/price_plan">料金表</a></li>
 
         <% if user_signed_in? %>
             <li class="not_image"><%= link_to '必ずお読みください', "/home/readmust/#{User.find_by(id: current_user.id).user_type}" %></li>
@@ -60,7 +60,7 @@
     <section class="nav">
         <ul>
             <li><a href="/about_metatron">メタトロンとは</a></li>
-            <li><%= link_to "メタトロン料金表", price_list_select_path, { :remote => true , id: "price_list_select_link"} %></li>
+            <li><a href="/price_plan">メタトロン料金表</a></li>
             <!--<li><a href="/price_plan">Special Treatment（腸もみ等）</a></li>-->
             <!--<li><a href="/price_plan">Special Treatment料金表</a></li>-->
             <% if user_signed_in? %>
@@ -111,13 +111,7 @@
         document.getElementById('open').classList.remove('hide');
       });
       
-      // 20240823 追加 for 荒川料金選択
-      
-      document.getElementById('price_list_select_link').addEventListener('click', () => {
-        console.log("priceListSelectMenu js 通過");
-        document.querySelector('.overlay').classList.remove('show');
-        document.getElementById('open').classList.remove('hide');
-      });
+      // 20240823 追加 for 荒川料金選択 (不要になったため削除)
 
     
     
