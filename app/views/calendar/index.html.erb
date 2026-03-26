@@ -1,0 +1,189 @@
+<div id="new_calendar" class="container-wrapper">
+  <!-- 週ナビゲーション -->
+  <div class="week-navigation">
+    <% if @start_date > Date.current %>
+      <%= link_to "前週", calendar_path(start_date: [@start_date - 7.days, Date.current].max), class: "week-nav-btn", data: { turbo: false } %>
+    <% else %>
+      <div class="week-nav-spacer"></div>
+    <% end %>
+    <div class="week-range">
+      <%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6.days).strftime("%-m/%-d") %>
+    </div>
+    <% if @start_date < Date.current + 5.weeks %>
+      <%= link_to "翌週", calendar_path(start_date: @start_date + 7.days), class: "week-nav-btn", data: { turbo: false } %>
+    <% else %>
+      <div class="week-nav-spacer"></div>
+    <% end %>
+  </div>
+
+  <div class="table-wrapper">
+    <!-- 固定ヘッダー -->
+    <div class="table-header">
+      <table class="table table-bordered rounded-2" style="margin-bottom: 0;">
+        <thead>
+          <tr>
+            <th></th>
+            <% @dates.each do |date| %>
+              <th class="<%= 'today' if date == Date.current %>">
+                <div><%= date.strftime("%-m/%-d") %></div>
+                <small class="<%= 'weekend' if date.wday == 0 || date.wday == 6 %>">
+                  <%= %w[日 月 火 水 木 金 土][date.wday] %>
+                </small>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    
+    <!-- スクロール可能なボディ -->
+    <div class="table-body">
+      <table class="table table-bordered table-striped table-hover rounded-2" style="margin-bottom: 0;">
+        <tbody>
+        <% @time_slots.each do |time_data| %>
+          <% slot = time_data[:slot] %>
+          <tr>
+            <td><%= time_data[:time] %></td>
+            <% @dates.each do |date| %>
+              <% availability = @weekly_availability[date][slot] %>
+              <% status = availability[:status] %>
+              <td>
+                <% case status %>
+                <% when 'excellent' %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <button class="status-link reserve-modal-btn admin-tooltip status-excellent" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>"
+                            data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>
+                      ○
+                    </button>
+                  <% else %>
+                    <button class="status-link reserve-modal-btn status-excellent" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>">
+                      ○
+                    </button>
+                  <% end %>
+                <% when 'good' %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <button class="status-link reserve-modal-btn admin-tooltip status-good" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>"
+                            data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>
+                      ○
+                    </button>
+                  <% else %>
+                    <button class="status-link reserve-modal-btn status-good" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>">
+                      ○
+                    </button>
+                  <% end %>
+                <% when 'reserved' %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <div class="status-unavailable admin-tooltip" 
+                         data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>×</div>
+                  <% else %>
+                    <div class="status-unavailable">×</div>
+                  <% end %>
+                <% when 'no_staff' %>
+                  <div class="status-no-staff"></div>
+                <% else %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <div class="status-unavailable admin-tooltip" 
+                         data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>×</div>
+                  <% else %>
+                    <div class="status-unavailable">×</div>
+                  <% end %>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 予約モーダル -->
+<div id="reserveModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>予約フォーム</h2>
+      <span class="close">&times;</span>
+    </div>
+    
+    <div class="modal-body">
+      <div class="reservation-info">
+        <h3>予約情報</h3>
+        <p><strong>日付:</strong> <span id="modal-date"></span></p>
+        <p><strong>時間:</strong> <span id="modal-time"></span></p>
+      </div>
+
+      <form action="<%= confirm_new_reserves_path %>" method="post" id="reserve-form" class="reserve-form" data-turbo="false">
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+        <input type="hidden" name="new_reserve[date]" id="form-date">
+        <input type="hidden" name="new_reserve[start_time_slot]" id="form-time-slot">
+        <input type="hidden" name="original_date" value="<%= @start_date %>">
+
+        <div class="form-group">
+          <label for="staff-select" class="form-label">担当スタッフ</label>
+          <select name="new_reserve[new_staff_id]" id="staff-select" class="form-control" required>
+            <option value="">スタッフを選択してください</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="duration-select" class="form-label">施術時間</label>
+          <select name="new_reserve[duration]" id="duration-select" class="form-control" required>
+            <option value="">時間を選択してください</option>
+            <option value="thirty_minutes">30分</option>
+            <option value="sixty_minutes">60分</option>
+          </select>
+        </div>
+
+        <% unless user_signed_in? %>
+          <div class="customer-info">
+            <h4>お客様情報</h4>
+            
+            <div class="form-group">
+              <label for="customer-name" class="form-label">お名前</label>
+              <input type="text" name="new_reserve[customer_name]" id="customer-name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="customer-gender" class="form-label">性別</label>
+              <select name="new_reserve[customer_gender]" id="customer-gender" class="form-control" required>
+                <option value="">性別を選択してください</option>
+                <option value="customer_male">男性</option>
+                <option value="customer_female">女性</option>
+                <option value="customer_other">その他</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="customer-tel" class="form-label">電話番号</label>
+              <input type="tel" name="new_reserve[customer_tel]" id="customer-tel" class="form-control" required>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="form-group">
+          <label for="notes" class="form-label">備考</label>
+          <textarea name="new_reserve[notes]" id="notes" rows="2" class="form-control" 
+                    placeholder="ご要望やご質問がございましたらご記入ください"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <input type="submit" value="予約内容を確認" class="btn btn-primary btn-large" id="confirm-submit-btn">
+          <button type="button" class="btn btn-secondary modal-cancel">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

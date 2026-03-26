@@ -1,0 +1,467 @@
+/* 出張登録ページのスタイル */
+
+.business-trip-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .business-trip-container .header {
+    background-color: #333;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  
+  .business-trip-container .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .business-trip-container .logo-icon {
+    font-size: 24px;
+  }
+  
+  .business-trip-container .logo-text {
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .business-trip-container .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .business-trip-container .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .business-trip-container .main-content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 70px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .business-trip-container .page-title {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .business-trip-container .page-title h1 {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+  }
+  
+  /* マシン選択 */
+  .machine-selector {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .machine-selector label {
+    font-weight: bold;
+    color: #495057;
+    white-space: nowrap;
+  }
+  
+  .machine-selector select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  /* 週ナビゲーション */
+  .business-trip-container .week-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
+    position: relative;
+  }
+  
+  .business-trip-container .week-range {
+    font-size: 18px;
+    color: #333;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .business-trip-container .week-nav-btn {
+    background-color: transparent;
+    color: #2196F3;
+    border: 2px solid #2196F3;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    height: 40px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .business-trip-container .week-nav-btn:hover {
+    background-color: #2196F3;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  }
+  
+  /* 出張スケジュールグリッド */
+  .business-trip-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .business-trip-grid {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    order: 2;
+  }
+  
+  .business-trip-header-row {
+    display: grid;
+    grid-template-columns: 100px repeat(7, 1fr);
+    background-color: #00bcd4;
+    color: white;
+    min-height: 80px;
+  }
+  
+  .business-trip-header-row .time-header {
+    background-color: #00bcd4;
+    padding: 15px 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .date-header {
+    padding: 15px 5px;
+    text-align: center;
+    border-right: 1px solid #0097a7;
+    font-size: 12px;
+  }
+  
+  .date-header.today {
+    background-color: #0097a7;
+  }
+  
+  .date-header:last-child {
+    border-right: none;
+  }
+  
+  .date-number {
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+  
+  .day-name {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-bottom: 8px;
+  }
+  
+  .day-name.weekend {
+    color: #ffcdd2;
+    font-weight: bold;
+    opacity: 1;
+  }
+  
+  .day-controls {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  
+  .day-all-btn,
+  .day-clear-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .day-all-btn:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+  }
+  
+  .day-clear-btn:hover {
+    background-color: rgba(244, 67, 54, 0.3);
+  }
+  
+  .business-trip-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100vh - 450px);
+  }
+  
+  .time-row {
+    display: grid;
+    grid-template-columns: 100px repeat(7, 1fr);
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .time-row:last-child {
+    border-bottom: none;
+  }
+  
+  .time-label {
+    padding: 15px 10px;
+    background-color: #f8f8f8;
+    border-right: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+  }
+  
+  .business-trip-cell {
+    padding: 15px 5px;
+    border-right: 1px solid #e0e0e0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+  }
+  
+  .business-trip-cell:last-child {
+    border-right: none;
+  }
+  
+  /* 出張用カスタムチェックボックス */
+  .business-trip-container .checkbox-container {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .business-trip-container .checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+  
+  .trip-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
+  
+  .business-trip-container .checkbox-container:hover input~.trip-checkmark {
+    background-color: #ccc;
+  }
+  
+  .business-trip-container .checkbox-container input:checked~.trip-checkmark {
+    background-color: #00bcd4;
+    border-color: #00bcd4;
+  }
+  
+  .trip-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  .business-trip-container .checkbox-container input:checked~.trip-checkmark:after {
+    display: block;
+  }
+  
+  .business-trip-container .checkbox-container .trip-checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* フォームアクション */
+  .business-trip-container .form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    margin-top: auto;
+  }
+  
+  .business-trip-container .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .business-trip-container .btn-primary {
+    background-color: #00bcd4;
+    color: white;
+  }
+  
+  .business-trip-container .btn-primary:hover {
+    background-color: #0097a7;
+  }
+  
+  .business-trip-container .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .business-trip-container .btn-secondary:hover {
+    background-color: #545b62;
+  }
+  
+  .business-trip-container .btn-large {
+    // padding: 15px 30px;
+    font-size: 15px;
+  }
+  
+  .business-trip-container .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* レスポンシブデザイン */
+  @media (max-width: 768px) {
+    .business-trip-container .header {
+      padding: 10px 15px;
+    }
+  
+    .business-trip-container .main-content {
+      padding: 15px;
+    }
+  
+    .machine-selector {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  
+    .machine-selector select {
+      width: 100%;
+    }
+  
+    .business-trip-header-row {
+      grid-template-columns: 80px repeat(7, 1fr);
+    }
+  
+    .business-trip-container .time-row {
+      grid-template-columns: 80px repeat(7, 1fr);
+    }
+  
+    .business-trip-container .time-label {
+      padding: 10px 5px;
+      font-size: 10px;
+    }
+  
+    .business-trip-cell {
+      padding: 10px 2px;
+      min-height: 50px;
+    }
+  
+    .trip-checkmark {
+      height: 20px;
+      width: 20px;
+    }
+  
+    .business-trip-container .checkbox-container .trip-checkmark:after {
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 8px;
+    }
+  
+    .business-trip-container .date-header {
+      padding: 10px 2px;
+      font-size: 10px;
+    }
+  
+    .business-trip-container .day-controls {
+      flex-direction: column;
+      gap: 2px;
+    }
+  
+    .business-trip-container .day-all-btn,
+    .business-trip-container .day-clear-btn {
+      font-size: 8px;
+      padding: 1px 4px;
+    }
+  
+    .business-trip-container .form-actions {
+      flex-direction: column;
+    }
+  }

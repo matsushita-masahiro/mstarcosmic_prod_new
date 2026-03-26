@@ -1,0 +1,88 @@
+<div class="confirm-container">
+  <div class="confirm-header">
+    <h1>予約内容確認</h1>
+  </div>
+
+  <div class="confirmation-details">
+    <h3>予約内容をご確認ください</h3>
+    
+    <div class="detail-section">
+      <h4>予約情報</h4>
+      <div class="detail-row">
+        <span class="label">日付:</span>
+        <span class="value"><%= @new_reserve.date.strftime("%Y年%m月%d日 (%a)") %></span>
+      </div>
+      <div class="detail-row">
+        <span class="label">開始時間:</span>
+        <span class="value"><%= @time_display %></span>
+      </div>
+      <div class="detail-row">
+        <span class="label">施術時間:</span>
+        <span class="value">
+          <%= @new_reserve.duration == "thirty_minutes" ? "30分" : "60分" %>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">担当スタッフ:</span>
+        <span class="value"><%= @staff.name %></span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>お客様情報</h4>
+      <div class="detail-row">
+        <span class="label">お名前:</span>
+        <span class="value">
+          <%= user_signed_in? ? current_user.name : @new_reserve.customer_name %>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">性別:</span>
+        <span class="value">
+          <% if user_signed_in? %>
+            <%= current_user.gender == "male" ? "男性" : current_user.gender == "female" ? "女性" : "その他" %>
+          <% else %>
+            <%= @new_reserve.customer_gender == "customer_male" ? "男性" : @new_reserve.customer_gender == "customer_female" ? "女性" : "その他" %>
+          <% end %>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">電話番号:</span>
+        <span class="value">
+          <%= user_signed_in? ? current_user.tel : @new_reserve.customer_tel %>
+        </span>
+      </div>
+    </div>
+
+    <% if @new_reserve.notes.present? %>
+      <div class="detail-section">
+        <h4>備考</h4>
+        <div class="notes-content">
+          <%= simple_format(@new_reserve.notes) %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= form_with model: @new_reserve, local: true, class: "confirm-form", data: { turbo: false } do |form| %>
+    <%= form.hidden_field :date %>
+    <%= form.hidden_field :start_time_slot %>
+    <%= form.hidden_field :duration %>
+    <%= form.hidden_field :new_staff_id %>
+    <%= form.hidden_field :notes %>
+    <%= hidden_field_tag :original_date, params[:original_date] %>
+    
+    <% unless user_signed_in? %>
+      <%= form.hidden_field :customer_name %>
+      <%= form.hidden_field :customer_gender %>
+      <%= form.hidden_field :customer_tel %>
+    <% end %>
+
+    <div class="form-actions">
+      <%= form.submit "予約を確定する", class: "btn btn-primary btn-large confirm-btn" %>
+      <%= link_to "内容を修正する", new_new_reserve_path(date: @new_reserve.date, time_slot: @new_reserve.start_time_slot), 
+          class: "btn btn-secondary" %>
+      <%= link_to "キャンセル", calendar_path(date: @new_reserve.date), class: "btn btn-outline" %>
+    </div>
+  <% end %>
+</div>

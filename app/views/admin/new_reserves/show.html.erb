@@ -1,0 +1,122 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3 class="card-title mb-0">
+            <i class="fas fa-calendar-check"></i>
+            予約詳細
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>予約日:</strong>
+            </div>
+            <div class="col-sm-8">
+              <%= @new_reserve.date.strftime('%Y年%m月%d日') %>
+              (<%= %w[日 月 火 水 木 金 土][@new_reserve.date.wday] %>曜日)
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>時間:</strong>
+            </div>
+            <div class="col-sm-8">
+              <%= "#{@new_reserve.start_time_slot}:00" %> 〜 
+              <%= "#{@new_reserve.end_time_slot + 1}:00" %>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>お客様名:</strong>
+            </div>
+            <div class="col-sm-8">
+              <%= @new_reserve.customer_display_name %>
+              <% if @new_reserve.user %>
+                <span class="badge bg-primary ms-2">会員</span>
+              <% else %>
+                <span class="badge bg-secondary ms-2">非会員</span>
+              <% end %>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>性別:</strong>
+            </div>
+            <div class="col-sm-8">
+              <% case @new_reserve.customer_display_gender %>
+              <% when 'male', 'customer_male' %>
+                <span class="badge bg-info">男性</span>
+              <% when 'female', 'customer_female' %>
+                <span class="badge bg-warning">女性</span>
+              <% else %>
+                <span class="badge bg-secondary">その他</span>
+              <% end %>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>電話番号:</strong>
+            </div>
+            <div class="col-sm-8">
+              <%= @new_reserve.customer_display_tel %>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>担当スタッフ:</strong>
+            </div>
+            <div class="col-sm-8">
+              <%= @new_reserve.new_staff.name %>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>施術時間:</strong>
+            </div>
+            <div class="col-sm-8">
+              <% case @new_reserve.duration %>
+              <% when 'thirty_minutes', 1 %>
+                <span class="badge bg-success">30分</span>
+              <% when 'sixty_minutes', 2 %>
+                <span class="badge bg-primary">60分</span>
+              <% end %>
+            </div>
+          </div>
+          
+          <% if @new_reserve.user %>
+            <div class="row mb-3">
+              <div class="col-sm-4">
+                <strong>会員情報:</strong>
+              </div>
+              <div class="col-sm-8">
+                <p class="mb-1">ID: <%= @new_reserve.user.id %></p>
+                <p class="mb-0">メール: <%= @new_reserve.user.email %></p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        
+        <div class="card-footer">
+          <div class="d-flex justify-content-between">
+            <%= link_to '一覧に戻る', admin_new_reserves_path, 
+                class: 'btn btn-secondary' %>
+            <div>
+              <%= link_to '削除', admin_new_reserve_path(@new_reserve), 
+                  method: :delete,
+                  class: 'btn btn-danger',
+                  confirm: '本当に削除しますか？' %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,182 @@
+<div class="calendar-container">
+  <div class="main-content">
+    <div class="page-title">
+      <h1>Holistic(4D)のご予約</h1>
+    </div>
+
+    <div class="week-navigation">
+      <% if @start_date > Date.current %>
+        <%= link_to "前週", calendar_path(date: @start_date - 1.week), class: "week-nav-btn" %>
+      <% else %>
+        <div class="week-nav-spacer"></div>
+      <% end %>
+      <span class="week-range">
+        <%= @start_date.strftime("%m/%d") %> - <%= (@start_date + 6.days).strftime("%m/%d") %>
+      </span>
+      <% if @start_date < Date.current + 4.weeks %>
+        <%= link_to "翌週", calendar_path(date: @start_date + 1.week), class: "week-nav-btn" %>
+      <% else %>
+        <div class="week-nav-spacer"></div>
+      <% end %>
+    </div>
+
+    <div class="calendar-grid">
+      <!-- ヘッダー行 -->
+      <div class="calendar-header-grid">
+        <div class="time-header">時間</div>
+        <% @dates.each do |date| %>
+          <div class="date-header <%= 'today' if date == Date.current %>">
+            <div class="date-number"><%= date.strftime("%m/%d") %></div>
+            <div class="day-name <%= 'weekend' if date.wday == 0 || date.wday == 6 %>"><%= %w[日 月 火 水 木 金 土][date.wday] %></div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- スクロール可能なコンテンツ -->
+      <div class="calendar-scroll-container">
+        <% @time_slots.each do |time_data| %>
+          <% slot = time_data[:slot] %>
+          <div class="time-row-grid">
+            <div class="time-label"><%= time_data[:time] %></div>
+            <% @dates.each do |date| %>
+              <% availability = @weekly_availability[date][slot] %>
+              <% status = availability[:status] %>
+              <div class="time-cell">
+                <% case status %>
+                <% when 'excellent' %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <button class="status-link reserve-modal-btn admin-tooltip" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>"
+                            data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>
+                      <div class="status-excellent">○</div>
+                    </button>
+                  <% else %>
+                    <button class="status-link reserve-modal-btn" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>">
+                      <div class="status-excellent">○</div>
+                    </button>
+                  <% end %>
+                <% when 'good' %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <button class="status-link reserve-modal-btn admin-tooltip" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>"
+                            data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>
+                      <div class="status-good">○</div>
+                    </button>
+                  <% else %>
+                    <button class="status-link reserve-modal-btn" 
+                            data-date="<%= date %>" 
+                            data-time-slot="<%= slot %>"
+                            data-time-display="<%= time_data[:time] %>">
+                      <div class="status-good">○</div>
+                    </button>
+                  <% end %>
+                <% when 'reserved' %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <div class="status-unavailable admin-tooltip" 
+                         data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>×</div>
+                  <% else %>
+                    <div class="status-unavailable">×</div>
+                  <% end %>
+                <% when 'no_staff' %>
+                  <div class="status-no-staff"></div>
+                <% else %>
+                  <% if user_signed_in? && current_user.admin? && @weekly_reserves[date][slot].present? %>
+                    <div class="status-unavailable admin-tooltip" 
+                         data-reserves='<%= @weekly_reserves[date][slot].to_json %>'>×</div>
+                  <% else %>
+                    <div class="status-unavailable">×</div>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 予約モーダル -->
+<div id="reserveModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>予約フォーム</h2>
+      <span class="close">&times;</span>
+    </div>
+    
+    <div class="modal-body">
+      <div class="reservation-info">
+        <h3>予約情報</h3>
+        <p><strong>日付:</strong> <span id="modal-date"></span></p>
+        <p><strong>時間:</strong> <span id="modal-time"></span></p>
+      </div>
+
+      <form action="<%= confirm_reserves_path %>" method="post" id="reserve-form" class="reserve-form" data-turbo="false">
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+        <input type="hidden" name="reserve[date]" id="form-date">
+        <input type="hidden" name="reserve[start_time_slot]" id="form-time-slot">
+        <input type="hidden" name="original_date" value="<%= @start_date %>">
+
+        <div class="form-group">
+          <label for="staff-select" class="form-label">担当スタッフ</label>
+          <select name="reserve[staff_id]" id="staff-select" class="form-control" required>
+            <option value="">スタッフを選択してください</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="duration-select" class="form-label">施術時間</label>
+          <select name="reserve[duration]" id="duration-select" class="form-control" required>
+            <option value="">時間を選択してください</option>
+            <option value="thirty_minutes">30分</option>
+            <option value="sixty_minutes">60分</option>
+          </select>
+        </div>
+
+        <% unless user_signed_in? %>
+          <div class="customer-info">
+            <h4>お客様情報</h4>
+            
+            <div class="form-group">
+              <label for="customer-name" class="form-label">お名前</label>
+              <input type="text" name="reserve[customer_name]" id="customer-name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="customer-gender" class="form-label">性別</label>
+              <select name="reserve[customer_gender]" id="customer-gender" class="form-control" required>
+                <option value="">性別を選択してください</option>
+                <option value="customer_male">男性</option>
+                <option value="customer_female">女性</option>
+                <option value="customer_other">その他</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="customer-tel" class="form-label">電話番号</label>
+              <input type="tel" name="reserve[customer_tel]" id="customer-tel" class="form-control" required>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="form-group">
+          <label for="notes" class="form-label">備考</label>
+          <textarea name="reserve[notes]" id="notes" rows="2" class="form-control" 
+                    placeholder="ご要望やご質問がございましたらご記入ください"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <input type="submit" value="予約内容を確認" class="btn btn-primary btn-large" id="confirm-submit-btn">
+          <button type="button" class="btn btn-secondary modal-cancel">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

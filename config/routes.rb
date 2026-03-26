@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  get "business_trips/index"
+  get "calendar/index"
+  get "new_staff_schedules/index"
+  get "new_schedules/index"
+  get "new_reserves/index"
+  get "new_reserves/show"
+  get "new_reserves/confirm"
+  get "new_reserves/new"
 
   
    #  新レイアウト用
@@ -120,6 +128,41 @@ Rails.application.routes.draw do
    get 'sanmeis/handred_graph' => 'sanmeis#handred_graph'
    get 'sanmeis/koudo_area' => 'sanmeis#koudo_area' 
    get 'sanmeis/rikushin' => 'sanmeis#rikushin'
+
+   # 新予約システム 2025/08/01
+   # ✅ 新予約機能
+   resources :new_reserves, except: [:edit, :update] do
+      collection do
+       post :confirm
+      end
+   end
+
+   get 'calendar', to: 'calendar#index'
+   get 'calendar/availability', to: 'calendar#availability', defaults: { format: :json }
+
+   namespace :admin do
+      resources :new_schedules, only: [:index, :create, :update, :destroy]
+      resources :new_reserves, only: [:index, :show, :destroy]
+      # 出張登録管理
+      resources :business_trips, only: [:index, :create, :destroy] do
+         collection do
+         patch :bulk_update
+         end
+      end 
+   end
+
+     # スタッフスケジュール管理
+   resources :new_staff_schedules, only: [:index, :show, :update] do
+      collection do
+      patch :bulk_update
+      end
+   end
+
+   # 旧パスから新パスへのリダイレクト
+   get 'staff_schedules', to: redirect('/new_staff_schedules')
+
+    
+
    
 
    
