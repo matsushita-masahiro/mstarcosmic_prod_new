@@ -1,6 +1,5 @@
 <div id="reserves" class="reserves">
-  <% maintenance_mode = true %>
-  <% if maintenance_mode %>
+  <% if ENV['MAINTENANCE_MODE'] == 'true' %>
     <%= render 'reserves/system_mente' %>
   <% else %>
     <%= render 'reserves/calender_new' %>
