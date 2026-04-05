@@ -1,3 +1,8 @@
 <div id="reserves" class="reserves">
-  <%= render 'reserves/calender_new' %>
+  <% maintenance_mode = true %>
+  <% if maintenance_mode %>
+    <%= render 'reserves/system_mente' %>
+  <% else %>
+    <%= render 'reserves/calender_new' %>
+  <% end %>
 </div>

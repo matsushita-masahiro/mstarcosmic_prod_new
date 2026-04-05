@@ -1,4 +1,10 @@
 <div id="reserves" class="reserves">
-  <%= render 'reserves/calender_new' %>
+  <%# メンテナンスモード: MAINTENANCE_MODE を true にしてデプロイ、完了後に false に戻す %>
+  <% maintenance_mode = true %>
+  <% if maintenance_mode && !(user_signed_in? && admin_user?) %>
+    <%= render 'reserves/system_mente' %>
+  <% else %>
+    <%= render 'reserves/calender_new' %>
+  <% end %>
 </div>
 
