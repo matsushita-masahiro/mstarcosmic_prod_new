@@ -34,7 +34,19 @@
             <% d = (@start_date + k).to_date; names = attendance_staff(d, 10 + t * 0.5) %>
             <td>
               <% if names == ["=="] %><span class="nc-icon nc-icon-empty"></span>
-              <% else %><% names.each do |n| %><span class="nc-staff-badge"><%= n %></span><% end %><% end %>
+              <% else %><% names.each do |n| %><%
+                colors = {
+                  '聖子' => 'background:#ffebee;color:#c62828;',
+                  '花香' => 'background:#fce4ec;color:#ad1457;',
+                  '悠綺' => 'background:#e8f5e9;color:#2e7d32;',
+                  '由香' => 'background:#e3f2fd;color:#1565c0;',
+                  '奈緒' => 'background:#fff3e0;color:#e65100;',
+                  '夏子' => 'background:#f3e5f5;color:#7b1fa2;',
+                  '可奈' => 'background:#e0f7fa;color:#00695c;',
+                  '佐藤' => 'background:#fbe9e7;color:#bf360c;',
+                }
+                style = colors[n] || 'background:#f5f5f5;color:#555;'
+              %><span class="nc-staff-badge" style="<%= style %>"><%= n %></span><% end %><% end %>
             </td>
           <% end %>
         </tr>
