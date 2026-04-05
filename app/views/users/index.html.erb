@@ -1,53 +1,73 @@
-<div class="container">
-    <h2 class="my-reserved-title">お客様一覧</h2>
-<div id="page_top"><a href="#"></a></div>
-    
-<%= form_tag users_path, :method => 'get' do %> <%#　projects_pathはモデル名で読みかえること %>
+<div style="max-width:1200px;margin:0 auto;padding:24px 16px;">
+<div class="nc-card">
+  <h2 class="nc-title">👥 お客様一覧</h2>
 
-  <p>
-    <p>名前：<%= text_field_tag "search[name]", @user, :class => "form-control width-100 height-30 col-search" %></p>
-    <p>type：<%= select :search, :user_type, @user_types.map{|type_name, id| [type_name, id]}, :include_blank => true, :selected => @user_type %></p>
-    <%= submit_tag "検索", :name => nil, :class => "btn-search" %><span class="user-count">(<%= @users.count %>/<%= User.all.count-1 %>)</span>
-        
- </p>
-<% end %>
-
-     <!--<div class="user-index-table-wrapper">-->
-     <div class="text-nowrap table-responsive">
-        <table class="table table-bordered table-schedule table-fixed">
-          <thead>
-            <tr>
-              <th scope="col" class="name">名前</th>
-              <th scope="col" class="email">メール</th>
-              <th scope="col" class="tel">電話</th>
-              <th scope="col" class="birthday">生年月日</th>
-              <th scope="col" class="gender">性別</th>
-              <th scope="col" class="introducer">紹介者</th>
-              <th scope="col" class="type">タイプ</th>
-              <th scope="col" class="delete">削除</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @users.each do |user| %>
-               <tr>
-                  <td class="name"><%= link_to user.name, "/users/#{user.id}/edit" %></td>
-                  <td class="email"><a href="mailto:<%= user.email %>"><%= user.email %></a></td>
-                  <!--<td class="email"><= user.email %></td>-->
-                  <td class="tel"><%= user.tel %></td>
-                  <td class="birthday"><%= user.birthday %></td>
-                  <td class="gender"><%= Global::GENDER[user.gender] %></td>
-                  <td class="introducer"><%= user.introducer %></td>
-                  <% if user.user_type.present? %>
-                    <td class="type"><%= UserType.find(user.user_type).type_name %></td>
-                  <% else %>
-                    <td class="type">---</td>
-                  <% end %>
-<td class="delete"><%= link_to "削除", "users/#{user.id}", data: { confirm: "#{User.find_by(id: user.id).name}様を本当に削除しますか？" }, method: :delete %></td>
-               </tr>
-            <% end %>
-          </tbody>
-        </table>
-        
+  <%= form_tag users_path, method: 'get', id: 'user-search-form' do %>
+    <div style="display:flex;gap:12px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+      <div>
+        <div style="color:#888;font-size:0.75rem;margin-bottom:4px;">名前</div>
+        <%= text_field_tag "search[name]", @user, style: "padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;width:160px;" %>
+      </div>
+      <div>
+        <div style="color:#888;font-size:0.75rem;margin-bottom:4px;">タイプ</div>
+        <%= select :search, :user_type, @user_types.map{|type_name, id| [type_name, id]}, {include_blank: true, selected: @user_type}, style: "padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;width:160px;" %>
+      </div>
+      <div><%= submit_tag "検索", name: nil, class: "nc-nav-btn", style: "border-color:#667eea;color:#667eea;cursor:pointer;" %></div>
+      <div style="color:#888;font-size:0.85rem;"><%= @users.count %> / <%= User.all.count - 1 %>件</div>
     </div>
-        
+  <% end %>
+
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+      <tr style="border-bottom:2px solid #eee;">
+        <th style="text-align:left;padding:8px 10px;color:#888;font-weight:600;white-space:nowrap;">名前</th>
+        <th style="text-align:left;padding:8px 10px;color:#888;font-weight:600;">メール</th>
+        <th style="text-align:left;padding:8px 10px;color:#888;font-weight:600;white-space:nowrap;">電話</th>
+        <th style="text-align:left;padding:8px 10px;color:#888;font-weight:600;white-space:nowrap;">生年月日</th>
+        <th style="text-align:left;padding:8px 4px;color:#888;font-weight:600;white-space:nowrap;">性別</th>
+        <th style="text-align:left;padding:8px 4px;color:#888;font-weight:600;white-space:nowrap;">紹介者</th>
+        <th style="text-align:left;padding:8px 4px;color:#888;font-weight:600;white-space:nowrap;">タイプ</th>
+        <th style="padding:8px 4px;white-space:nowrap;"></th>
+      </tr>
+      <% @users.each do |user| %>
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 10px;white-space:nowrap;"><%= link_to user.name, "/users/#{user.id}/edit", style: "color:#2563eb;font-weight:600;text-decoration:none;" %></td>
+          <td style="padding:8px 10px;word-break:break-all;"><a href="mailto:<%= user.email %>" data-turbo="false" style="color:#2563eb;text-decoration:none;"><%= user.email %></a></td>
+          <td style="padding:8px 10px;white-space:nowrap;"><%= user.tel %></td>
+          <td style="padding:8px 10px;white-space:nowrap;"><%= user.birthday %></td>
+          <td style="padding:8px 4px;"><%= Global::GENDER[user.gender] %></td>
+          <td style="padding:8px 4px;"><%= user.introducer %></td>
+          <td style="padding:8px 4px;">
+            <% if user.user_type.present? %>
+              <% type_name = UserType.find_by(id: user.user_type)&.type_name || '---' %>
+              <span style="padding:2px 8px;border-radius:12px;font-size:0.7rem;font-weight:600;
+                <% if user.user_type == '1' %>background:#e8f5e9;color:#2e7d32;
+                <% elsif user.user_type == '11' %>background:#fff3cd;color:#856404;
+                <% elsif user.user_type == '12' %>background:#e3f2fd;color:#1565c0;
+                <% else %>background:#f5f5f5;color:#555;<% end %>"><%= type_name %></span>
+            <% else %><span style="color:#ccc;">---</span><% end %>
+          </td>
+          <td style="padding:8px 10px;">
+            <%= link_to "users/#{user.id}", data: { confirm: "#{user.name}様を本当に削除しますか？" }, method: :delete, style: "color:#e74c3c;font-size:0.75rem;text-decoration:none;" do %>削除<% end %>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
 </div>
+</div>
+
+<script>
+(function() {
+  var form = document.getElementById('user-search-form');
+  if (!form) return;
+  var nameInput = form.querySelector('[name="search[name]"]');
+  var typeSelect = form.querySelector('[name="search[user_type]"]');
+  var timer;
+  if (typeSelect) typeSelect.addEventListener('change', function() { form.submit(); });
+  if (nameInput) nameInput.addEventListener('input', function() {
+    clearTimeout(timer);
+    timer = setTimeout(function() { form.submit(); }, 400);
+  });
+})();
+</script>

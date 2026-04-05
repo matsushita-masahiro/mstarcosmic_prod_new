@@ -1,75 +1,32 @@
-<div id="schedule-new">
-    <!--< if current_user.user_type == "1" %>-->
-     <div class="back-link"><%= link_to "<< 戻る", "/admin/staffs" %></div>
-    <!--< end %>-->
-    <div class="title">スケジュール登録（<%= @staff.name %>）</div>
-    <% if user_signed_in? && current_user.user_type == "1" %>
-        <% if @staff.active_flag %>
-          <div class="nonactivate"><%= link_to "予約カレンダーからはずす", "/staffs/#{@staff.id}/nonactivate", method: "patch" %></div>
-        <% else %>
-          <div class="activate"><%= link_to "予約カレンダーに入れる", "/staffs/#{@staff.id}/activate", method: "patch" %></div>
-        <% end %>
-    <% end %>
-    <%= render 'schedule_calender' %>
-    <% if admin_user? %>
-            <div class="dismiss">
-                <% if @staff.dismiss_flag == false %>
-                      <%= link_to "スタッフを解任",
-                          "/admin/staffs/#{@staff.id}",
-                          data: {
-                            turbo_method: :delete,
-                            turbo_confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも削除されますが本当に解任されますか？"
-                          },
-                          class: "btn btn-danger" %>
-                 <% else %>
-                      <%= link_to "再度スタッフにする",
-                          "/admin/staffs/#{@staff.id}",
-                          data: {
-                            turbo_method: :patch,
-                            turbo_confirm: "【確認】『#{@staff.name}』を再度スタッフに就任させますか？"
-                          },
-                          class: "btn btn-primary" %>                 
-                 <% end %>
-            </div>
-            <div class="dismiss">※スタッフ解任すると、全ての出勤カレンダーも削除されます。</div>
-            <div class="dismiss">
-                      <%= link_to "スタッフ解雇",
-                          "/admin/staffs/#{@staff.id}",
-                          data: {
-                            turbo_method: :post,
-                            turbo_confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも予約も削除されますが本当に完全解雇されますか？"
-                          },
-                          class: "btn btn-danger staff-fire" %>                
-            </div>
-    <% end %>    <!--  admin_user? end -->
+<div class="nc-container">
+<div class="nc-card">
+  <h2 class="nc-title">📋 スケジュール登録（<%= @staff.name %>）</h2>
+  <p class="nc-subtitle"><%= link_to "← スタッフ管理に戻る", "/admin/staffs", style: "color:#667eea;" %></p>
+
+  <% if user_signed_in? && current_user.user_type == "1" %>
+    <div class="nc-actions">
+      <% if @staff.active_flag %>
+        <%= link_to "予約カレンダーからはずす", "/staffs/#{@staff.id}/nonactivate", method: "patch", class: "nc-nav-btn nc-nav-btn-danger" %>
+      <% else %>
+        <%= link_to "予約カレンダーに入れる", "/staffs/#{@staff.id}/activate", method: "patch", class: "nc-nav-btn", style: "border-color:#27ae60;color:#27ae60;" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= render 'schedule_calender' %>
+
+  <% if admin_user? %>
+    <div class="nc-actions" style="margin-top:24px;">
+      <% if @staff.dismiss_flag == false %>
+        <%= link_to "スタッフを解任", "/admin/staffs/#{@staff.id}",
+            data: { turbo_method: :delete, turbo_confirm: "【確認】『#{@staff.name}』の全ての出勤カレンダーも削除されますが本当に解任されますか？" },
+            class: "nc-nav-btn nc-nav-btn-danger" %>
+      <% else %>
+        <%= link_to "再度スタッフにする", "/admin/staffs/#{@staff.id}",
+            data: { turbo_method: :patch, turbo_confirm: "【確認】『#{@staff.name}』を再度スタッフに就任させますか？" },
+            class: "nc-nav-btn" %>
+      <% end %>
+    </div>
+  <% end %>
 </div>
-
-<style>
-
-    .activate, .nonactivate {
-        color: black;
-        margin: 20px auto 0;
-        text-align: center;
-        width: 200px;
-        height: 40px;
-        background: lightgray;
-        line-height: 40px;
-        border-radius: 5px;
-    }
-    
-    .activate:hover, .nonactivate:hover {
-        opacity: 0.7;
-    }
-    
-    .nonactivate > a {
-        color: red;
-    }
-    
-    .dismiss {
-        font-size: 12px;
-        margin-top: 20px;
-        text-align: center;
-    }
-    
-</style>
-    
+</div>

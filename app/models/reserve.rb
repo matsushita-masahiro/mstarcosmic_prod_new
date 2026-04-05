@@ -2,6 +2,10 @@ class Reserve < ApplicationRecord
     belongs_to :user
     belongs_to :staff
     attr_accessor :frames, :start_date, :email, :gender , :tel, :name, :name_kana
+
+    # 並行稼働: 旧reservesに書き込まれたら新reservationsにも同期
+    after_create :sync_to_reservations
+    after_destroy :remove_from_reservations
     
     scope :h_nonnominated_reserved_count, -> (date, space) { where(reserved_date: date, reserved_space: space, machine: "h", staff_id: 0).count }
     scope :w_nonnominated_reserved_count, -> (date, space) { where(reserved_date: date, reserved_space: space, machine: "w", staff_id: 0).count }
@@ -70,6 +74,113 @@ class Reserve < ApplicationRecord
         # logger.debug("-------reserve exported #{backup_reserves.count}件")
         
 #   end
+    private
+
+    def sync_to_reservations
+      return if user_id == 0 # 休日レコードはスキップ
+      # root_reserve_idが自分自身の場合のみ同期（親レコード）
+      # root_reserve_idがまだ設定されていない場合も同期（後でupdateされる）
+      return if root_reserve_id.present? && root_reserve_id != id
+
+      # 同じroot_reserve_idのグループを集めて1件のReservationにする
+      # ただしcreate直後はroot_reserve_idがまだnilの場合があるので、
+      # after_updateでも同期する
+    end
+
+    def remove_from_reservations
+      # root_reserve_idでグループ化されたReservationを削除
+      Reservation.where(
+        "notes LIKE ?", "%legacy_reserve_id:#{root_reserve_id || id}%"
+      ).destroy_all
+    rescue => e
+      Rails.logger.warn "Reserve#remove_from_reservations: #{e.message}"
+    end
+
+    # root_reserve_id設定後に呼ばれる
+    after_update :sync_group_to_reservations_if_root
+    # 子レコード作成時にも親グループを再同期
+    after_create :sync_parent_group
+    after_update :sync_parent_group_on_update
+
+    def sync_group_to_reservations_if_root
+      return unless saved_change_to_root_reserve_id?
+      sync_group_to_reservations
+    end
+
+    def sync_parent_group
+      return if user_id == 0
+      return if root_reserve_id.nil? || root_reserve_id == id
+      parent = Reserve.find_by(id: root_reserve_id)
+      parent&.send(:sync_group_to_reservations)
+    end
+
+    def sync_parent_group_on_update
+      return unless saved_change_to_root_reserve_id?
+      return if user_id == 0
+      return if root_reserve_id.nil? || root_reserve_id == id
+      parent = Reserve.find_by(id: root_reserve_id)
+      parent&.send(:sync_group_to_reservations)
+    end
+
+    def sync_group_to_reservations
+      return if user_id == 0
+      return unless root_reserve_id == id # 親レコードのみ
+
+      group = Reserve.where(root_reserve_id: id).order(:reserved_space)
+      return if group.empty?
+
+      min_space = group.minimum(:reserved_space)
+      max_space = group.maximum(:reserved_space)
+      duration = group.count * 30
+
+      service = case machine
+                when 'h' then 'holistic'
+                when 'w' then 'wellbeing'
+                else 'holistic'
+                end
+
+      h = min_space.to_i
+      m = ((min_space - h) * 60).round
+      start_time = format('%02d:%02d', h, m)
+
+      end_h = (max_space + 0.5).to_i
+      end_m = (((max_space + 0.5) - end_h) * 60).round
+      end_time = format('%02d:%02d', end_h, end_m)
+
+      staff_id_val = staff_id == 0 ? nil : staff_id
+
+      # 指名なし(staff_id=0)の場合、自動割当
+      if staff_id_val.nil?
+        slot_time = start_time
+        svc = AvailabilityService.new(service, reserved_date, num_days: 1, user_signed_in: true)
+        assigned = svc.auto_assign_staff(reserved_date, slot_time, duration_minutes: duration)
+        staff_id_val = assigned&.id
+      end
+
+      existing = Reservation.find_by(
+        user_id: user_id, date: reserved_date,
+        start_time: start_time, service: service
+      )
+
+      if existing
+        existing.update!(
+          staff_id: staff_id_val, end_time: end_time,
+          duration: duration, notes: remarks,
+          is_new_customer: new_customer || false
+        )
+      else
+        Reservation.create!(
+          user_id: user_id, staff_id: staff_id_val,
+          service: service, date: reserved_date,
+          start_time: start_time, end_time: end_time,
+          duration: duration, is_new_customer: new_customer || false,
+          notes: remarks, status: 0,
+          group_id: SecureRandom.uuid
+        )
+      end
+    rescue => e
+      Rails.logger.warn "Reserve#sync_group_to_reservations: #{e.message}"
+    end
     
     
 end

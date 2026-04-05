@@ -1,0 +1,59 @@
+<div class="nc-container">
+  <h2 class="nc-title">🚗 出張登録（ホリスティック）</h2>
+  <p class="nc-subtitle">マシンが出張中の時間帯にチェックを入れてください</p>
+
+  <!-- 週ナビ -->
+  <div class="nc-week-nav">
+    <% if @start_date > Date.current %>
+      <%= link_to new_service_unavailabilities_path(start_date: @start_date - 7), class: "btn btn-outline-primary btn-sm" do %>
+        <i class="fas fa-chevron-left"></i> 前週
+      <% end %>
+    <% else %><span></span><% end %>
+    <span class="nc-week-range"><%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6).strftime("%-m/%-d") %></span>
+    <%= link_to new_service_unavailabilities_path(start_date: @start_date + 7), class: "btn btn-outline-primary btn-sm" do %>
+      翌週 <i class="fas fa-chevron-right"></i>
+    <% end %>
+  </div>
+
+  <%= form_tag new_service_unavailabilities_path, method: :post do %>
+    <%= hidden_field_tag :service, 'holistic' %>
+    <%= hidden_field_tag :start_date, @start_date %>
+
+    <div class="nc-actions">
+      <%= submit_tag "保存する", class: "btn btn-primary" %>
+    </div>
+
+    <table class="nc-table">
+      <thead>
+        <tr>
+          <th></th>
+          <% @dates.each do |d| %>
+            <% weekend = d.wday == 0 || d.wday == 6 %>
+            <th class="<%= 'nc-weekend' if weekend %>">
+              <%= d.strftime("%-m/%-d") %><br><small><%= %w[日 月 火 水 木 金 土][d.wday] %></small>
+            </th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @time_slots.each do |slot| %>
+          <tr>
+            <th><%= slot %></th>
+            <% @dates.each do |date| %>
+              <% checked = @weekly.dig(date, slot) %>
+              <td class="nc-check-cell">
+                <input type="checkbox" name="slots[<%= date %>_<%= slot %>]" value="1"
+                       class="nc-check" <%= 'checked' if checked %>
+                       style="accent-color: #e74c3c;">
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="nc-actions">
+      <%= submit_tag "保存する", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>

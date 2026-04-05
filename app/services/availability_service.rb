@@ -1,0 +1,223 @@
+class AvailabilityService
+  SLOT_MINUTES  = 30
+  SLOTS_PER_DAY = 24
+  CUTOFF_HOUR   = 15
+
+  def self.time_slots
+    @time_slots ||= SLOTS_PER_DAY.times.map do |i|
+      format('%02d:%02d', 10 + i / 2, (i % 2) * 30)
+    end.freeze
+  end
+
+  # サービスのmin_durationを考慮した表示用スロット
+  def self.time_slots_for_service(service)
+    last_start_hour = 22 * 60 - service.min_duration # 分単位
+    time_slots.select do |t|
+      h, m = t.split(':').map(&:to_i)
+      (h * 60 + m) <= last_start_hour
+    end
+  end
+
+  # @param service_name [String] 'holistic', 'seitai', 'shinkyu'
+  # @param start_date [Date]
+  # @param num_days [Integer]
+  # @param user_signed_in [Boolean]
+  def initialize(service_name, start_date, num_days: 7, user_signed_in: false)
+    @service_name   = service_name
+    @start_date     = start_date
+    @num_days       = num_days
+    @user_signed_in = user_signed_in
+    @dates          = (0...num_days).map { |i| start_date + i.days }
+  end
+
+  # 週間空き状況
+  # => { Date => { "10:00" => Integer(-1|0|1|2), ... }, ... }
+  def calculate
+    load_data
+    result = {}
+    @dates.each do |date|
+      result[date] = {}
+      self.class.time_slots.each do |slot|
+        result[date][slot] = calc_slot(date, slot)
+      end
+    end
+    result
+  end
+
+  # 管理者用: 週間予約一覧
+  # => { Date => { "10:00" => [Reservation, ...], ... }, ... }
+  def weekly_reservations
+    load_data
+    result = {}
+    @dates.each do |date|
+      result[date] = {}
+      self.class.time_slots.each do |slot|
+        s, e = slot_range(slot)
+        result[date][slot] = (@res_idx[date] || []).select { |r| r.start_time < e && r.end_time > s }
+      end
+    end
+    result
+  end
+
+  # 指定枠の空きスタッフ一覧（duration分の連続空きをチェック）
+  def available_staff(date, slot_time, duration_minutes: 60)
+    load_data
+    s, e = slot_range(slot_time)
+    # duration分の終了時刻
+    full_end = s + duration_minutes.minutes
+
+    w_ids = working_ids(date, s)
+    # duration全体をカバーして出勤しているスタッフのみ
+    w_ids = w_ids.select do |sid|
+      (@sched_idx[date] || []).any? do |sc|
+        sc.staff_id == sid && sc.start_time <= s && sc.end_time >= full_end
+      end
+    end
+
+    # duration全体で予約が重複していないスタッフのみ
+    busy_ids = (@res_idx[date] || []).select do |r|
+      r.staff_id.present? && r.start_time < full_end && r.end_time > s
+    end.map(&:staff_id).uniq
+
+    free_ids = w_ids - busy_ids
+
+    # 出張中のスタッフを除外（出張時はまさこが不在）
+    if (@unavail_idx[date] || []).any? { |u| u.start_time < full_end && u.end_time > s }
+      # 出張担当スタッフ（まさこ=nomination_fee > 0）を除外
+      trip_staff_ids = @staffs.select { |st| st.nomination_fee > 0 }.map(&:id)
+      free_ids -= trip_staff_ids
+    end
+
+    free_ids &= @new_capable_ids unless @user_signed_in
+    @staffs.select { |st| free_ids.include?(st.id) }
+  end
+
+  # 指名なし予約時の自動スタッフ割当
+  # まさこ以外を優先し、他に空きがなければまさこを割当
+  def auto_assign_staff(date, slot_time, duration_minutes: 60, is_new_customer: false)
+    staff_list = available_staff(date, slot_time, duration_minutes: duration_minutes)
+    return nil if staff_list.empty?
+
+    # 新規客はcan_serve_new=trueのスタッフのみ（フィルタ済み）
+    # まさこ以外を優先
+    non_masako = staff_list.reject { |s| s.nomination_fee > 0 }
+    non_masako.any? ? non_masako.first : staff_list.first
+  end
+
+  private
+
+  def load_data
+    return if @loaded
+    @loaded = true
+
+    @service = Service.find_by!(name: @service_name)
+    svc_staff_ids = StaffService.where(service: @service_name).pluck(:staff_id)
+    @staffs = Staff.where(id: svc_staff_ids, active_flag: true, dismiss_flag: false).to_a
+    @staff_ids = @staffs.map(&:id)
+    @new_capable_ids = @staffs.select { |s| s.new_customer_flag }.map(&:id)
+
+    @sched_idx = StaffSchedule.for_dates(@dates).where(staff_id: @staff_ids)
+                              .group_by(&:date)
+    @res_idx   = Reservation.confirmed.for_dates(@dates).includes(:user, :staff)
+                            .group_by(&:date)
+    @unavail_idx = ServiceUnavailability.for_dates(@dates).for_service(@service_name)
+                                        .group_by(&:date)
+  end
+
+  def calc_slot(date, slot_time)
+    s, e = slot_range(slot_time)
+    today = Date.current
+    now_h = Time.current.in_time_zone('Tokyo').hour
+
+    return -1 if date <= today
+    return -1 if date == today + 1.day && now_h >= CUTOFF_HOUR
+    return -1 unless @service.bookable?
+
+    # 予約時間分の枠が営業時間内に収まるかチェック
+    business_end = Time.zone.parse('2000-01-01 22:00')
+    required_end = s + @service.min_duration.minutes
+    return 0 if required_end > business_end
+
+    case @service_name
+    when 'holistic', 'wellbeing'
+      calc_holistic(date, s, e)
+    else
+      calc_simple(date, s, e)
+    end
+  end
+
+  def calc_holistic(date, s, e)
+    full_end = s + @service.min_duration.minutes
+
+    # このスロット(30分)に重複する全予約を取得
+    slot_res = (@res_idx[date] || []).select do |r|
+      %w[holistic wellbeing].include?(r.service) && r.start_time < e && r.end_time > s
+    end
+
+    # マシン空き = max_concurrent - 出張 - このスロットの同時予約数
+    unavail_n = (@unavail_idx[date] || []).count { |u| u.start_time < e && u.end_time > s }
+    machine_left = @service.max_concurrent - unavail_n - slot_res.size
+    return 0 if machine_left <= 0
+
+    # 出勤スタッフ（予約全体の時間帯をカバー）
+    w_ids = (@sched_idx[date] || []).select do |sc|
+      @staff_ids.include?(sc.staff_id) && sc.start_time <= s && sc.end_time >= full_end
+    end.map(&:staff_id).uniq
+    return -1 if w_ids.empty?
+
+    # 予約全体(60分)で重複する予約があるスタッフを除外
+    full_res = (@res_idx[date] || []).select do |r|
+      %w[holistic wellbeing].include?(r.service) && r.start_time < full_end && r.end_time > s
+    end
+    busy_staff_ids = full_res.select { |r| r.staff_id.present? }.map(&:staff_id).uniq
+    free_ids = w_ids - busy_staff_ids
+
+    # 出張中のスタッフ（まさこ）を除外
+    if unavail_n > 0
+      trip_staff_ids = @staffs.select { |st| st.nomination_fee > 0 }.map(&:id)
+      free_ids -= trip_staff_ids
+    end
+
+    # マシン残りとスタッフ空きの小さい方
+    free_new = free_ids.count { |id| @new_capable_ids.include?(id) }
+    free_all = free_ids.size
+
+    avail_new = [free_new, machine_left].min.clamp(0, 2)
+    avail_old = [free_all, machine_left].min.clamp(0, 2)
+
+    v = @user_signed_in ? avail_old : avail_new
+    return 2 if v >= 2
+    return 1 if v == 1
+    0
+  end
+
+  def calc_simple(date, s, e)
+    w_ids = working_ids(date, s)
+    return -1 if w_ids.empty?
+
+    reserved = (@res_idx[date] || []).any? do |r|
+      r.service == @service_name && r.start_time < e && r.end_time > s
+    end
+    reserved ? 0 : 1
+  end
+
+  def working_ids(date, slot_start)
+    (@sched_idx[date] || []).select do |sc|
+      @staff_ids.include?(sc.staff_id) && sc.start_time <= slot_start && sc.end_time > slot_start
+    end.map(&:staff_id).uniq
+  end
+
+  def reserved_ids(date, s, e)
+    (@res_idx[date] || []).select do |r|
+      r.staff_id.present? && r.start_time < e && r.end_time > s
+    end.map(&:staff_id).uniq
+  end
+
+  # "10:30" => [Time, Time] (slot_start, slot_end)
+  def slot_range(slot_time)
+    h, m = slot_time.split(':').map(&:to_i)
+    base = Time.zone.parse('2000-01-01')
+    s = base.change(hour: h, min: m)
+    [s, s + SLOT_MINUTES.minutes]
+  end
+end

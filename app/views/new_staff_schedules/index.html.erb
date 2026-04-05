@@ -1,0 +1,68 @@
+<div class="nc-container">
+  <h2 class="nc-title">📋 出勤スケジュール登録</h2>
+
+  <!-- スタッフ選択タブ -->
+  <div class="nc-staff-tabs">
+    <% @staffs.each do |staff| %>
+      <%= link_to staff.name,
+          new_staff_schedules_path(staff_id: staff.id, start_date: @start_date),
+          class: "nc-staff-tab #{'active' if @selected_staff&.id == staff.id}" %>
+    <% end %>
+  </div>
+
+  <% if @selected_staff %>
+    <!-- 週ナビ -->
+    <div class="nc-week-nav">
+      <% if @start_date > Date.current %>
+        <%= link_to new_staff_schedules_path(staff_id: @selected_staff.id, start_date: @start_date - 7), class: "btn btn-outline-primary btn-sm" do %>
+          <i class="fas fa-chevron-left"></i> 前週
+        <% end %>
+      <% else %><span></span><% end %>
+      <span class="nc-week-range"><%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6).strftime("%-m/%-d") %></span>
+      <%= link_to new_staff_schedules_path(staff_id: @selected_staff.id, start_date: @start_date + 7), class: "btn btn-outline-primary btn-sm" do %>
+        翌週 <i class="fas fa-chevron-right"></i>
+      <% end %>
+    </div>
+
+    <%= form_tag new_staff_schedules_path, method: :post do %>
+      <%= hidden_field_tag :staff_id, @selected_staff.id %>
+      <%= hidden_field_tag :start_date, @start_date %>
+
+      <div class="nc-actions">
+        <%= submit_tag "保存する", class: "btn btn-primary" %>
+      </div>
+
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th></th>
+            <% @dates.each do |d| %>
+              <% weekend = d.wday == 0 || d.wday == 6 %>
+              <th class="<%= 'nc-weekend' if weekend %>">
+                <%= d.strftime("%-m/%-d") %><br><small><%= %w[日 月 火 水 木 金 土][d.wday] %></small>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @time_slots.each do |slot| %>
+            <tr>
+              <th><%= slot %></th>
+              <% @dates.each do |date| %>
+                <% checked = @weekly.dig(date, slot) %>
+                <td class="nc-check-cell">
+                  <input type="checkbox" name="slots[<%= date %>_<%= slot %>]" value="1"
+                         class="nc-check" <%= 'checked' if checked %>>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <div class="nc-actions">
+        <%= submit_tag "保存する", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

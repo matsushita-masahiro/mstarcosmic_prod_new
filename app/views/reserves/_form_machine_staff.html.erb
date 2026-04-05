@@ -1,120 +1,95 @@
-<div class="modal-dialog modal-lg" style="z-index: 10000;" >
- <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">予約確認</h3>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>   
-    <div class="container reserve-form">
-        <%= form_for @reserve do |f| %>
-          <%= f.hidden_field :staff_id, :value => @staff.id %>
-          <table class="table table-bordered modal-table">
-            <tbody>
-              <tr>
-                <th scope="row" style="background: #dcdcdc;">氏名</th>
-                <td><%= current_user.name %></td>
-          
-              </tr>
-              <tr>
-                <th scope="row">性別</th>
-                <td><%= Global::GENDER[current_user.gender] %></td>
-          
-              </tr>
-              <tr>
-                <th scope="row">電話</th>
-                <td><%= current_user.tel %></td>
-              </tr>
-              <tr>
-                <th scope="row">開始日時</th>
-                <td><%= @date.to_date.strftime("%Y年 %-m月 %-d日") %>(<%= Global::WEEKDAY[@date.to_date.wday] %>)　<%= display_time(@frame.to_f) %>〜</td>
-              </tr>
-              <tr>
-                <th scope="row">スタッフ</th>
-                <td><%= @staff.name %></td>
-              </tr>              
-              <tr>
-                <th scope="row">マシン</th>
-                <td>
-                  <% if @machine == "h" %>
-                    Holistic
-                  <% elsif @machine == "w" %>
-                    Wellbeing
-                  <% else %>
-                    <% if @staff.id == 1 %>
-                      算命学
-                    <% elsif @staff.id == 5 %>
-                      腸もみ等
-                    <% else %>
-                      その他
-                    <% end %>
-                  <% end %>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">予約枠</th>
-                <td>
-                  <!-- 2025/5/2 modify 管理者は30分も選択できる,それ以外は60分だけ-->
-                  <% if user_signed_in? && admin_user? %>
-                      <label class="radio_text"><%= f.radio_button :frames, "30", checked: true %> 30分</label><br>
-                      <label class="radio_text"><%= f.radio_button :frames, "60", checked: true %> 60分</label>
-                  <% else %>
-                      <label class="radio_text"><%= f.radio_button :frames, "60", checked: true %> 60分</label>
-                  <% end %>
-                </td>
-              </tr>     
-              <tr>
-              
-              <tr>
-                <th scope="row">備考</th>
-                <td><%= f.text_area :remarks, class: "form-control", :id => "message-text" %></td>
-              </tr>   
-            </tbody>
-          </table>        
-        
+<div class="modal-dialog modal-lg" style="z-index: 10000;">
+  <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 8px 32px rgba(0,0,0,0.12);">
+    <div class="modal-header" style="border-bottom:none;padding:20px 24px 0;">
+      <h3 style="font-weight:700;font-size:1.2rem;color:#1a1a2e;">予約確認</h3>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="background:none;border:1px solid #ddd;border-radius:50%;width:32px;height:32px;font-size:0.7rem;"></button>
+    </div>
+    <div style="padding:16px 24px 24px;">
+      <%= form_for @reserve do |f| %>
 
-                <%= f.hidden_field :reserved_date, :value => @date %>
-                <%= f.hidden_field :reserved_space, :value => @frame %>
-                <%= f.hidden_field :start_date, :value => @start_date %>
-                <%= f.hidden_field :user_id, :value => current_user.id %>
-                <%= f.hidden_field :staff_id, :value => @staff.id %>
-                <%= f.hidden_field :machine, :value => @machine %>
-        
-
-        
-      <div class="modal-footer">
-        <div>
-          <button type="button" class="btn btn-warning" data-bs-dismiss="modal">戻る</button>
-        </div>
-        <div>
-          <%= f.submit "予約確定", class: "btn btn-primary btn-reserve-confirm" %>
+        <div style="background:#f8f9fa;border-radius:12px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;border-bottom:1px solid #eee;padding:10px 0;">
+            <span style="width:70px;color:#888;font-size:0.85rem;">氏名</span>
+            <span style="font-weight:600;color:#1a1a2e;"><%= current_user.name %></span>
+          </div>
+          <div style="display:flex;border-bottom:1px solid #eee;padding:10px 0;">
+            <span style="width:70px;color:#888;font-size:0.85rem;">性別</span>
+            <span><%= Global::GENDER[current_user.gender] %></span>
+          </div>
+          <div style="display:flex;border-bottom:1px solid #eee;padding:10px 0;">
+            <span style="width:70px;color:#888;font-size:0.85rem;">電話</span>
+            <span><%= current_user.tel %></span>
+          </div>
+          <div style="display:flex;border-bottom:1px solid #eee;padding:10px 0;">
+            <span style="width:70px;color:#888;font-size:0.85rem;">日時</span>
+            <span style="color:#2563eb;font-weight:600;"><%= @date.to_date.strftime("%Y年%-m月%-d日") %>（<%= Global::WEEKDAY[@date.to_date.wday] %>）<%= display_time(@frame.to_f) %>〜</span>
+          </div>
+          <div style="display:flex;border-bottom:1px solid #eee;padding:10px 0;">
+            <span style="width:70px;color:#888;font-size:0.85rem;">サービス</span>
+            <span style="font-weight:600;">ホリスティック</span>
+          </div>
+          <div style="display:flex;padding:10px 0;">
+            <span style="width:70px;color:#888;font-size:0.85rem;">スタッフ</span>
+            <span style="flex:1;">
+              <% available = AvailabilityService.new('holistic', @date.to_date, num_days: 1, user_signed_in: true).available_staff(@date.to_date, format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i), duration_minutes: 60) %>
+              <select name="reserve[staff_id]" id="staff-select" style="width:100%;padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;background:#fff;" onchange="updateNominationFee(this)">
+                <option value="0">指名なし</option>
+                <% available.each do |s| %>
+                  <option value="<%= s.id %>" data-fee="<%= s.nomination_fee %>"><%= s.name %><%= s.nomination_fee > 0 ? "（+#{number_with_delimiter(s.nomination_fee)}円）" : "" %></option>
+                <% end %>
+              </select>
+              <div id="nomination-fee-notice" style="color:#e74c3c;margin-top:4px;font-size:0.8rem;display:none;">指名料: <span id="fee-amount"></span>円</div>
+            </span>
+          </div>
         </div>
 
-      </div>        
+        <div style="margin-bottom:16px;">
+          <div style="color:#888;font-size:0.8rem;margin-bottom:6px;">予約時間</div>
+          <% if user_signed_in? && admin_user? %>
+            <div style="display:flex;gap:8px;">
+              <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                <%= f.radio_button :frames, "30" %> 30分
+              </label>
+              <label style="padding:8px 20px;border-radius:20px;background:#fff3cd;color:#856404;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                <%= f.radio_button :frames, "60", checked: true %> 60分
+              </label>
+            </div>
+          <% else %>
+            <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;">60分</div>
+            <%= f.hidden_field :frames, value: "60" %>
+          <% end %>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="color:#888;font-size:0.8rem;margin-bottom:6px;">備考</div>
+          <%= f.text_area :remarks, style: "width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;min-height:80px;resize:vertical;", placeholder: "ご要望があればご記入ください" %>
+        </div>
+
+        <%= f.hidden_field :reserved_date, value: @date %>
+        <%= f.hidden_field :reserved_space, value: @frame %>
+        <%= f.hidden_field :start_date, value: @start_date %>
+        <%= f.hidden_field :user_id, value: current_user.id %>
+        <%= f.hidden_field :machine, value: @machine %>
+
+        <div style="display:flex;gap:12px;justify-content:center;padding-top:8px;">
+          <button type="button" data-bs-dismiss="modal" style="padding:10px 28px;border-radius:24px;border:1.5px solid #ddd;background:#fff;color:#333;font-size:0.9rem;font-weight:500;cursor:pointer;">戻る</button>
+          <%= f.submit "予約を確定する", style: "padding:10px 28px;border-radius:24px;border:none;background:#2563eb;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;" %>
+        </div>
       <% end %>
-
     </div>
   </div>
 </div>
 
 <script>
-
-function nidoosi2(form) {
-    let elements = form.elements;
-    for (let i = 0; i < elements.length; i++) {
-            if (elements[i].type == 'submit') {
-             elements[i].disabled = true;
-            }
-    }
-} 
-
-
-$('#holiday').on('click', function(){
-    // 2重送信防止クラスのチェック
-    if ( $(this).hasClass('double_click') ){
-        return false;
-    }
-    $(this).text("処理中...");
-    // 2重送信防止クラス
-    $(this).addClass('double_click');
-});
+function updateNominationFee(select) {
+  var fee = select.options[select.selectedIndex].getAttribute('data-fee');
+  var notice = document.getElementById('nomination-fee-notice');
+  var amount = document.getElementById('fee-amount');
+  if (fee && parseInt(fee) > 0) {
+    amount.textContent = parseInt(fee).toLocaleString();
+    notice.style.display = 'block';
+  } else {
+    notice.style.display = 'none';
+  }
+}
 </script>
-

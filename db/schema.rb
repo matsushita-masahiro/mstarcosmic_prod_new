@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_05_000006) do
   create_table "answers", force: :cascade do |t|
     t.integer "inquiry_id"
     t.integer "user_id"
@@ -92,6 +92,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "reservations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "staff_id"
+    t.string "service", limit: 20, null: false
+    t.date "date", null: false
+    t.time "start_time", null: false
+    t.time "end_time", null: false
+    t.integer "duration", null: false
+    t.boolean "is_new_customer", default: false, null: false
+    t.text "notes"
+    t.integer "status", default: 0, null: false
+    t.string "group_id", limit: 36
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_reservations_on_date"
+    t.index ["staff_id", "date"], name: "index_reservations_on_staff_id_and_date"
+    t.index ["user_id"], name: "index_reservations_on_user_id"
+  end
+
   create_table "reserve_algorithms", force: :cascade do |t|
     t.integer "num_staffs_for_new"
     t.integer "num_staffs_for_nonnew"
@@ -129,12 +148,56 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
     t.index ["user_id"], name: "index_schedules_on_user_id"
   end
 
+  create_table "service_unavailabilities", force: :cascade do |t|
+    t.string "service", limit: 20, null: false
+    t.date "date", null: false
+    t.time "start_time", null: false
+    t.time "end_time", null: false
+    t.string "reason", limit: 50, default: "business_trip"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_service_unavailabilities_on_date"
+    t.index ["service", "date"], name: "index_service_unavailabilities_on_service_and_date"
+  end
+
+  create_table "services", force: :cascade do |t|
+    t.string "name", limit: 50, null: false
+    t.string "display_name", limit: 50, null: false
+    t.integer "max_concurrent", default: 1, null: false
+    t.integer "min_duration", default: 30, null: false
+    t.integer "max_duration", default: 60, null: false
+    t.bigint "fixed_staff_id"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_services_on_name", unique: true
+  end
+
   create_table "staff_machine_relations", force: :cascade do |t|
     t.integer "staff_id"
     t.string "machine"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["staff_id"], name: "index_staff_machine_relations_on_staff_id"
+  end
+
+  create_table "staff_schedules", force: :cascade do |t|
+    t.bigint "staff_id", null: false
+    t.date "date", null: false
+    t.time "start_time", null: false
+    t.time "end_time", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_staff_schedules_on_date"
+    t.index ["staff_id", "date", "start_time"], name: "index_staff_schedules_on_staff_id_and_date_and_start_time", unique: true
+  end
+
+  create_table "staff_services", force: :cascade do |t|
+    t.bigint "staff_id", null: false
+    t.string "service", limit: 20, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["staff_id", "service"], name: "index_staff_services_on_staff_id_and_service", unique: true
   end
 
   create_table "staffs", force: :cascade do |t|
@@ -146,6 +209,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
     t.boolean "new_customer_flag", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "capacity", default: 1, null: false
+    t.integer "nomination_fee", default: 0, null: false
+    t.string "assignment_type", limit: 20, default: "nominatable", null: false
   end
 
   create_table "user_backups", force: :cascade do |t|
@@ -206,7 +272,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_07_182241) do
   end
 
   add_foreign_key "ms_inquiry_answers", "metatron_sale_inquiries"
+  add_foreign_key "reservations", "staffs"
+  add_foreign_key "reservations", "users"
   add_foreign_key "schedules", "staffs"
   add_foreign_key "schedules", "users"
+  add_foreign_key "services", "staffs", column: "fixed_staff_id"
   add_foreign_key "staff_machine_relations", "staffs"
+  add_foreign_key "staff_schedules", "staffs"
+  add_foreign_key "staff_services", "staffs"
 end

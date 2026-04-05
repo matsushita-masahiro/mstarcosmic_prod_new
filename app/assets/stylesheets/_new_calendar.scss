@@ -1,0 +1,189 @@
+/* ===== 新カレンダーUI v2 ===== */
+.nc-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.nc-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 28px 20px;
+}
+
+.nc-title {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.nc-subtitle {
+  text-align: center;
+  color: #888;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+/* 凡例 */
+.nc-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+  color: #555;
+}
+.nc-legend-item { display: flex; align-items: center; gap: 5px; }
+
+/* 週ナビ */
+.nc-week-nav { display: flex; align-items: center; margin-bottom: 20px; }
+.nc-nav-left, .nc-nav-center, .nc-nav-right { flex: 1; }
+.nc-nav-left { text-align: left; }
+.nc-nav-center { text-align: center; }
+.nc-nav-right { text-align: right; }
+
+.nc-nav-btn {
+  display: inline-block;
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 1.5px solid #ccc;
+  background: #fff;
+  color: #333 !important;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.nc-nav-btn:hover { border-color: #667eea; color: #667eea !important; }
+.nc-nav-btn-danger { border-color: #e74c3c; color: #e74c3c !important; }
+.nc-nav-btn-danger:hover { background: #e74c3c; color: #fff !important; }
+
+.nc-week-range { font-weight: 700; font-size: 1.05rem; color: #1a1a2e; }
+
+/* テーブル */
+.nc-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.nc-table th, .nc-table td {
+  text-align: center;
+  padding: 8px 4px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.nc-table thead th {
+  padding: 12px 4px 8px;
+  font-weight: 700;
+  color: #555;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+}
+.nc-table thead th:first-child { color: #999; font-size: 0.75rem; background: #fff; }
+.nc-table thead .nc-date-num { font-size: 1.2rem; color: #1a1a2e; display: block; }
+.nc-table thead .nc-date-day { font-size: 0.7rem; color: #888; }
+.nc-table thead .nc-sat { background: #f0f6ff; }
+.nc-table thead .nc-sat .nc-date-num, .nc-table thead .nc-sat .nc-date-day { color: #4a90d9; }
+.nc-table thead .nc-sun { background: #fff5f5; }
+.nc-table thead .nc-sun .nc-date-num, .nc-table thead .nc-sun .nc-date-day { color: #e74c3c; }
+.nc-table thead .nc-today { background: #f0f6ff; }
+.nc-table thead .nc-today .nc-date-num { color: #4a90d9; }
+.nc-table thead .nc-today::after {
+  content: '';
+  display: block;
+  width: 6px; height: 6px;
+  background: #4a90d9;
+  border-radius: 50%;
+  margin: 2px auto 0;
+}
+.nc-table thead .nc-today .nc-date-day { color: #4a90d9; font-weight: 600; }
+/* 土日の列全体に薄い背景 */
+.nc-table tbody td:nth-child(7) { background: #f8fbff; }
+.nc-table tbody td:nth-child(8) { background: #fff8f8; }
+.nc-table tbody th {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 400;
+  white-space: nowrap;
+  min-width: 50px;
+}
+.nc-table tbody tr:hover { background: #fafbff; }
+
+/* セルアイコン */
+.nc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.nc-icon-excellent {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 2px solid #a5d6a7;
+}
+.nc-icon-excellent::after { content: '◎'; }
+.nc-icon-good {
+  background: #fff8e1;
+  color: #f9a825;
+  border: 2px solid #ffe082;
+}
+.nc-icon-good::after { content: '◯'; }
+.nc-icon-full {
+  background: #ffebee;
+  color: #e53935;
+  border: 2px solid #ef9a9a;
+}
+.nc-icon-full::after { content: '✕'; }
+.nc-icon-empty { color: #d0d0d0; font-size: 0.85rem; }
+.nc-icon-empty::after { content: '──'; }
+
+a .nc-icon { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+a:hover .nc-icon { transform: scale(1.12); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+a { text-decoration: none !important; }
+
+/* チェックボックス */
+.nc-check { width: 18px; height: 18px; accent-color: #667eea; cursor: pointer; }
+.nc-check-cell { text-align: center !important; vertical-align: middle !important; }
+
+/* スタッフタブ */
+.nc-staff-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.nc-staff-tab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #ddd;
+  color: #555;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.nc-staff-tab:hover, .nc-staff-tab.active { border-color: #667eea; color: #667eea; background: #f0f4ff; }
+
+/* アクション */
+.nc-actions { display: flex; gap: 12px; justify-content: center; margin: 16px 0; }
+
+/* スタッフ名バッジ（全スケジュール用） */
+.nc-staff-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  margin: 1px;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .nc-card { padding: 16px 10px; }
+  .nc-table th, .nc-table td { padding: 5px 2px; font-size: 0.7rem; }
+  .nc-icon { width: 28px; height: 28px; font-size: 0.75rem; }
+  .nc-title { font-size: 1.1rem; }
+}

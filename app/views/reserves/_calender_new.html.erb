@@ -1,0 +1,72 @@
+<div class="nc-container">
+<div class="nc-card">
+  <h2 class="nc-title">ホリスティック予約</h2>
+  <div class="nc-legend">
+    <div class="nc-legend-item"><span class="nc-icon nc-icon-excellent" style="width:20px;height:20px;font-size:0.6rem;"></span> 空きあり</div>
+    <div class="nc-legend-item"><span class="nc-icon nc-icon-good" style="width:20px;height:20px;font-size:0.6rem;"></span> 残りわずか</div>
+    <div class="nc-legend-item"><span class="nc-icon nc-icon-full" style="width:20px;height:20px;font-size:0.6rem;"></span> 満席</div>
+    <div class="nc-legend-item"><span class="nc-icon nc-icon-empty" style="width:20px;height:20px;font-size:0.6rem;"></span> 休み</div>
+  </div>
+
+  <div class="nc-week-nav">
+    <div class="nc-nav-left">
+      <% if @start_date > Date.today %>
+        <% base = !user_signed_in? ? ((%w[o e b].include?(@machine) ? reserves_new_cust_other_path : reserves_new_cust_path)) : reserves_path %>
+        <%= link_to "#{base}?calender_start_date=#{@start_date - 7}&machine=#{@machine}&staff_id=#{@staff&.id}", class: "nc-nav-btn" do %>← 前週<% end %>
+      <% end %>
+    </div>
+    <div class="nc-nav-center">
+      <span class="nc-week-range"><%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6).strftime("%-m/%-d") %></span>
+    </div>
+    <div class="nc-nav-right">
+      <% if @start_date <= (Date.today + 28) %>
+        <% base = !user_signed_in? ? ((%w[o e b].include?(@machine) ? reserves_new_cust_other_path : reserves_new_cust_path)) : reserves_path %>
+        <%= link_to "#{base}?calender_start_date=#{@start_date + 7}&machine=#{@machine}&staff_id=#{@staff&.id}", class: "nc-nav-btn" do %>翌週 →<% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div id="user-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+  <table class="nc-table">
+    <thead>
+      <tr>
+        <th></th>
+        <% 7.times do |i| %>
+          <% d = (@start_date + i).to_date %>
+          <% day_class = d == Date.current ? 'nc-today' : (d.wday == 6 ? 'nc-sat' : (d.wday == 0 ? 'nc-sun' : '')) %>
+          <th class="<%= day_class %>">
+            <span class="nc-date-num"><%= d.day %></span>
+            <span class="nc-date-day"><%= %w[日 月 火 水 木 金 土][d.wday] %></span>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @time_slots.each do |slot_time| %>
+        <% slot_float = slot_time.split(':').then { |h, m| h.to_f + (m.to_i >= 30 ? 0.5 : 0) } %>
+        <tr>
+          <th><%= slot_time %></th>
+          <% 7.times do |k| %>
+            <% date = (@start_date + k).to_date %>
+            <% code = @weekly.dig(date, slot_time) || -1 %>
+            <% is_today = date == Date.current %>
+            <% if code == -1 %>
+              <td><span class="nc-icon nc-icon-empty"></span></td>
+            <% elsif code == 0 %>
+              <td><span class="nc-icon nc-icon-full"></span></td>
+            <% elsif is_today %>
+              <td><span class="nc-icon <%= code >= 2 ? 'nc-icon-excellent' : 'nc-icon-good' %>"></span></td>
+            <% else %>
+              <td>
+                <%= link_to new_reserve_path(machine: @machine, date: date.to_s, frame: slot_float, start_date: @start_date.to_s, staff_id: @staff.id, format: :js), remote: true, data: { turbo: false } do %>
+                  <span class="nc-icon <%= code >= 2 ? 'nc-icon-excellent' : 'nc-icon-good' %>"></span>
+                <% end %>
+              </td>
+            <% end %>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+</div>

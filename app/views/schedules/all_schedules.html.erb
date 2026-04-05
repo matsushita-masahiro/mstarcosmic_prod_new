@@ -1,38 +1,45 @@
-<div id="all_schedules">
-    <% if current_user.user_type == "1" %>
-      <div class="back-link"><%= link_to "<< 戻る", "/admin/staffs" %></div>
-    <% else %>
-      <div class="back-link"></div>
-    <% end %>
-    <div class="title">全スケジュール</div>
-    <%= render 'all_schedule_calender' %>
+<div class="nc-container">
+<div class="nc-card">
+  <h2 class="nc-title">📋 全スタッフ出勤スケジュール</h2>
+  <% if current_user.user_type == "1" %>
+    <p class="nc-subtitle"><%= link_to "← スタッフ管理に戻る", "/admin/staffs", style: "color:#667eea;" %></p>
+  <% end %>
+
+  <div class="nc-week-nav">
+    <div class="nc-nav-left">
+      <% if @start_date > Date.today %>
+        <%= link_to "/all_schedules?calender_start_date=#{@start_date - 7}", class: "nc-nav-btn" do %>← 前週<% end %>
+      <% end %>
+    </div>
+    <div class="nc-nav-center"><span class="nc-week-range"><%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6).strftime("%-m/%-d") %></span></div>
+    <div class="nc-nav-right">
+      <% if @start_date <= (Date.today + 70) %>
+        <%= link_to "/all_schedules?calender_start_date=#{@start_date + 7}", class: "nc-nav-btn" do %>翌週 →<% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <table class="nc-table">
+    <thead><tr><th></th>
+      <% 7.times do |i| %>
+        <% d = (@start_date + i).to_date %>
+        <% day_class = d == Date.current ? 'nc-today' : (d.wday == 6 ? 'nc-sat' : (d.wday == 0 ? 'nc-sun' : '')) %>
+        <th class="<%= day_class %>"><span class="nc-date-num"><%= d.day %></span><span class="nc-date-day"><%= %w[日 月 火 水 木 金 土][d.wday] %></span></th>
+      <% end %>
+    </tr></thead>
+    <tbody>
+      <% 24.times do |t| %>
+        <tr><th><%= display_time(10 + t * 0.5) %></th>
+          <% 7.times do |k| %>
+            <% d = (@start_date + k).to_date; names = attendance_staff(d, 10 + t * 0.5) %>
+            <td>
+              <% if names == ["=="] %><span class="nc-icon nc-icon-empty"></span>
+              <% else %><% names.each do |n| %><span class="nc-staff-badge"><%= n %></span><% end %><% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
 </div>
-
-<style>
-
-    .back-link {
-        width: 60%;
-        margin: 0 auto;
-    }
-
-    .activate, .nonactivate {
-        color: black;
-        margin: 20px auto 0;
-        text-align: center;
-        width: 200px;
-        height: 40px;
-        background: lightgray;
-        line-height: 40px;
-        border-radius: 5px;
-    }
-    
-    .activate:hover, .nonactivate:hover {
-        opacity: 0.7;
-    }
-    
-    .nonactivate > a {
-        color: red;
-    }
-    
-</style>
-    
+</div>

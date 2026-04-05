@@ -7,6 +7,7 @@ class ReservesController < ApplicationController
     before_action :redirect_edit_user, oniy: [:index]
     before_action :calender_start_day, only: [:staff, :index, :destroy, :delete, :new_cust, :new_cust_other] 
     before_action :reject_reserve_new, only: [:create]
+    before_action :load_weekly_availability, only: [:index, :new_cust, :new_cust_other]
 
     def new
         if user_signed_in?
@@ -590,6 +591,34 @@ class ReservesController < ApplicationController
     def redirect_edit_user
       if registration_completed?.size > 0
         redirect_to edit_user_path(current_user)
+      end
+    end
+
+    # AvailabilityServiceで週間空き状況を一括計算
+    def load_weekly_availability
+      service_name = machine_to_service_name(@machine || 'h')
+      svc = AvailabilityService.new(
+        service_name,
+        @start_date.to_date,
+        num_days: 7,
+        user_signed_in: user_signed_in?
+      )
+      @weekly = svc.calculate
+      @time_slots = AvailabilityService.time_slots_for_service(Service.find_by!(name: service_name))
+
+      if user_signed_in? && admin_user?
+        @weekly_reserves = svc.weekly_reservations
+      end
+    end
+
+    def machine_to_service_name(machine)
+      case machine.to_s
+      when 'h' then 'holistic'
+      when 'w' then 'holistic' # wellbeingはholistic扱い（レンタル中）
+      when 'o' then 'seitai'   # その他 → 整体（デフォルト）
+      when 'e' then 'seitai'
+      when 'b' then 'seitai'
+      else 'holistic'
       end
     end
      

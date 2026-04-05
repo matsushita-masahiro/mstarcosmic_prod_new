@@ -1,6 +1,18 @@
 Rails.application.routes.draw do
 
-  
+  # API
+  namespace :api do
+    namespace :v1 do
+      resources :reserves, only: %i[index show create update]
+      resources :schedules, only: :index
+      resources :staffs, only: :index
+      resources :staff_machine_relations, only: :index
+      resources :reserve_algorithms, only: :index
+      resources :machine_schedules, only: :index
+      post 'users/find_or_register', to: 'users#find_or_register'
+    end
+  end
+
    #  新レイアウト用
    root "main#top"
    # root "main#top_mente"
@@ -61,6 +73,10 @@ Rails.application.routes.draw do
    resources :reserves, except: [:show, :destroy]
    
    get 'all_schedules' => 'schedules#all_schedules'
+   
+   # 新UI: 出勤スケジュール・出張登録
+   resources :new_staff_schedules, only: [:index, :create], controller: 'new_staff_schedules'
+   resources :new_service_unavailabilities, only: [:index, :create, :destroy], controller: 'new_service_unavailabilities'
    
    patch "admin/staffs/staff_machine_relations" => "staff_machine_relations#update"
 
