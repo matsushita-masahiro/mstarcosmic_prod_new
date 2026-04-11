@@ -84,7 +84,7 @@ class AvailabilityService
     # 出張中のスタッフを除外
     trip_records = (@unavail_idx[date] || []).select { |u| u.start_time < full_end && u.end_time > s }
     if trip_records.any?
-      trip_staff_ids = trip_records.map(&:staff_id).compact.uniq
+      trip_staff_ids = trip_records.select { |u| u.respond_to?(:staff_id) && u.staff_id.present? }.map(&:staff_id).uniq
       free_ids -= trip_staff_ids
     end
 
@@ -224,7 +224,7 @@ class AvailabilityService
     # 出張中のスタッフを除外
     trip_records = (@unavail_idx[date] || []).select { |u| u.start_time < e && u.end_time > s }
     if trip_records.any?
-      trip_staff_ids = trip_records.map(&:staff_id).compact.uniq
+      trip_staff_ids = trip_records.select { |u| u.respond_to?(:staff_id) && u.staff_id.present? }.map(&:staff_id).uniq
       free_ids -= trip_staff_ids
     end
 
