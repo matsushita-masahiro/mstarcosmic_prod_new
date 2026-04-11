@@ -56,8 +56,12 @@ class SchedulesController < ApplicationController
       # この1週間で１つもチェックされてない場合は全削除
       logger.debug("================== checked none start_date = #{@start_date}")
       @staff.schedules.where(schedule_date: @start_date..(@start_date+6)).delete_all
+      # チェックなし削除時もStaffScheduleを同期
+      (@start_date..(@start_date+6)).each do |date|
+        StaffSchedule.where(staff_id: @staff.id, date: date).delete_all
+      end
     end
-    # schedule/indexへ
+    # Scheduleモデルのafter_commitで自動同期されるため、明示的な同期は不要
     redirect_to staff_schedules_path(@staff,calender_start_date: @start_date)
   end  
   
@@ -142,5 +146,43 @@ class SchedulesController < ApplicationController
         end
      end     
      
-     
+     # 旧Schedule → 新StaffScheduleへ同期
+     def sync_schedule_to_staff_schedule(staff_id, start_date)
+       dates = (0..6).map { |i| start_date.to_date + i.days }
+       StaffSchedule.where(staff_id: staff_id, date: dates).delete_all
+
+       grouped = Schedule.where(staff_id: staff_id, schedule_date: dates)
+                         .group_by(&:schedule_date)
+
+       grouped.each do |date, slots|
+         spaces = slots.map(&:schedule_space).sort
+         next if spaces.empty?
+
+         # 連続スロットをまとめる
+         ranges = []
+         current_start = spaces.first
+         current_end = spaces.first + 0.5
+         spaces[1..].each do |space|
+           if space == current_end
+             current_end = space + 0.5
+           else
+             ranges << [current_start, current_end]
+             current_start = space
+             current_end = space + 0.5
+           end
+         end
+         ranges << [current_start, current_end]
+
+         ranges.each do |s, e|
+           sh = s.to_i; sm = (s % 1 == 0.5) ? 30 : 0
+           eh = e.to_i; em = (e % 1 == 0.5) ? 30 : 0
+           StaffSchedule.create!(
+             staff_id: staff_id, date: date,
+             start_time: Time.zone.parse('2000-01-01').change(hour: sh, min: sm),
+             end_time: Time.zone.parse('2000-01-01').change(hour: eh, min: em)
+           )
+         end
+       end
+     end
+
 end

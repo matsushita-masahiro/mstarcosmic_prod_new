@@ -100,7 +100,10 @@ class NewStaffSchedulesController < ApplicationController
       space = h + (m >= 30 ? 0.5 : 0.0)
       end_space = eh + (em >= 30 ? 0.5 : 0.0)
       while space < end_space
-        Schedule.create!(staff_id: staff_id, schedule_date: ss.date, schedule_space: space)
+        # 新→旧同期時はコールバックをスキップ（無限ループ防止）
+        s = Schedule.new(staff_id: staff_id, schedule_date: ss.date, schedule_space: space)
+        s.skip_staff_schedule_sync = true
+        s.save!
         space += 0.5
       end
     end
