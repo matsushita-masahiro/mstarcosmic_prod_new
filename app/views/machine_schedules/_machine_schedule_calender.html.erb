@@ -14,7 +14,16 @@
 
 <%= form_tag "/admin/machines/#{@machine.short_word}/machine_schedules", method: "post" do %>
   <input type="hidden" name="calender_start_date" value="<%= @start_date %>">
-  <div class="nc-actions"><%= submit_tag "出張登録", class: "nc-nav-btn nc-nav-btn-danger", style: "cursor:pointer;" %></div>
+  <div class="nc-actions" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+    <div>
+      <label style="font-weight:600; margin-right:8px;">出張スタッフ:</label>
+      <select name="staff_id" class="form-select" style="display:inline-block; width:auto;">
+        <option value="1" <%= 'selected' if (@staff_id || 1) == 1 %>>まさこ</option>
+        <option value="2" <%= 'selected' if @staff_id == 2 %>>ゆうき</option>
+      </select>
+    </div>
+    <%= submit_tag "出張登録", class: "nc-nav-btn nc-nav-btn-danger", style: "cursor:pointer;" %>
+  </div>
 
   <table class="nc-table">
     <thead><tr><th></th>

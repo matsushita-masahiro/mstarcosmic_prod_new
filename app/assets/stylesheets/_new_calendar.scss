@@ -90,8 +90,8 @@
 .nc-table thead .nc-sat .nc-date-num, .nc-table thead .nc-sat .nc-date-day { color: #4a90d9; }
 .nc-table thead .nc-sun { background: #fff5f5; }
 .nc-table thead .nc-sun .nc-date-num, .nc-table thead .nc-sun .nc-date-day { color: #e74c3c; }
-.nc-table thead .nc-today { background: #f0f6ff; }
-.nc-table thead .nc-today .nc-date-num { color: #4a90d9; }
+.nc-table thead .nc-today { }
+.nc-table thead .nc-today .nc-date-num { color: #1a1a2e; }
 .nc-table thead .nc-today::after {
   content: '';
   display: block;
@@ -100,10 +100,10 @@
   border-radius: 50%;
   margin: 2px auto 0;
 }
-.nc-table thead .nc-today .nc-date-day { color: #4a90d9; font-weight: 600; }
+.nc-table thead .nc-today .nc-date-day { color: #888; font-weight: 400; }
 /* 土日の列全体に薄い背景 */
-.nc-table tbody td:nth-child(7) { background: #f8fbff; }
-.nc-table tbody td:nth-child(8) { background: #fff8f8; }
+.nc-table tbody td.nc-col-sat { background: #f8fbff; }
+.nc-table tbody td.nc-col-sun { background: #fff8f8; }
 .nc-table tbody th {
   font-size: 0.8rem;
   color: #888;

@@ -1,61 +1,73 @@
-<div id="staff-new">
-    <h4>スタッフ登録</h4>
-        <% hash = {Holistic: "h", Wellbeing: "w", "その他": "o"} %>
-        <%= form_with model: @staff, url: "/admin/staffs" do |f| %>
-          <div>スタッフ名：<%= f.text_field :name, required: true, class: "form-control staff-input-width" %></div>
-          <div>スタッフ名漢字：<%= f.text_field :name_kanji, class: "form-control staff-input-width" %></div><br>
-          <div>
-              <% @users.each do |key, value| %>
-                <span style="display: inline-block; padding-right: 10px;"><%= f.radio_button :user_id, key %><%= value %></span>
-              <% end %>
+<div class="staff-mgmt">
 
-            <!--<ul style="text-align: left;">-->
-            <!--  < @users.each do |key, value| %>-->
-            <!--    <li style="list-style: none;"><= f.check_box :user_id, {checked: false, multiple: true}, key, nil %><= value %></li>-->
-            <!--  < end %>-->
-            <!--</ul>-->
+  <!-- スタッフ登録 -->
+  <div class="staff-section">
+    <h3 class="staff-section-title">👤 スタッフ登録</h3>
+    <%= form_with model: @staff, url: "/admin/staffs", class: "staff-form" do |f| %>
+      <div class="staff-field">
+        <label class="staff-label">スタッフ名</label>
+        <%= f.text_field :name, required: true, class: "staff-input", placeholder: "ひらがな" %>
+      </div>
+      <div class="staff-field">
+        <label class="staff-label">スタッフ名漢字</label>
+        <%= f.text_field :name_kanji, class: "staff-input", placeholder: "漢字" %>
+      </div>
+      <div class="staff-field">
+        <label class="staff-label">担当施術</label>
+        <%= f.fields_for :staff_machine_relations do |smr| %>
+          <div class="staff-radio-group">
+            <label class="staff-radio-item"><%= smr.radio_button :machine, "h", checked: true %> ホリスティック</label>
+            <label class="staff-radio-item"><%= smr.radio_button :machine, "e" %> エステ</label>
+            <label class="staff-radio-item"><%= smr.radio_button :machine, "stem" %> 幹細胞</label>
+            <label class="staff-radio-item"><%= smr.radio_button :machine, "b" %> 鍼・整体</label>
+            <label class="staff-radio-item"><%= smr.radio_button :machine, "o" %> その他</label>
           </div>
-          <div>内容：
-            <%= f.fields_for :staff_machine_relations do |smr| %>
-                <div class="checkbox">
-                  <%= smr.radio_button :machine, "h", checked: true %>Holistic　
-                  <%= smr.radio_button :machine, "w" %>Wellbeing　
-                  <!--<= smr.radio_button :machine, "s" %>算命学　-->
-                  <br class="machine-select-br">
-                  <%= smr.radio_button :machine, "e" %>エステ　
-                  <%= smr.radio_button :machine, "b" %>鍼・整体　
-                  <%= smr.radio_button :machine, "o" %>その他
-                </div>
-            <% end %>
-          </div>
-          <div><%= f.submit "登録", class: "btn btn-primary" %></div>
         <% end %>
-<hr>        
-</div>
+      </div>
+      <div class="staff-actions">
+        <%= f.submit "登録", class: "staff-btn staff-btn-primary" %>
+      </div>
+    <% end %>
+  </div>
 
-<div id="staff-edit">
-   <h4>担当マシン修正</h4>
-        <% hash = {Holistic: "h", Wellbeing: "w", "その他": "o"} %>
-
-        <%= form_with model: @staff_machine_relation, url: admin_staffs_staff_machine_relations_path, method: :patch do |g| %>
-          <ul style="list-style: none; padding-left: 0;">
-            <% @staffs.each do |staff| %>
-                   <li>
-                     <%= g.radio_button :staff_id, staff.id %>
-                     <label style="font-weight: normal; display: inline-block;"><%= "#{staff.name}..#{staff.staff_machines}" %></label>
-                     <!--<= g.label "#{staff.name}..#{staff.staff_machines}", {value: staff.id, style: "font-weight: normal; display: inline-block;"} %>-->
-                   </li>
-                   
-            <% end %>
-          </ul>
-          <div>※ 使用するマシンは全てチェックを。&#8595;
-            <!--<= g.fields_for :staff_machine_relations do |smr| %>-->
-                <div class="checkbox">
-                  <%= g.collection_check_boxes :machine, Machine.all, :short_word, :name, include_hidden: false %><br>
+  <!-- 担当施術修正 -->
+  <div class="staff-section">
+    <h3 class="staff-section-title">✏️ 担当施術修正</h3>
+    <%= form_with model: @staff_machine_relation, url: admin_staffs_staff_machine_relations_path, method: :patch, class: "staff-form" do |g| %>
+      <div class="staff-field">
+        <label class="staff-label">スタッフ選択</label>
+        <div class="staff-card-list">
+          <% @staffs.each do |staff| %>
+            <label class="staff-card <%= 'staff-card-inactive' unless staff.active_flag %>">
+              <%= g.radio_button :staff_id, staff.id, class: "staff-card-radio" %>
+              <div class="staff-card-body">
+                <div class="staff-card-name"><%= staff.name_kanji.present? ? staff.name_kanji : staff.name %></div>
+                <div class="staff-card-sub"><%= staff.name %></div>
+                <div class="staff-card-machines">
+                  <% staff.staff_machine_relations.each do |rel| %>
+                    <span class="staff-tag staff-tag-<%= rel.machine %>"><%= { 'h' => 'ホリスティック', 'w' => 'ウェルビーイング', 'e' => 'エステ', 'stem' => '幹細胞', 'b' => '鍼・整体', 'o' => 'その他' }[rel.machine] || rel.machine %></span>
+                  <% end %>
                 </div>
-            <!--< end %>-->
-          </div>
-          <div><%= g.submit "修正", class: "btn btn-success" %></div>
-        <% end %>  
-</div>
+              </div>
+            </label>
+          <% end %>
+        </div>
+      </div>
+      <div class="staff-field">
+        <label class="staff-label">担当施術（複数選択可）</label>
+        <div class="staff-check-group">
+          <% Machine.where.not(short_word: 'w').each do |machine| %>
+            <% label = { 'h' => 'ホリスティック', 'w' => 'ウェルビーイング', 'e' => 'エステ', 'stem' => '幹細胞', 'b' => '鍼・整体', 'o' => 'その他' }[machine.short_word] || machine.name %>
+            <label class="staff-check-item">
+              <%= g.check_box :machine, { multiple: true, include_hidden: false }, machine.short_word, nil %> <%= label %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+      <div class="staff-actions">
+        <%= g.submit "修正を保存", class: "staff-btn staff-btn-success" %>
+      </div>
+    <% end %>
+  </div>
 
+</div>

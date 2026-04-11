@@ -1,16 +1,16 @@
 <div class="nc-container">
   <h2 class="nc-title">🚗 出張登録（ホリスティック）</h2>
-  <p class="nc-subtitle">マシンが出張中の時間帯にチェックを入れてください</p>
+  <p class="nc-subtitle">出張するスタッフと時間帯を選択してください</p>
 
   <!-- 週ナビ -->
   <div class="nc-week-nav">
     <% if @start_date > Date.current %>
-      <%= link_to new_service_unavailabilities_path(start_date: @start_date - 7), class: "btn btn-outline-primary btn-sm" do %>
+      <%= link_to new_service_unavailabilities_path(start_date: @start_date - 7, staff_id: @staff_id), class: "btn btn-outline-primary btn-sm" do %>
         <i class="fas fa-chevron-left"></i> 前週
       <% end %>
     <% else %><span></span><% end %>
     <span class="nc-week-range"><%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6).strftime("%-m/%-d") %></span>
-    <%= link_to new_service_unavailabilities_path(start_date: @start_date + 7), class: "btn btn-outline-primary btn-sm" do %>
+    <%= link_to new_service_unavailabilities_path(start_date: @start_date + 7, staff_id: @staff_id), class: "btn btn-outline-primary btn-sm" do %>
       翌週 <i class="fas fa-chevron-right"></i>
     <% end %>
   </div>
@@ -19,7 +19,14 @@
     <%= hidden_field_tag :service, 'holistic' %>
     <%= hidden_field_tag :start_date, @start_date %>
 
-    <div class="nc-actions">
+    <div class="nc-actions" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <div>
+        <label style="font-weight:600; margin-right:8px;">出張スタッフ:</label>
+        <select name="staff_id" class="form-select" style="display:inline-block; width:auto;">
+          <option value="1" <%= 'selected' if @staff_id == 1 %>>まさこ</option>
+          <option value="2" <%= 'selected' if @staff_id == 2 %>>ゆうき</option>
+        </select>
+      </div>
       <%= submit_tag "保存する", class: "btn btn-primary" %>
     </div>
 

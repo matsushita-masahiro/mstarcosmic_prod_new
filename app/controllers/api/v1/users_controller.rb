@@ -15,11 +15,12 @@ module Api
 
         if user.nil?
           # (1) mstarcosmicに未登録 → 新規作成
-          random_password = SecureRandom.hex(16)
+          # パスワードはmedirosaから渡されたものを使う、なければデフォルト
+          pw = params[:password].presence || "medirosa"
           user = User.new(
             email: email,
-            password: random_password,
-            password_confirmation: random_password,
+            password: pw,
+            password_confirmation: pw,
             user_type: "12",
             registration_status: false,
             name: params[:name] || "",

@@ -1,43 +1,60 @@
-<div class="container">
+<div class="mr-container">
+  <h2 class="mr-title">📋 予約履歴</h2>
 
-    <h2 class="my-reserved-title">予約履歴</h2>
-      <!--< link_to "過去", reserves_my_reserved_past_path, :class => "btn btn-default active" %>-->
-    
-        <table class="table table-bordered table-schedule">
-          <thead>
-            <tr>
-              <th scope="col" class="col-xs-2 col-sm-2 col-md-2 col-lg-2">予約日付</th>
-              <th scope="col" class="col-xs-2 col-sm-2 col-md-2 col-lg-2">時間</th>
-              <th scope="col" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">スタッフ</th>
-              <th scope="col" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">Machine</th>
-               <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">備考</th> 
+  <% if @reserves.empty? %>
+    <div class="mr-empty">予約はありません</div>
+  <% else %>
+    <div class="mr-table-wrap">
+      <table class="mr-table">
+        <thead>
+          <tr>
+            <th>予約日付</th>
+            <th>時間</th>
+            <% if User.find(current_user.id).user_type == "1" %>
+              <th>予約者</th>
+            <% end %>
+            <th>内容</th>
+            <th>スタッフ</th>
+            <th>備考</th>
+            <% if User.find(current_user.id).user_type == "1" %>
+              <th></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @reserves.each do |reserve| %>
+            <% user = User.find(reserve.user_id) %>
+            <% is_medirosa = %w[stem esthe].include?(reserve.machine) %>
+            <% duration = Reserve.where(root_reserve_id: reserve.id).count * 30 %>
+            <% menu_label = case reserve.machine
+                 when 'stem' then '幹細胞'
+                 when 'esthe' then 'エステ'
+                 when 'h' then 'ホリスティック'
+                 when 'w' then 'ウェルビーイング'
+                 when 'o' then '算命学'
+                 when 'e' then 'エステ'
+                 when 'b' then '鍼・整体'
+                 else reserve.machine
+               end %>
+            <tr class="<%= is_medirosa ? 'mr-medirosa' : '' %>">
+              <td><%= reserve.reserved_date.strftime("%-m/%-d") %>（<%= %w[日 月 火 水 木 金 土][reserve.reserved_date.wday] %>）</td>
+              <td><%= display_time(reserve.reserved_space.to_f) %>〜<%= display_time(reserve.reserved_space.to_f + duration / 60.0) %><br><span class="mr-duration"><%= duration %>分</span></td>
               <% if User.find(current_user.id).user_type == "1" %>
-               <th scope="col" class="col-xs-3 col-sm-3 col-md-3 col-lg-3">予約者</th>
-               <th scope="col" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">Action</th>
+                <td style="color: <%= user.new_customer? ? '#2563eb' : 'inherit' %>"><%= user.name %></td>
+              <% end %>
+              <td>
+                <%= menu_label %>
+                <% if is_medirosa %><span class="mr-badge">medirosa</span><% end %>
+              </td>
+              <td><%= Staff.find_by(id: reserve.staff_id)&.name %></td>
+              <td class="mr-remarks"><%= reserve.remarks %></td>
+              <% if User.find(current_user.id).user_type == "1" %>
+                <td><%= link_to "削除", "/reserves/#{reserve.id}", method: :delete, data: { confirm: "#{reserve.reserved_date.strftime('%-m/%-d')} #{display_time(reserve.reserved_space.to_f)}〜の予約を取り消しますか？" }, class: "mr-delete-btn" %></td>
               <% end %>
             </tr>
-          </thead>
-          <tbody>
-            <% @reserves.each do |reserve| %>
-               <% user = User.find(reserve.user_id) %>
-               <tr>
-                  <td class="col-xs-2 col-sm-2 col-md-2 col-lg-2"><%= reserve.reserved_date %></td>
-                  <td class="col-xs-2 col-sm-2 col-md-2 col-lg-2"><%= display_time(reserve.reserved_space.to_f) %>（<%= Reserve.where(root_reserve_id: reserve.id).count*30 %>分）</td>
-                  <td class="col-xs-1 col-sm-1 col-md-1 col-lg-1"><%= Staff.find_by(id: reserve.staff_id).name %></td>
-                  <td class="col-xs-1 col-sm-1 col-md-1 col-lg-1"><%= reserve.machine %></td>
-                  <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3"><%= reserve.remarks %></td>
-                  <% if User.find(current_user.id).user_type == "1" %>
-                    <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3" style="color: <%= user.new_customer? ? "blue" : "black"%>"><%= user.name %></td>
-                    <td class="col-xs-1 col-sm-1 col-md-1 col-lg-1"><%= link_to "削除", "/reserves/#{reserve.id}", :method => "delete", data: { confirm: "#{reserve.reserved_date}⇨#{reserve.reserved_space}:00の予約を削除しますか？" } %></td>
-                  <% end %>
-               </tr>
-            <% end %>
-          </tbody>
-        </table>
-        
-         
-
-    
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
 </div>
-
-

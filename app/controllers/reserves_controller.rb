@@ -27,6 +27,11 @@ class ReservesController < ApplicationController
         # url直打ち(reserves/new)防止 
         return redirect_to reserves_path if @date.nil?
 
+        # 60分確保できるか事前チェック
+        slot_time = format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i)
+        @available_staff = AvailabilityService.new('holistic', @date.to_date, num_days: 1, user_signed_in: user_signed_in? || false)
+                                              .available_staff(@date.to_date, slot_time, duration_minutes: 60)
+
         respond_to do |format|
             # format.html
             format.js

@@ -54,14 +54,15 @@
             <% has_tooltip = user_signed_in? && admin_user? && reservations.any? %>
             <% tooltip_attr = has_tooltip ? "data-bs-toggle=\"tooltip\" data-bs-html=\"true\" title=\"#{reservations.map { |r| "#{r.user&.name} / #{r.staff&.name || '指名なし'} / #{r.start_time.strftime('%H:%M')}-#{r.end_time.strftime('%H:%M')}#{r.notes.present? ? '<br>' + r.notes.to_s[0..20] : ''}" }.join('<hr>')}\"" : "" %>
 
+            <% day_class = date.wday == 6 ? 'nc-col-sat' : (date.wday == 0 ? 'nc-col-sun' : '') %>
             <% if code == -1 %>
-              <td><span class="nc-icon nc-icon-empty"></span></td>
+              <td class="<%= day_class %>"><span class="nc-icon nc-icon-empty"></span></td>
             <% elsif code == 0 %>
-              <td <%= tooltip_attr.html_safe %>><span class="nc-icon nc-icon-full"></span></td>
+              <td class="<%= day_class %>" <%= tooltip_attr.html_safe %>><span class="nc-icon nc-icon-full"></span></td>
             <% elsif is_today %>
-              <td <%= tooltip_attr.html_safe %>><span class="nc-icon <%= code >= 2 ? 'nc-icon-excellent' : 'nc-icon-good' %>"></span></td>
+              <td class="<%= day_class %>" <%= tooltip_attr.html_safe %>><span class="nc-icon <%= code >= 2 ? 'nc-icon-excellent' : 'nc-icon-good' %>"></span></td>
             <% else %>
-              <td <%= tooltip_attr.html_safe %>>
+              <td class="<%= day_class %>" <%= tooltip_attr.html_safe %>>
                 <%= link_to new_reserve_path(machine: @machine, date: date.to_s, frame: slot_float, start_date: @start_date.to_s, staff_id: @staff.id, format: :js), remote: true, data: { turbo: false } do %>
                   <span class="nc-icon <%= code >= 2 ? 'nc-icon-excellent' : 'nc-icon-good' %>"></span>
                 <% end %>

@@ -6,12 +6,13 @@ class NewServiceUnavailabilitiesController < ApplicationController
 
   def index
     @service = 'holistic'
+    @staff_id = (params[:staff_id] || 1).to_i
     @time_slots = AvailabilityService.time_slots
     @weekly = {}
     @dates.each do |date|
       @weekly[date] = {}
       @time_slots.each do |slot|
-        @weekly[date][slot] = ServiceUnavailability.where(service: @service, date: date)
+        @weekly[date][slot] = ServiceUnavailability.where(service: @service, date: date, staff_id: @staff_id)
                                                     .where('start_time <= ? AND end_time > ?',
                                                            slot, slot).exists?
       end
@@ -20,7 +21,8 @@ class NewServiceUnavailabilitiesController < ApplicationController
 
   def create
     service = params[:service] || 'holistic'
-    ServiceUnavailability.where(service: service, date: @dates).destroy_all
+    staff_id = (params[:staff_id] || 1).to_i
+    ServiceUnavailability.where(service: service, date: @dates, staff_id: staff_id).destroy_all
 
     slots_by_date = {}
     (params[:slots] || {}).each do |key, _|
@@ -36,14 +38,14 @@ class NewServiceUnavailabilitiesController < ApplicationController
       ranges.each do |r|
         ServiceUnavailability.create!(service: service, date: date,
                                       start_time: r[:start], end_time: r[:end],
-                                      reason: 'business_trip')
+                                      reason: 'business_trip', staff_id: staff_id)
       end
     end
 
     # 旧machine_schedulesにも同期
     sync_to_old_machine_schedules(service, @dates)
 
-    redirect_to new_service_unavailabilities_path(start_date: @start_date),
+    redirect_to new_service_unavailabilities_path(start_date: @start_date, staff_id: staff_id),
                 notice: '出張スケジュールを保存しました'
   end
 

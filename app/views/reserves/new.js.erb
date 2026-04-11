@@ -1,21 +1,16 @@
 console.log("===================== new.js.erb start");
-<% if @user.present? %>
-  $("#user-modal").html("<%= escape_javascript(render 'form_machine_staff') %>")
+<% if @available_staff.empty? %>
+  alert("この時間帯は60分の予約枠を確保できません。別の時間帯をお選びください。");
 <% else %>
-  $("#user-modal").html("<%= escape_javascript(render 'form_machine_staff_not_user') %>")
+  <% if @user.present? %>
+    $("#user-modal").html("<%= escape_javascript(render 'form_machine_staff') %>")
+  <% else %>
+    $("#user-modal").html("<%= escape_javascript(render 'form_machine_staff_not_user') %>")
+  <% end %>
+  $("#user-modal").modal("show")
+
+  if($('#error_explanation')[0]){
+      $(".modal").animate({scrollTop:0});
+  }
 <% end %>
-
-$("#user-modal").modal("show")
-
-
-<!--var modal = document.getElementById("reserveModal");-->
-<!--modal.style.display = 'block';-->
-
-
-if($('#error_explanation')[0]){
-    $(".modal").animate({scrollTop:0});
-}
-
 console.log("===================== new.js.erb end");
-
-

@@ -22,6 +22,7 @@ class MachineSchedulesController < ApplicationController
     require 'date'
     # before_action set_staff @staff set
     logger.debug("=============== schedule index machine_id = #{params[:machine_id]}")
+    @staff_id = (params[:staff_id] || 1).to_i
     @schedule = MachineSchedule.new(machine: @machine.short_word)
     @today = Time.now.in_time_zone("Tokyo")
     @schedules = MachineSchedule.where("schedule_date >= :date ", date: @today, machine: @machine)
@@ -41,10 +42,15 @@ class MachineSchedulesController < ApplicationController
           # このmachineのこの1週間のスケジュールを全削除処理し、再度check入ったspaceを作成する
           MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6)).delete_all
           logger.debug("--------------------- schedule create params[:machine][:machine_schedule] = #{params[:machine][:machine_schedule]}")
+          staff_id = (params[:staff_id] || 1).to_i
           params[:machine][:machine_schedule].each do |schedule|
             schedule_arr = schedule.split("&")
             MachineSchedule.create(machine_schedule_date: schedule_arr[0], machine_schedule_space: schedule_arr[1], machine: @machine.short_word)
           end
+
+          # ServiceUnavailabilityにも同期
+          sync_machine_to_service_unavailability(@machine.short_word, @start_date, staff_id)
+
           flash[:notice] = "出張登録できました"
           redirect_to machine_machine_schedules_path(@machine.short_word, calender_start_date: @start_date)
 
@@ -62,6 +68,8 @@ class MachineSchedulesController < ApplicationController
       # この1週間で１つもチェックされてない場合は全削除
       logger.debug("================== checked none start_date = #{@start_date}")
       MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6)).delete_all
+      staff_id = (params[:staff_id] || 1).to_i
+      sync_machine_to_service_unavailability(@machine.short_word, @start_date, staff_id)
       flash[:notice] = "出張修正できました"
       # schedule/indexへ
       redirect_to machine_machine_schedules_path(@machine.short_word, calender_start_date: @start_date)
@@ -158,5 +166,44 @@ class MachineSchedulesController < ApplicationController
                 @flash_msg = "出張登録不可な枠がありましたメールを確認下さい"
                 format.html { redirect_to machine_machine_schedules_path(machine, calender_start_date: calender_start_day), alert: @flash_msg }
           end
+     end
+
+     # MachineScheduleからServiceUnavailabilityへ同期
+     def sync_machine_to_service_unavailability(machine_code, start_date, staff_id)
+       service = machine_code == 'h' ? 'holistic' : 'holistic'
+       dates = (0..6).map { |i| start_date.to_date + i.days }
+       ServiceUnavailability.where(service: service, date: dates, staff_id: staff_id).destroy_all
+
+       dates.each do |date|
+         spaces = MachineSchedule.where(machine: machine_code, machine_schedule_date: date)
+                                  .pluck(:machine_schedule_space).sort
+         next if spaces.empty?
+
+         # 連続スロットをまとめる
+         ranges = []
+         current_start = spaces.first
+         current_end = spaces.first + 0.5
+         spaces[1..].each do |space|
+           if space == current_end
+             current_end = space + 0.5
+           else
+             ranges << [current_start, current_end]
+             current_start = space
+             current_end = space + 0.5
+           end
+         end
+         ranges << [current_start, current_end]
+
+         ranges.each do |s, e|
+           sh = s.to_i; sm = (s % 1 == 0.5) ? 30 : 0
+           eh = e.to_i; em = (e % 1 == 0.5) ? 30 : 0
+           ServiceUnavailability.create!(
+             service: service, date: date,
+             start_time: Time.zone.parse('2000-01-01').change(hour: sh, min: sm),
+             end_time: Time.zone.parse('2000-01-01').change(hour: eh, min: em),
+             reason: 'business_trip', staff_id: staff_id
+           )
+         end
+       end
      end
 end

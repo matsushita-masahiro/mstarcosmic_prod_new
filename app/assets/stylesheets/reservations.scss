@@ -138,3 +138,108 @@ td.table-frame-header {
 
 
  
+
+// 予約履歴テーブル
+.mr-container {
+  max-width: 900px;
+  margin: 120px auto 30px;
+  padding: 0 16px;
+}
+
+.mr-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.mr-empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}
+
+.mr-table-wrap {
+  overflow-x: auto;
+}
+
+.mr-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  font-size: 0.9rem;
+
+  thead th {
+    background: #2d3748;
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: #f7fafc;
+  }
+
+  tbody tr.mr-medirosa {
+    background: #f0f7f7;
+  }
+
+  tbody tr.mr-medirosa:hover {
+    background: #e4efef;
+  }
+}
+
+.mr-duration {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.mr-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: #5a8a8a;
+  color: #fff;
+  padding: 1px 8px;
+  border-radius: 10px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.mr-remarks {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mr-delete-btn {
+  font-size: 0.8rem;
+  color: #e74c3c;
+  text-decoration: none;
+  padding: 3px 10px;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #e74c3c;
+    color: #fff;
+  }
+}
