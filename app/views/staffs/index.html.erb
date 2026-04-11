@@ -9,13 +9,13 @@
       <% if current_user.user_type == "1" %>
         <% @staffs.each do |staff| %>
             <% if staff.dismiss_flag == false %>
-               <li><%= link_to staff.name, staff_schedules_path(staff) %></li>
+               <li><%= link_to staff.name, new_staff_schedules_path(staff_id: staff.id) %></li>
             <% else %>
-               <li><%= link_to staff.name, staff_schedules_path(staff), class: "dismissal-link" %></li>
+               <li><%= link_to staff.name, new_staff_schedules_path(staff_id: staff.id), class: "dismissal-link" %></li>
             <% end %>
         <% end %>
       <% elsif current_user.user_type == "10" && Staff.find_by(user_id: current_user.id) %>
-        <li><%= link_to Staff.find_by(user_id: current_user.id).name, staff_schedules_path(Staff.find_by(user_id: current_user.id)) %></li>
+        <li><%= link_to Staff.find_by(user_id: current_user.id).name, new_staff_schedules_path(staff_id: Staff.find_by(user_id: current_user.id).id) %></li>
       <% else %>
         <li>スタッフ登録処理未完了です</li>
       <% end %>

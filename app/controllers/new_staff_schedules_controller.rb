@@ -12,9 +12,11 @@ class NewStaffSchedulesController < ApplicationController
     @dates.each do |date|
       @weekly[date] = {}
       @time_slots.each do |slot|
+        h, m = slot.split(':').map(&:to_i)
+        t = Time.zone.parse('2000-01-01').change(hour: h, min: m)
         @weekly[date][slot] = StaffSchedule.where(staff_id: @selected_staff.id, date: date)
                                            .where('start_time <= ? AND end_time > ?',
-                                                  slot, slot).exists?
+                                                  t, t).exists?
       end
     end
   end
@@ -56,8 +58,8 @@ class NewStaffSchedulesController < ApplicationController
   end
 
   def set_dates
-    @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current
-    @start_date = Date.current if @start_date < Date.current
+    @start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.current + 1.day
+    @start_date = Date.current + 1.day if @start_date <= Date.current
     @dates = (0..6).map { |i| @start_date + i.days }
   end
 

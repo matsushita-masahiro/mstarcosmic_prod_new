@@ -2,7 +2,7 @@
   <h2 class="nc-title">📋 出勤スケジュール登録</h2>
 
   <!-- スタッフ選択タブ -->
-  <div class="nc-staff-tabs">
+  <div class="nc-staff-tabs" style="margin-top: 20px;">
     <% @staffs.each do |staff| %>
       <%= link_to staff.name,
           new_staff_schedules_path(staff_id: staff.id, start_date: @start_date),
@@ -12,16 +12,20 @@
 
   <% if @selected_staff %>
     <!-- 週ナビ -->
-    <div class="nc-week-nav">
-      <% if @start_date > Date.current %>
-        <%= link_to new_staff_schedules_path(staff_id: @selected_staff.id, start_date: @start_date - 7), class: "btn btn-outline-primary btn-sm" do %>
-          <i class="fas fa-chevron-left"></i> 前週
+    <div class="nc-week-nav" style="display:flex; align-items:center; justify-content:space-between; margin:16px 0;">
+      <div style="min-width:80px;">
+        <% if @start_date > Date.current %>
+          <%= link_to new_staff_schedules_path(staff_id: @selected_staff.id, start_date: @start_date - 7), class: "nc-nav-btn" do %>
+            ← 前週
+          <% end %>
         <% end %>
-      <% else %><span></span><% end %>
+      </div>
       <span class="nc-week-range"><%= @start_date.strftime("%-m/%-d") %> 〜 <%= (@start_date + 6).strftime("%-m/%-d") %></span>
-      <%= link_to new_staff_schedules_path(staff_id: @selected_staff.id, start_date: @start_date + 7), class: "btn btn-outline-primary btn-sm" do %>
-        翌週 <i class="fas fa-chevron-right"></i>
-      <% end %>
+      <div style="min-width:80px; text-align:right;">
+        <%= link_to new_staff_schedules_path(staff_id: @selected_staff.id, start_date: @start_date + 7), class: "nc-nav-btn" do %>
+          翌週 →
+        <% end %>
+      </div>
     </div>
 
     <%= form_tag new_staff_schedules_path, method: :post do %>
@@ -37,9 +41,11 @@
           <tr>
             <th></th>
             <% @dates.each do |d| %>
-              <% weekend = d.wday == 0 || d.wday == 6 %>
-              <th class="<%= 'nc-weekend' if weekend %>">
-                <%= d.strftime("%-m/%-d") %><br><small><%= %w[日 月 火 水 木 金 土][d.wday] %></small>
+              <% day_class = d.wday == 6 ? 'nc-saturday' : (d.wday == 0 ? 'nc-sunday' : '') %>
+              <th class="<%= day_class %>">
+                <%= d.strftime("%-m/%-d") %><br><small><%= %w[日 月 火 水 木 金 土][d.wday] %></small><br>
+                <input type="checkbox" class="js-toggle-day" data-date="<%= d %>"
+                       title="この日を全選択/全解除">
               </th>
             <% end %>
           </tr>
@@ -52,7 +58,7 @@
                 <% checked = @weekly.dig(date, slot) %>
                 <td class="nc-check-cell">
                   <input type="checkbox" name="slots[<%= date %>_<%= slot %>]" value="1"
-                         class="nc-check" <%= 'checked' if checked %>>
+                         class="nc-check" data-date="<%= date %>" <%= 'checked' if checked %>>
                 </td>
               <% end %>
             </tr>
@@ -66,3 +72,144 @@
     <% end %>
   <% end %>
 </div>
+
+<style>
+  /* カード全体 */
+  .nc-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .nc-container .nc-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .nc-container .nc-table thead th {
+    background: #f5f5f5;
+    color: #333;
+    padding: 10px 4px;
+    font-size: 0.85rem;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    font-weight: bold;
+  }
+  .nc-container .nc-table thead th.nc-saturday {
+    background: #e8f4ff;
+    color: #2277cc;
+  }
+  .nc-container .nc-table thead th.nc-sunday {
+    background: #fff0f0;
+    color: #d44;
+  }
+  .nc-container .nc-table tbody th {
+    background: #f8f8f8;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    text-align: right;
+    border: 1px solid #e0e0e0;
+    white-space: nowrap;
+  }
+  .nc-container .nc-table tbody td {
+    text-align: center;
+    padding: 4px;
+    border: 1px solid #e0e0e0;
+  }
+  .nc-container .nc-table tbody tr:hover {
+    background: #f0f6ff;
+  }
+  /* チェックボックス */
+  .nc-check {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #4a90d9;
+  }
+  /* スタッフタブ */
+  .nc-staff-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .nc-staff-tab {
+    padding: 6px 16px;
+    border: 2px solid #ccc;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #555;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .nc-staff-tab.active {
+    border-color: #4a90d9;
+    color: #4a90d9;
+    font-weight: bold;
+    background: #eef4ff;
+  }
+  .nc-staff-tab:hover {
+    border-color: #4a90d9;
+    color: #4a90d9;
+  }
+  /* ナビボタン */
+  .nc-week-nav .nc-nav-btn {
+    display: inline-block !important;
+    padding: 8px 16px !important;
+    background: #4a90d9 !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    font-size: 0.9rem !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .nc-week-nav .nc-nav-btn:hover {
+    background: #357abd !important;
+    color: #fff !important;
+  }
+  .nc-week-range {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+  /* 保存ボタン */
+  .nc-actions {
+    text-align: center;
+    margin: 12px 0;
+  }
+  .nc-actions .btn-primary {
+    padding: 10px 32px;
+    font-size: 1rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  /* 日付トグルチェック */
+  .js-toggle-day {
+    margin-top: 4px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #4a90d9;
+  }
+</style>
+
+<script>
+  document.addEventListener('turbo:load', function() {
+    // 日付ヘッダーのチェックボックスで、その日の全スロットをトグル
+    document.querySelectorAll('.js-toggle-day').forEach(function(toggle) {
+      // 初期状態: その日のチェックが全部ONならヘッダーもON
+      var date = toggle.dataset.date;
+      var slots = document.querySelectorAll('.nc-check[data-date="' + date + '"]');
+      var allChecked = Array.from(slots).every(function(cb) { return cb.checked; });
+      toggle.checked = allChecked;
+
+      toggle.addEventListener('change', function() {
+        var checked = this.checked;
+        slots.forEach(function(cb) { cb.checked = checked; });
+      });
+    });
+  });
+</script>

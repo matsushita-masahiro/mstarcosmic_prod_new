@@ -55,7 +55,7 @@
                   <!--<li><= link_to '予約カレンダー', registration_completed?.size > 0 ? "/users/edit" : "/reserves/h/index" %></li>-->
                   <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
                   <% if staff_info %>
-                    <li><%= link_to 'スケジュール入力', staff_schedules_path(staff_info) %></li>
+                    <li><%= link_to 'スケジュール入力', new_staff_schedules_path(staff_id: staff_info.id) %></li>
                   <% end %>
               </ul> 
             </li>
@@ -120,7 +120,7 @@
                <!--<li><= link_to 'ご予約', "/reserves/h/index" %></li>-->
                <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
                   <% if staff_info %>
-                    <li><%= link_to 'スケジュール入力', staff_schedules_path(staff_info) %></li>
+                    <li><%= link_to 'スケジュール入力', new_staff_schedules_path(staff_id: staff_info.id) %></li>
                   <% end %>
                <li><%= link_to 'プロフィール', edit_user_registration_path %></li>
             <% else %>
