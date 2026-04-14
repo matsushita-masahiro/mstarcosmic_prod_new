@@ -1,13 +1,6 @@
 <div class="nc-container">
 <div class="nc-card">
   <h2 class="nc-title">ホリスティック予約</h2>
-  <div class="nc-info" style="margin: 0 16px 12px; padding: 12px; background: #fff8e1; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; color: #555;">
-    施術スタートの希望時間をクリックすると自動的に１時間の予約ができます。<br>
-    お2人で同時予約の場合は◎連続の場合は２回予約お願いします。<br>
-    貸切希望の場合は、備考欄にお書きください。<br>
-    貸切料として5,000円別途かかります。
-  </div>
-
   <div class="nc-legend">
     <div class="nc-legend-item"><span class="nc-icon nc-icon-excellent" style="width:20px;height:20px;font-size:0.6rem;"></span> 空きあり</div>
     <div class="nc-legend-item"><span class="nc-icon nc-icon-good" style="width:20px;height:20px;font-size:0.6rem;"></span> 残りわずか</div>
@@ -17,9 +10,7 @@
 
   <div class="nc-week-nav">
     <div class="nc-nav-left">
-      <% today = Time.now.in_time_zone("Tokyo").to_date %>
-      <% min_start = (user_signed_in? && admin_user?) ? today : today + 1 %>
-      <% if (@start_date - 7) >= min_start %>
+      <% if @start_date > Date.today %>
         <% base = !user_signed_in? ? ((%w[o e b].include?(@machine) ? reserves_new_cust_other_path : reserves_new_cust_path)) : reserves_path %>
         <%= link_to "#{base}?calender_start_date=#{@start_date - 7}&machine=#{@machine}&staff_id=#{@staff&.id}", class: "nc-nav-btn" do %>← 前週<% end %>
       <% end %>

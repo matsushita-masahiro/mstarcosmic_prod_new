@@ -54,7 +54,9 @@ class NewStaffSchedulesController < ApplicationController
   private
 
   def ensure_admin
-    redirect_to root_path, alert: '管理者権限が必要です' unless current_user.user_type == '1'
+    unless current_user.user_type.in?(%w[1 10])
+      redirect_to root_path, alert: '権限がありません'
+    end
   end
 
   def set_dates

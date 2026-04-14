@@ -376,22 +376,23 @@ class ReservesController < ApplicationController
     
     def calender_start_day
       # 日付ではないデータが直打ちされた時の対処のif
-      today = Time.now.in_time_zone("Tokyo").to_date
-      # 管理者は当日から表示、それ以外は翌日から
-      default_start = (user_signed_in? && admin_user?) ? today : today + 1
-      min_start = default_start
 
       if (defined? params[:calender_start_date]) && date_valid?(params[:calender_start_date])
         logger.debug("--------------------------- calender_start = not nil #{params[:calender_start_date]}")
-        @start_date = Date.parse(params[:calender_start_date])
-        if @start_date > today + 28
-          @start_date = today + 35
-        elsif @start_date < min_start
-          @start_date = min_start
+        @start_date = DateTime.parse(params[:calender_start_date])
+        # 今日から5週間の以外前後の日をURLから直打ちしたときの対処
+        if @start_date > Date.today + 28
+          @start_date = Date.today + 35
+        elsif @start_date < Date.today
+          @start_date = Date.today
         end
       else
-        logger.debug("--------------------------- calender_start = nil or false")
-        @start_date = default_start
+        logger.debug("~~~~~~~~~~~~~~~~~ Time.current = #{Time.current.since(1.days)}")
+        logger.debug("~~~~~~~~~~~~~~~~~ Time.now     = #{Time.now}")
+        logger.debug("--------------------------- calender_start =  nil or false")
+        # @start_date = DateTime.current.in_time_zone("Tokyo")
+        logger.debug("--------------------------- today =  #{@start_date}")
+        @start_date = Date.today
       end
     end
     
