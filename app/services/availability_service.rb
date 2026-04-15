@@ -84,7 +84,7 @@ class AvailabilityService
     # 出張中のスタッフを除外
     trip_records = (@unavail_idx[date] || []).select { |u| u.start_time < full_end && u.end_time > s }
     if trip_records.any?
-      trip_staff_ids = trip_records.map(&:staff_id).compact.uniq
+      trip_staff_ids = trip_records.select { |u| u.respond_to?(:staff_id) && u.staff_id.present? }.map(&:staff_id).uniq
       free_ids -= trip_staff_ids
     end
 
@@ -116,12 +116,65 @@ class AvailabilityService
     @staff_ids = @staffs.map(&:id)
     @new_capable_ids = @staffs.select { |s| s.new_customer_flag }.map(&:id)
 
-    @sched_idx = StaffSchedule.for_dates(@dates).where(staff_id: @staff_ids)
-                              .group_by(&:date)
+    # 新StaffScheduleから取得
+    new_scheds = StaffSchedule.for_dates(@dates).where(staff_id: @staff_ids).to_a
+
+    # 旧Scheduleにあって新StaffScheduleに無い分を補完（同期漏れ対策）
+    old_scheds = Schedule.where(schedule_date: @dates, staff_id: @staff_ids).to_a
+    if old_scheds.any?
+      # 旧Scheduleを日付×スタッフでグループ化し、StaffSchedule形式に変換
+      old_grouped = old_scheds.group_by { |s| [s.schedule_date, s.staff_id] }
+      new_grouped = new_scheds.group_by { |s| [s.date, s.staff_id] }
+
+      old_grouped.each do |(date, staff_id), slots|
+        # 新テーブルにこの日・このスタッフのレコードがなければ補完
+        next if new_grouped.key?([date, staff_id])
+
+        spaces = slots.map(&:schedule_space).sort
+        ranges = consolidate_spaces_for_fallback(spaces)
+        ranges.each do |r|
+          new_scheds << StaffSchedule.new(
+            staff_id: staff_id, date: date,
+            start_time: space_to_time_obj(r[:start]),
+            end_time: space_to_time_obj(r[:end_space])
+          )
+        end
+        Rails.logger.info("[AvailabilityService] 旧Schedule→StaffScheduleフォールバック: staff_id=#{staff_id}, date=#{date}")
+      end
+    end
+
+    @sched_idx = new_scheds.group_by(&:date)
     @res_idx   = Reservation.confirmed.for_dates(@dates).includes(:user, :staff)
                             .group_by(&:date)
     @unavail_idx = ServiceUnavailability.for_dates(@dates).for_service(@service_name)
                                         .group_by(&:date)
+  end
+
+  # 旧Schedule space値の連続スロットを範囲に集約
+  def consolidate_spaces_for_fallback(spaces)
+    return [] if spaces.empty?
+    ranges = []
+    current_start = spaces.first
+    current_end = spaces.first
+    spaces.each_with_index do |sp, i|
+      next if i == 0
+      if (sp - current_end - 0.5).abs < 0.01
+        current_end = sp
+      else
+        ranges << { start: current_start, end_space: current_end + 0.5 }
+        current_start = sp
+        current_end = sp
+      end
+    end
+    ranges << { start: current_start, end_space: current_end + 0.5 }
+    ranges
+  end
+
+  # space値(例: 12.0, 12.5)をTime型に変換
+  def space_to_time_obj(space)
+    h = space.to_i
+    m = ((space - h) * 60).round
+    Time.zone.parse('2000-01-01').change(hour: h, min: m)
   end
 
   def calc_slot(date, slot_time)
@@ -171,7 +224,7 @@ class AvailabilityService
     # 出張中のスタッフを除外
     trip_records = (@unavail_idx[date] || []).select { |u| u.start_time < e && u.end_time > s }
     if trip_records.any?
-      trip_staff_ids = trip_records.map(&:staff_id).compact.uniq
+      trip_staff_ids = trip_records.select { |u| u.respond_to?(:staff_id) && u.staff_id.present? }.map(&:staff_id).uniq
       free_ids -= trip_staff_ids
     end
 

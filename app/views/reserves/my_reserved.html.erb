@@ -4,19 +4,19 @@
   <% if @reserves.empty? %>
     <div class="mr-empty">予約はありません</div>
   <% else %>
+    <% is_admin = User.find(current_user.id).user_type == "1" %>
     <div class="mr-table-wrap">
       <table class="mr-table">
         <thead>
           <tr>
-            <th>予約日付</th>
-            <th>時間</th>
-            <% if User.find(current_user.id).user_type == "1" %>
+            <th>予約日時</th>
+            <% if is_admin %>
               <th>予約者</th>
             <% end %>
             <th>内容</th>
             <th>スタッフ</th>
             <th>備考</th>
-            <% if User.find(current_user.id).user_type == "1" %>
+            <% if is_admin %>
               <th></th>
             <% end %>
           </tr>
@@ -34,21 +34,26 @@
                  when 'o' then '算命学'
                  when 'e' then 'エステ'
                  when 'b' then '鍼・整体'
+                 when 'shinkyu' then '鍼灸'
+                 when 'seitai' then '整体'
                  else reserve.machine
                end %>
             <tr class="<%= is_medirosa ? 'mr-medirosa' : '' %>">
-              <td><%= reserve.reserved_date.strftime("%-m/%-d") %>（<%= %w[日 月 火 水 木 金 土][reserve.reserved_date.wday] %>）</td>
-              <td><%= display_time(reserve.reserved_space.to_f) %>〜<%= display_time(reserve.reserved_space.to_f + duration / 60.0) %><br><span class="mr-duration"><%= duration %>分</span></td>
-              <% if User.find(current_user.id).user_type == "1" %>
-                <td style="color: <%= user.new_customer? ? '#2563eb' : 'inherit' %>"><%= user.name %></td>
-              <% end %>
-              <td>
-                <%= menu_label %>
-                <% if is_medirosa %><span class="mr-badge">medirosa</span><% end %>
+              <td style="white-space:nowrap;">
+                <div><strong><%= reserve.reserved_date.strftime("%-m/%-d") %>（<%= %w[日 月 火 水 木 金 土][reserve.reserved_date.wday] %>）</strong></div>
+                <div><%= display_time(reserve.reserved_space.to_f) %>〜<%= display_time(reserve.reserved_space.to_f + duration / 60.0) %></div>
+                <div class="mr-duration"><%= duration %>分</div>
               </td>
-              <td><%= Staff.find_by(id: reserve.staff_id)&.name %></td>
+              <% if is_admin %>
+                <td style="white-space:nowrap; color: <%= user.new_customer? ? '#2563eb' : 'inherit' %>"><%= user.name %></td>
+              <% end %>
+              <td style="white-space:nowrap;">
+                <%= menu_label %>
+                <% if is_medirosa %><br><span class="mr-badge">medirosa</span><% end %>
+              </td>
+              <td style="white-space:nowrap;"><%= Staff.find_by(id: reserve.staff_id)&.name %></td>
               <td class="mr-remarks"><%= reserve.remarks %></td>
-              <% if User.find(current_user.id).user_type == "1" %>
+              <% if is_admin %>
                 <td><%= link_to "削除", "/reserves/#{reserve.id}", method: :delete, data: { confirm: "#{reserve.reserved_date.strftime('%-m/%-d')} #{display_time(reserve.reserved_space.to_f)}〜の予約を取り消しますか？" }, class: "mr-delete-btn" %></td>
               <% end %>
             </tr>

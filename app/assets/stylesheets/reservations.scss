@@ -161,15 +161,15 @@ td.table-frame-header {
 
 .mr-table-wrap {
   overflow-x: auto;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
 }
 
 .mr-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: separate;
   border-spacing: 0;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
   font-size: 0.9rem;
 
   thead th {
@@ -242,4 +242,24 @@ td.table-frame-header {
     background: #e74c3c;
     color: #fff;
   }
+}
+
+// 予約履歴 - 予約日時列のみ固定
+.mr-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #2d3748;
+}
+
+.mr-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  border-right: 2px solid #edf2f7;
+}
+
+.mr-table tbody tr.mr-medirosa td:first-child {
+  background: #f0f7f7;
 }
