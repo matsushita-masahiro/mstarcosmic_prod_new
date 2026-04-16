@@ -34,8 +34,8 @@
               <% available = AvailabilityService.new('holistic', @date.to_date, num_days: 1, user_signed_in: true).available_staff(@date.to_date, format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i), duration_minutes: 60) %>
               <select name="reserve[staff_id]" id="staff-select" style="width:100%;padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;background:#fff;" onchange="updateNominationFee(this)">
                 <option value="0">指名なし</option>
-                <% available.each do |s| %>
-                  <option value="<%= s.id %>" data-fee="<%= s.nomination_fee %>"><%= s.name %><%= s.nomination_fee > 0 ? "（+#{number_with_delimiter(s.nomination_fee)}円）" : "" %></option>
+                <% available.select { |s| s.nomination_fee > 0 }.each do |s| %>
+                  <option value="<%= s.id %>" data-fee="<%= s.nomination_fee %>"><%= s.name %>（+<%= number_with_delimiter(s.nomination_fee) %>円）</option>
                 <% end %>
               </select>
               <div id="nomination-fee-notice" style="color:#e74c3c;margin-top:4px;font-size:0.8rem;display:none;">指名料: <span id="fee-amount"></span>円</div>
