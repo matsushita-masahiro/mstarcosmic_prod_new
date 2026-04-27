@@ -2,18 +2,17 @@
     <img src="/new-images/metatron_price_top.jpg" class="about-metatron-top-image" >
     <img src="/new-images/sp_metatron_price.jpg" class="sp-about-metatron-top-image" >
 </div>
-<div id="coupon-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 
 <div id="price_plan">
     <div class="price_notice">
       <p>※表示価格は全て税込価格です</p>
     </div>
     <div class="price_plan_images">
-      <div class="price_plan_table">
-        <img src="/new_images_2026/price_list_2026_表.png" alt="2026年料金表">
+      <div class="price_plan_main">
+        <img src="/new_images_2026/price_list_2026_new_表.jpg" alt="2026年料金表">
       </div>
       <div class="price_plan_info">
-        <img src="/new_images_2026/price_list_2026_案内.png" alt="2026年ご案内">
+        <img src="/new_images_2026/price_list_2026_new_案内.jpeg" alt="価格改定に関するご案内">
       </div>
     </div>
 </div>
@@ -32,7 +31,6 @@
       <li>それ以降は人数分の全額キャンセル代として頂きますのでご了承ください</li>
   </ul>
 </div>
-
 
 <style>
  #price_plan {
@@ -55,35 +53,29 @@
  .price_plan_images {
    display: flex;
    justify-content: center;
-   align-items: stretch;
+   align-items: flex-start;
    gap: 20px;
    max-width: 1200px;
    margin: 0 auto;
    padding: 0 20px;
  }
  
- .price_plan_table {
+ .price_plan_main {
    flex: 6;
    max-width: 60%;
-   display: flex;
-   align-items: stretch;
  }
  
  .price_plan_info {
    flex: 4;
    max-width: 40%;
-   display: flex;
-   align-items: stretch;
  }
  
- .price_plan_table img,
+ .price_plan_main img,
  .price_plan_info img {
    width: 100%;
-   height: 100%;
-   object-fit: contain;
+   height: auto;
    display: block;
  }
- 
  .price_plan_basic_notice {
    width: 65%;
    margin: 50px auto;
@@ -100,14 +92,14 @@
  
  .price_plan_basic_notice > ul {
    list-style: none;
-   padding-left: 0;
+   padding-left: 1.5em;
  }
  
  .price_plan_basic_notice > ul > li {
    padding-bottom: 8px;
    line-height: 1.6;
  }
- 
+
 @media screen and (max-width: 792px) {
    .price_plan_images {
      flex-direction: column;
@@ -115,21 +107,15 @@
      padding: 0 10px;
    }
    
-   .price_plan_table,
+   .price_plan_main,
    .price_plan_info {
-     max-width: 80%;
-     width: 80%;
+     max-width: 90%;
+     width: 90%;
      margin: 0 auto;
    }
    
-   .price_plan_table img,
-   .price_plan_info img {
-     height: auto;
-     object-fit: contain;
-   }
-     
    .price_plan_basic_notice {
-     width: 80%;
+     width: 90%;
      padding: 15px;
    }
    
