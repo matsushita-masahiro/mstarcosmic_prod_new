@@ -58,16 +58,5 @@
 </div>
 
 <script>
-(function() {
-  var form = document.getElementById('user-search-form');
-  if (!form) return;
-  var nameInput = form.querySelector('[name="search[name]"]');
-  var typeSelect = form.querySelector('[name="search[user_type]"]');
-  var timer;
-  if (typeSelect) typeSelect.addEventListener('change', function() { form.submit(); });
-  if (nameInput) nameInput.addEventListener('input', function() {
-    clearTimeout(timer);
-    timer = setTimeout(function() { form.submit(); }, 400);
-  });
-})();
+// 検索ボタンクリック時のみ検索（自動検索なし）
 </script>

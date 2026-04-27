@@ -45,9 +45,12 @@
                 <div class="staff-card-sub"><%= staff.name %></div>
                 <div class="staff-card-machines">
                   <% staff.staff_machine_relations.each do |rel| %>
-                    <span class="staff-tag staff-tag-<%= rel.machine %>"><%= { 'h' => 'ホリスティック', 'w' => 'ウェルビーイング', 'e' => 'エステ', 'stem' => '幹細胞', 'b' => '鍼・整体', 'o' => 'その他' }[rel.machine] || rel.machine %></span>
+                    <span class="staff-tag staff-tag-<%= rel.machine %>"><%= { 'h' => 'ホリスティック', 'w' => 'ウェルビーイング', 'e' => 'エステ', 'stem' => '幹細胞', 'b' => '鍼・整体', 'o' => 'その他', 'shinkyu' => '鍼灸', 'seitai' => '整体' }[rel.machine] || rel.machine %></span>
                   <% end %>
                 </div>
+              </div>
+              <div class="staff-card-dismiss">
+                <%= link_to "スタッフ解任", "/admin/staffs/#{staff.id}", method: :delete, data: { confirm: "#{staff.name}を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。" }, class: "staff-dismiss-btn" %>
               </div>
             </label>
           <% end %>
