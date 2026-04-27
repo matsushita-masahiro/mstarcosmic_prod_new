@@ -23,7 +23,7 @@ class StaffsController < ApplicationController
     @users = User.where.not(id: 0).where(user_type: ["1","10"]).where.not(id: @already_staffs).pluck(:id, :name)
     @staff = Staff.new
     registored_staff_array = StaffMachineRelation.where.not(id: 0).where.not(staff_id: 0).select(:staff_id).distinct.pluck(:staff_id)
-    @staffs = Staff.where(id: registored_staff_array)
+    @staffs = Staff.where(dismiss_flag: false).where.not(id: 0).order(:id)
     @staff_machine_relations = StaffMachineRelation.where.not(staff_id: 0).order(:id)
     @staff_machine_relation = @staff.staff_machine_relations.build
   end

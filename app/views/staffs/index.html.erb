@@ -11,7 +11,10 @@
             <% if staff.dismiss_flag == false %>
                <li><%= link_to staff.name, new_staff_schedules_path(staff_id: staff.id) %></li>
             <% else %>
-               <li><%= link_to staff.name, new_staff_schedules_path(staff_id: staff.id), class: "dismissal-link" %></li>
+               <li>
+                 <span class="dismissal-link"><%= staff.name %></span>
+                 <%= link_to "復帰", staff_path(staff), method: :patch, data: { confirm: "#{staff.name}をスタッフに復帰させますか？" }, class: "restore-btn" %>
+               </li>
             <% end %>
         <% end %>
       <% elsif current_user.user_type == "10" && Staff.find_by(user_id: current_user.id) %>
@@ -31,7 +34,21 @@
   
   .dismissal-link {
     color: red;
-    /*margin-left: 50px;*/
+  }
+  
+  .restore-btn {
+    margin-left: 10px;
+    font-size: 0.85rem;
+    color: #16a34a;
+    text-decoration: none;
+    border: 1px solid #16a34a;
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+  
+  .restore-btn:hover {
+    background: #16a34a;
+    color: #fff;
   }
   
   @media (max-width: 414px) {
