@@ -4,9 +4,13 @@
   <!-- スタッフ選択タブ（管理者のみ複数表示） -->
   <div class="nc-staff-tabs" style="margin-top: 20px;">
     <% @staffs.each do |staff| %>
-      <%= link_to staff.name,
-          new_staff_schedules_path(staff_id: staff.id, start_date: @start_date),
-          class: "nc-staff-tab #{'active' if @selected_staff&.id == staff.id}" %>
+      <% if @staffs.size > 1 %>
+        <%= link_to staff.name,
+            new_staff_schedules_path(staff_id: staff.id, start_date: @start_date),
+            class: "nc-staff-tab #{'active' if @selected_staff&.id == staff.id}" %>
+      <% else %>
+        <span class="nc-staff-tab active"><%= staff.name %></span>
+      <% end %>
     <% end %>
   </div>
 
