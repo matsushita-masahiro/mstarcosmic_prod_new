@@ -1,7 +1,7 @@
 <div class="nc-container">
   <h2 class="nc-title">📋 出勤スケジュール登録</h2>
 
-  <!-- スタッフ選択タブ -->
+  <!-- スタッフ選択タブ（管理者のみ複数表示） -->
   <div class="nc-staff-tabs" style="margin-top: 20px;">
     <% @staffs.each do |staff| %>
       <%= link_to staff.name,

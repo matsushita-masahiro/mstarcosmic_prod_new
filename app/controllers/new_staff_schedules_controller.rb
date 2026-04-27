@@ -5,8 +5,19 @@ class NewStaffSchedulesController < ApplicationController
   before_action :set_dates
 
   def index
-    @staffs = Staff.where(active_flag: true, dismiss_flag: false).where.not(id: 0).order(:id)
-    @selected_staff = params[:staff_id].present? ? Staff.find(params[:staff_id]) : @staffs.first
+    @is_admin = current_user.user_type == '1'
+
+    if @is_admin
+      @staffs = Staff.where(active_flag: true, dismiss_flag: false).where.not(id: 0).order(:id)
+      @selected_staff = params[:staff_id].present? ? Staff.find(params[:staff_id]) : @staffs.first
+    else
+      # スタッフは自分自身のみ
+      my_staff = Staff.find_by(user_id: current_user.id)
+      redirect_to root_path, alert: 'スタッフ登録されていません' and return unless my_staff
+      @staffs = [my_staff]
+      @selected_staff = my_staff
+    end
+
     @time_slots = AvailabilityService.time_slots
     @weekly = {}
     @dates.each do |date|
@@ -23,6 +34,15 @@ class NewStaffSchedulesController < ApplicationController
 
   def create
     staff_id = params[:staff_id].to_i
+
+    # スタッフは自分自身のスケジュールのみ変更可能
+    unless current_user.user_type == '1'
+      my_staff = Staff.find_by(user_id: current_user.id)
+      if my_staff.nil? || my_staff.id != staff_id
+        redirect_to root_path, alert: '権限がありません' and return
+      end
+    end
+
     # 週の全スケジュールを削除して再作成
     StaffSchedule.where(staff_id: staff_id, date: @dates).destroy_all
 
