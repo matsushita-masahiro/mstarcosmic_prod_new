@@ -55,7 +55,7 @@
               </div>
               <div class="staff-card-actions">
                 <span class="staff-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); showEditForm(<%= staff.id %>)">編集</span>
-                <%= link_to "スタッフ解任", "/admin/staffs/#{staff.id}", method: :delete, data: { confirm: "#{staff.name}を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。" }, class: "staff-dismiss-btn", onclick: "event.stopPropagation();" %>
+                <%= button_to "スタッフ解任", "/admin/staffs/#{staff.id}", method: :delete, data: { turbo_confirm: "#{staff.name}を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。" }, class: "staff-dismiss-btn", form: { style: "display:inline;" } %>
               </div>
             </label>
             <div id="edit-form-<%= staff.id %>" class="staff-edit-form" style="display: none;">

@@ -95,11 +95,18 @@ class StaffsController < ApplicationController
 
   def fire 
     @staff = Staff.find(params[:id])
+    # 関連する全テーブルの参照を解除・削除してから物理削除
+    @staff.reserves.update_all(staff_id: 0)
+    Reservation.where(staff_id: @staff.id).update_all(staff_id: nil)
+    StaffSchedule.where(staff_id: @staff.id).destroy_all
+    StaffService.where(staff_id: @staff.id).destroy_all
+    @staff.staff_machine_relations.destroy_all
+    @staff.schedules.destroy_all
     if @staff.destroy
-      flash[:notice] = "スタッフ完全解雇しました"
+      flash[:notice] = "スタッフ完全削除しました"
       redirect_to "/admin/staffs"      
     else
-      flash[:alert] = "スタッフ解雇できませんでした"
+      flash[:alert] = "スタッフ削除できませんでした"
       redirect_back(fallback_location: root_path)      
     end
   end

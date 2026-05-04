@@ -179,6 +179,10 @@
   font-size: 0.75rem;
   color: #e74c3c !important;
   text-decoration: none !important;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   &:hover {
     text-decoration: underline !important;
   }
