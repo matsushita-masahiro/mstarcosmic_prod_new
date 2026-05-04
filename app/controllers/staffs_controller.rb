@@ -74,7 +74,7 @@ class StaffsController < ApplicationController
   def update
     @staff = Staff.find(params[:id])
     logger.debug("就任対象staff= #{@staff.name}")
-    if @staff.update(dismiss_flag: false)
+    if @staff.update(dismiss_flag: false, active_flag: true)
      flash[:notice] = "再度スタッフ就任しました"
      redirect_to "/admin/staffs"      
     else
