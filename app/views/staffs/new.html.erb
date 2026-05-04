@@ -42,7 +42,7 @@
         <label class="staff-label">スタッフ選択</label>
         <div class="staff-card-list">
           <% @staffs.each do |staff| %>
-            <label class="staff-card <%= 'staff-card-inactive' unless staff.active_flag %>" for="staff_machine_relation_staff_id_<%= staff.id %>">
+            <label class="staff-card <%= 'staff-card-inactive' unless staff.active_flag %>" for="staff_machine_relation_staff_id_<%= staff.id %>" data-staff-id="<%= staff.id %>">
               <%= g.radio_button :staff_id, staff.id, class: "staff-card-radio", id: "staff_machine_relation_staff_id_#{staff.id}" %>
               <div class="staff-card-body">
                 <div class="staff-card-name"><%= staff.name_kanji.present? ? staff.name_kanji : staff.name %></div>
@@ -123,7 +123,10 @@ function showEditForm(staffId) {
     form.style.display = 'none';
   });
   var form = document.getElementById('edit-form-' + staffId);
-  if (form) {
+  var card = document.querySelector('[data-staff-id="' + staffId + '"]');
+  if (form && card) {
+    // カードの直後に編集フォームを移動
+    card.parentNode.insertBefore(form, card.nextSibling);
     form.style.display = 'block';
   }
 }
