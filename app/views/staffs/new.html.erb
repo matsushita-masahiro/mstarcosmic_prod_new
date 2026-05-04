@@ -37,7 +37,7 @@
   <!-- 担当施術修正 -->
   <div class="staff-section">
     <h3 class="staff-section-title">✏️ 担当施術修正</h3>
-    <%= form_with model: @staff_machine_relation, url: admin_staffs_staff_machine_relations_path, method: :patch, class: "staff-form" do |g| %>
+    <%= form_with model: @staff_machine_relation, url: admin_staffs_staff_machine_relations_path, method: :patch, class: "staff-form", id: "staff-machine-form" do |g| %>
       <div class="staff-field">
         <label class="staff-label">スタッフ選択</label>
         <div class="staff-card-list">
@@ -55,36 +55,9 @@
               </div>
               <div class="staff-card-actions">
                 <span class="staff-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); showEditForm(<%= staff.id %>)">編集</span>
-                <%= button_to "スタッフ解任", "/admin/staffs/#{staff.id}", method: :delete, data: { turbo_confirm: "#{staff.name}を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。" }, class: "staff-dismiss-btn", form: { style: "display:inline;" } %>
+                <span class="staff-dismiss-btn" onclick="event.preventDefault(); event.stopPropagation(); dismissStaff(<%= staff.id %>, '<%= staff.name %>')">スタッフ解任</span>
               </div>
             </label>
-            <div id="edit-form-<%= staff.id %>" class="staff-edit-form" style="display: none;">
-              <%= form_with model: staff, url: update_info_staff_path(staff), method: :patch, class: "staff-form" do |ef| %>
-                <div class="staff-field">
-                  <label class="staff-label">スタッフ名（ひらがな）</label>
-                  <%= ef.text_field :name, required: true, class: "staff-input", value: staff.name %>
-                </div>
-                <div class="staff-field">
-                  <label class="staff-label">スタッフ名（漢字）</label>
-                  <%= ef.text_field :name_kanji, class: "staff-input", value: staff.name_kanji %>
-                </div>
-                <div class="staff-field">
-                  <label class="staff-label">ステータス</label>
-                  <div class="staff-toggle">
-                    <%= ef.hidden_field :active_flag, value: "0" %>
-                    <label class="staff-toggle-label">
-                      <%= ef.check_box :active_flag, { checked: staff.active_flag, class: "staff-toggle-input" }, "1", "0" %>
-                      <span class="staff-toggle-slider"></span>
-                      <span class="staff-toggle-text"><%= staff.active_flag ? '有効' : '無効' %></span>
-                    </label>
-                  </div>
-                </div>
-                <div class="staff-actions" style="display: flex; gap: 8px; justify-content: center;">
-                  <%= ef.submit "保存", class: "staff-btn staff-btn-success" %>
-                  <button type="button" class="staff-btn staff-btn-cancel" onclick="hideEditForm(<%= staff.id %>)">キャンセル</button>
-                </div>
-              <% end %>
-            </div>
           <% end %>
         </div>
       </div>
@@ -102,6 +75,43 @@
       <div class="staff-actions">
         <%= g.submit "修正を保存", class: "staff-btn staff-btn-success" %>
       </div>
+    <% end %>
+
+    <!-- 編集フォーム（メインフォームの外） -->
+    <% @staffs.each do |staff| %>
+      <div id="edit-form-<%= staff.id %>" class="staff-edit-form" style="display: none;">
+        <%= form_with model: staff, url: update_info_staff_path(staff), method: :patch, class: "staff-form" do |ef| %>
+          <div class="staff-field">
+            <label class="staff-label">スタッフ名（ひらがな）</label>
+            <%= ef.text_field :name, required: true, class: "staff-input", value: staff.name %>
+          </div>
+          <div class="staff-field">
+            <label class="staff-label">スタッフ名（漢字）</label>
+            <%= ef.text_field :name_kanji, class: "staff-input", value: staff.name_kanji %>
+          </div>
+          <div class="staff-field">
+            <label class="staff-label">ステータス</label>
+            <div class="staff-toggle">
+              <%= ef.hidden_field :active_flag, value: "0" %>
+              <label class="staff-toggle-label">
+                <%= ef.check_box :active_flag, { checked: staff.active_flag, class: "staff-toggle-input" }, "1", "0" %>
+                <span class="staff-toggle-slider"></span>
+                <span class="staff-toggle-text"><%= staff.active_flag ? '有効' : '無効' %></span>
+              </label>
+            </div>
+          </div>
+          <div class="staff-actions" style="display: flex; gap: 8px; justify-content: center;">
+            <%= ef.submit "保存", class: "staff-btn staff-btn-success" %>
+            <button type="button" class="staff-btn staff-btn-cancel" onclick="hideEditForm(<%= staff.id %>)">キャンセル</button>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- 解任用の隠しフォーム（メインフォームの外） -->
+    <% @staffs.each do |staff| %>
+      <%= form_with url: "/admin/staffs/#{staff.id}", method: :delete, id: "dismiss-form-#{staff.id}", style: "display:none;" do %>
+      <% end %>
     <% end %>
   </div>
 
@@ -122,6 +132,12 @@ function hideEditForm(staffId) {
   var form = document.getElementById('edit-form-' + staffId);
   if (form) {
     form.style.display = 'none';
+  }
+}
+
+function dismissStaff(staffId, staffName) {
+  if (confirm(staffName + "を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。")) {
+    document.getElementById('dismiss-form-' + staffId).requestSubmit();
   }
 }
 </script>
