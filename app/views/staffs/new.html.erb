@@ -38,8 +38,8 @@
         <label class="staff-label">スタッフ選択</label>
         <div class="staff-card-list">
           <% @staffs.each do |staff| %>
-            <label class="staff-card <%= 'staff-card-inactive' unless staff.active_flag %>">
-              <%= g.radio_button :staff_id, staff.id, class: "staff-card-radio" %>
+            <label class="staff-card <%= 'staff-card-inactive' unless staff.active_flag %>" for="staff_machine_relation_staff_id_<%= staff.id %>">
+              <%= g.radio_button :staff_id, staff.id, class: "staff-card-radio", id: "staff_machine_relation_staff_id_#{staff.id}" %>
               <div class="staff-card-body">
                 <div class="staff-card-name"><%= staff.name_kanji.present? ? staff.name_kanji : staff.name %></div>
                 <div class="staff-card-sub"><%= staff.name %></div>
@@ -49,10 +49,27 @@
                   <% end %>
                 </div>
               </div>
-              <div class="staff-card-dismiss">
-                <%= link_to "スタッフ解任", "/admin/staffs/#{staff.id}", method: :delete, data: { confirm: "#{staff.name}を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。" }, class: "staff-dismiss-btn" %>
+              <div class="staff-card-actions">
+                <span class="staff-edit-btn" onclick="event.preventDefault(); event.stopPropagation(); showEditForm(<%= staff.id %>)">編集</span>
+                <%= link_to "スタッフ解任", "/admin/staffs/#{staff.id}", method: :delete, data: { confirm: "#{staff.name}を解任しますか？\nスケジュールと担当施術も削除されます。\nこの操作は取り消せません。" }, class: "staff-dismiss-btn", onclick: "event.stopPropagation();" %>
               </div>
             </label>
+            <div id="edit-form-<%= staff.id %>" class="staff-edit-form" style="display: none;">
+              <%= form_with model: staff, url: update_info_staff_path(staff), method: :patch, class: "staff-form" do |ef| %>
+                <div class="staff-field">
+                  <label class="staff-label">スタッフ名（ひらがな）</label>
+                  <%= ef.text_field :name, required: true, class: "staff-input", value: staff.name %>
+                </div>
+                <div class="staff-field">
+                  <label class="staff-label">スタッフ名（漢字）</label>
+                  <%= ef.text_field :name_kanji, class: "staff-input", value: staff.name_kanji %>
+                </div>
+                <div class="staff-actions" style="display: flex; gap: 8px; justify-content: center;">
+                  <%= ef.submit "保存", class: "staff-btn staff-btn-success" %>
+                  <button type="button" class="staff-btn staff-btn-cancel" onclick="hideEditForm(<%= staff.id %>)">キャンセル</button>
+                </div>
+              <% end %>
+            </div>
           <% end %>
         </div>
       </div>
@@ -74,3 +91,22 @@
   </div>
 
 </div>
+
+<script>
+function showEditForm(staffId) {
+  document.querySelectorAll('.staff-edit-form').forEach(function(form) {
+    form.style.display = 'none';
+  });
+  var form = document.getElementById('edit-form-' + staffId);
+  if (form) {
+    form.style.display = 'block';
+  }
+}
+
+function hideEditForm(staffId) {
+  var form = document.getElementById('edit-form-' + staffId);
+  if (form) {
+    form.style.display = 'none';
+  }
+}
+</script>

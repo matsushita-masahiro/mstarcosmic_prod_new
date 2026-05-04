@@ -83,6 +83,16 @@ class StaffsController < ApplicationController
     end
   end
   
+  def update_info
+    @staff = Staff.find(params[:id])
+    if @staff.update(staff_info_params)
+      flash[:notice] = "#{@staff.name}のスタッフ情報を更新しました"
+    else
+      flash[:alert] = "スタッフ情報を更新できませんでした"
+    end
+    redirect_to new_staff_path
+  end
+
   def fire 
     @staff = Staff.find(params[:id])
     if @staff.destroy
@@ -98,5 +108,9 @@ class StaffsController < ApplicationController
   private 
     def staff_params
       params.require(:staff).permit(:name, :name_kanji, :user_id, staff_machine_relations_attributes: [:machine])
+    end
+
+    def staff_info_params
+      params.require(:staff).permit(:name, :name_kanji)
     end
 end

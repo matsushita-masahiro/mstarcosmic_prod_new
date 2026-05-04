@@ -82,6 +82,7 @@ Rails.application.routes.draw do
    scope :admin do
       post "/staffs/:id" => "staffs#fire"
       resources :staffs do
+         patch :update_info, on: :member
          resources :schedules
       end
    end
