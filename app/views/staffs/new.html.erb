@@ -1,5 +1,9 @@
 <div class="staff-mgmt">
 
+  <div style="margin-bottom: 16px;">
+    <%= link_to "← 出勤カレンダー入力・変更に戻る", "/admin/staffs", class: "staff-back-btn" %>
+  </div>
+
   <!-- スタッフ登録 -->
   <div class="staff-section">
     <h3 class="staff-section-title">👤 スタッフ登録</h3>
@@ -63,6 +67,17 @@
                 <div class="staff-field">
                   <label class="staff-label">スタッフ名（漢字）</label>
                   <%= ef.text_field :name_kanji, class: "staff-input", value: staff.name_kanji %>
+                </div>
+                <div class="staff-field">
+                  <label class="staff-label">ステータス</label>
+                  <div class="staff-toggle">
+                    <%= ef.hidden_field :active_flag, value: "0" %>
+                    <label class="staff-toggle-label">
+                      <%= ef.check_box :active_flag, { checked: staff.active_flag, class: "staff-toggle-input" }, "1", "0" %>
+                      <span class="staff-toggle-slider"></span>
+                      <span class="staff-toggle-text"><%= staff.active_flag ? '有効' : '無効' %></span>
+                    </label>
+                  </div>
                 </div>
                 <div class="staff-actions" style="display: flex; gap: 8px; justify-content: center;">
                   <%= ef.submit "保存", class: "staff-btn staff-btn-success" %>

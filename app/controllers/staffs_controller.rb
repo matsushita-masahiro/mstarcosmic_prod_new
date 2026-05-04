@@ -111,6 +111,6 @@ class StaffsController < ApplicationController
     end
 
     def staff_info_params
-      params.require(:staff).permit(:name, :name_kanji)
+      params.require(:staff).permit(:name, :name_kanji, :active_flag)
     end
 end
