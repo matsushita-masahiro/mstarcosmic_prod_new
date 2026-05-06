@@ -37,6 +37,9 @@ class StaffsController < ApplicationController
     @staff = Staff.new(staff_params)
     
     if @staff.save
+      # staff_servicesも同期
+      machines = @staff.staff_machine_relations.pluck(:machine)
+      sync_staff_services(@staff.id, machines)
       flash[:notice] = "#{@staff.name}のスタッフ登録を完了しました"
       redirect_to "/admin/staffs"
     else
@@ -119,5 +122,22 @@ class StaffsController < ApplicationController
 
     def staff_info_params
       params.require(:staff).permit(:name, :name_kanji, :active_flag)
+    end
+
+    def sync_staff_services(staff_id, machines)
+      services = machines.map { |m| machine_to_service(m) }.uniq
+      StaffService.where(staff_id: staff_id).delete_all
+      services.each do |service_name|
+        StaffService.create(staff_id: staff_id, service: service_name)
+      end
+    end
+
+    def machine_to_service(machine)
+      case machine
+      when 'h', 'stem', 'w'
+        'holistic'
+      else
+        'seitai'
+      end
     end
 end
