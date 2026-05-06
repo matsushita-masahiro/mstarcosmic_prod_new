@@ -251,7 +251,7 @@ class AvailabilityService
     staff_covers = (@sched_idx[date] || []).any? do |sc|
       w_ids.include?(sc.staff_id) && sc.start_time <= s && sc.end_time >= min_end
     end
-    return 0 unless staff_covers
+    return -1 unless staff_covers
 
     # min_duration分の間に予約が重複していないか
     reserved = (@res_idx[date] || []).any? do |r|
