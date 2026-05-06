@@ -61,6 +61,5 @@ class StaffMachineRelationsController < ApplicationController
           nil
         end
       end
-      end
       
 end
