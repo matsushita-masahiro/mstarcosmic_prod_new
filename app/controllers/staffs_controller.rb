@@ -138,8 +138,10 @@ class StaffsController < ApplicationController
         'holistic'
       when 'e'
         'esute'
-      else
+      when 'seitai'
         'seitai'
+      else
+        nil
       end
     end
 end

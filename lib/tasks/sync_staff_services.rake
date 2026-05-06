@@ -3,7 +3,14 @@ namespace :staff do
   task sync_services: :environment do
     StaffMachineRelation.where.not(staff_id: 0).pluck(:staff_id).uniq.each do |sid|
       machines = StaffMachineRelation.where(staff_id: sid).pluck(:machine)
-      services = machines.map { |m| %w[h stem w].include?(m) ? 'holistic' : (m == 'e' ? 'esute' : 'seitai') }.uniq
+      services = machines.map { |m|
+        case m
+        when 'h', 'stem', 'w' then 'holistic'
+        when 'e' then 'esute'
+        when 'seitai' then 'seitai'
+        else nil
+        end
+      }.compact.uniq
       StaffService.where(staff_id: sid).delete_all
       services.each { |s| StaffService.create!(staff_id: sid, service: s) }
       puts "staff_id=#{sid}: #{services.join(', ')}"

@@ -40,7 +40,7 @@ class StaffMachineRelationsController < ApplicationController
 
       def sync_staff_services(staff_id, machines)
         # machineからservice名へのマッピング
-        services = machines.map { |m| machine_to_service(m) }.uniq
+        services = machines.map { |m| machine_to_service(m) }.compact.uniq
 
         # 既存のstaff_servicesを削除して再作成
         StaffService.where(staff_id: staff_id).delete_all
@@ -55,9 +55,12 @@ class StaffMachineRelationsController < ApplicationController
           'holistic'
         when 'e'
           'esute'
-        else
+        when 'seitai'
           'seitai'
+        else
+          nil
         end
+      end
       end
       
 end
