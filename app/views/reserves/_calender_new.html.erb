@@ -68,7 +68,7 @@
             <% is_today = date == Date.current %>
             <% reservations = @weekly_reserves&.dig(date, slot_time) || [] %>
             <% has_tooltip = user_signed_in? && admin_user? && reservations.any? %>
-            <% tooltip_attr = has_tooltip ? "data-bs-toggle=\"tooltip\" data-bs-html=\"true\" title=\"#{reservations.map { |r| "#{r.user&.name} / #{r.staff&.name || '指名なし'} / #{r.start_time.strftime('%H:%M')}-#{r.end_time.strftime('%H:%M')}#{r.notes.present? ? '<br>' + r.notes.to_s[0..20] : ''}" }.join('<hr>')}\"" : "" %>
+            <% tooltip_attr = has_tooltip ? "data-bs-toggle=\"tooltip\" data-bs-html=\"true\" title=\"#{reservations.map { |r| "#{r.user&.name} / #{r.staff&.name || '指名なし'} / #{{'holistic' => 'ホリスティック', 'esute' => 'エステ', 'seitai' => '整体', 'stem' => '幹細胞'}[r.service] || r.service} / #{r.start_time.strftime('%H:%M')}-#{r.end_time.strftime('%H:%M')}#{r.notes.present? ? '<br>' + r.notes.to_s[0..20] : ''}" }.join('<hr>')}\"" : "" %>
 
             <% day_class = date.wday == 6 ? 'nc-col-sat' : (date.wday == 0 ? 'nc-col-sun' : '') %>
             <% if code == -1 %>

@@ -103,6 +103,7 @@ class Reserve < ApplicationRecord
                 when 'h' then 'holistic'
                 when 'w' then 'holistic'
                 when 'e' then 'esute'
+                when 'stem' then 'stem'
                 when 'seitai' then 'seitai'
                 else 'holistic'
                 end
@@ -158,6 +159,7 @@ class Reserve < ApplicationRecord
                 when 'h' then 'holistic'
                 when 'w' then 'holistic'
                 when 'e' then 'esute'
+                when 'stem' then 'stem'
                 when 'seitai' then 'seitai'
                 else 'holistic'
                 end
