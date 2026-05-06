@@ -8,7 +8,7 @@ class AddEsuteService < ActiveRecord::Migration[8.0]
     # エステサービスを追加
     execute <<-SQL
       INSERT INTO services (name, display_name, max_concurrent, min_duration, max_duration, active, created_at, updated_at)
-      VALUES ('esute', 'エステ', 1, 60, 150, 1, datetime('now'), datetime('now'));
+      VALUES ('esute', 'エステ', 1, 60, 150, 1, NOW(), NOW());
     SQL
   end
 
