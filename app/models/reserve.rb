@@ -88,9 +88,30 @@ class Reserve < ApplicationRecord
     end
 
     def remove_from_reservations
-      # root_reserve_idでグループ化されたReservationを削除
+      # 対応するReservationを削除
+      return if user_id == 0
+
+      group = Reserve.where(root_reserve_id: root_reserve_id || id)
+      return if group.empty?
+
+      min_space = group.minimum(:reserved_space)
+      h = min_space.to_i
+      m = ((min_space - h) * 60).round
+      start_t = format('%02d:%02d', h, m)
+
+      service = case machine
+                when 'h' then 'holistic'
+                when 'w' then 'holistic'
+                when 'e' then 'esute'
+                when 'seitai' then 'seitai'
+                else 'holistic'
+                end
+
       Reservation.where(
-        "notes LIKE ?", "%legacy_reserve_id:#{root_reserve_id || id}%"
+        user_id: user_id,
+        date: reserved_date,
+        start_time: start_t,
+        service: service
       ).destroy_all
     rescue => e
       Rails.logger.warn "Reserve#remove_from_reservations: #{e.message}"

@@ -348,9 +348,9 @@ class ReservesController < ApplicationController
   def destroy
         @reserve = Reserve.find_by(id: params[:id])
         @reserves = Reserve.where(root_reserve_id: params[:id])
-        # 遷移元のURLアクション
-        # fromAction = Rails.application.routes.recognize_path(request.referrer)[:action]
         if @reserve
+            # 対応するReservationも削除
+            delete_linked_reservation(@reserve, @reserves)
             if @reserves.destroy_all
               flash[:notice] = "予約を取り消しました"
               redirect_to reserves_my_reserved_path
@@ -637,6 +637,32 @@ class ReservesController < ApplicationController
       when 'o' then 'seitai'
       else 'holistic'
       end
+    end
+
+    def delete_linked_reservation(reserve, reserves)
+      return if reserve.user_id == 0
+
+      min_space = reserves.minimum(:reserved_space)
+      h = min_space.to_i
+      m = ((min_space - h) * 60).round
+      start_t = format('%02d:%02d', h, m)
+
+      service = case reserve.machine
+                when 'h' then 'holistic'
+                when 'w' then 'holistic'
+                when 'e' then 'esute'
+                when 'seitai' then 'seitai'
+                else 'holistic'
+                end
+
+      Reservation.where(
+        user_id: reserve.user_id,
+        date: reserve.reserved_date,
+        start_time: start_t,
+        service: service
+      ).destroy_all
+    rescue => e
+      Rails.logger.warn "delete_linked_reservation: #{e.message}"
     end
      
 
