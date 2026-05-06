@@ -11,7 +11,7 @@
                <li class="not_image"><%= link_to 'ページ別文章管理', page_contents_path%></li>
                <li class="not_image reserve_menu"><a href="">予約関連</a>
                   <ul class="dropdown">
-                      <li><%= link_to '予約カレンダー', "/reserves/h/index" %></li>
+                      <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
                       <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
                   </ul> 
                </li>
@@ -78,7 +78,7 @@
             <li><a href="/price_plan_admin">料金表</a></li>
             <% if user_signed_in? %>
                <li><%= link_to 'ページ別文章管理', page_contents_path%></li>
-               <li><%= link_to '予約カレンダー', "/reserves/h/index" %></li>
+               <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
                <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
                <li><%= link_to 'お客様一覧', users_path %></li>
                <li><%= link_to '回数券管理', payments_path %></li>

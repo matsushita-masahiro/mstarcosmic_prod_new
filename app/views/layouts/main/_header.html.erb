@@ -11,9 +11,9 @@
             <li class="not_image"><%= link_to 'プロフィール', edit_user_registration_path %></li>
             <li class="not_image reserve_menu"><a href="">予約関連</a>
               <ul class="dropdown">
-                  <!--<li><= link_to registration_completed?.size > 0 ? "/users/#{current_user.id}/edit" : "/reserves/h/index" do %><img src="/new-images/yoyaku.png" class="button">< end %></li>-->
-                  <li><%= link_to "/reserves/h/index" do %><img src="/new-images/yoyaku.png" class="button"><% end %></li>
-                  <!--<li><= link_to '予約カレンダー', registration_completed?.size > 0 ? "/users/edit" : "/reserves/h/index" %></li>-->
+                  <!--<li><= link_to registration_completed?.size > 0 ? "/users/#{current_user.id}/edit" : "/reserves/machine_select" do %><img src="/new-images/yoyaku.png" class="button">< end %></li>-->
+                  <li><%= link_to "/reserves/machine_select" do %><img src="/new-images/yoyaku.png" class="button"><% end %></li>
+                  <!--<li><= link_to '予約カレンダー', registration_completed?.size > 0 ? "/users/edit" : "/reserves/machine_select" %></li>-->
                   <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
                   <li><%= link_to "回数券", payments_pay_select_path %></li>
                   <% if staff_info %>
@@ -77,8 +77,8 @@
             <!--<li><a href="/price_plan">メタトロンをご購入を検討の方</a></li>-->
             <% if user_signed_in? %>
                <li><%= link_to '必ずお読みください', "/home/readmust/#{User.find_by(id: current_user.id).user_type}" %></li>
-                  <li><%= link_to registration_completed?.size > 0 ? "/users/edit" : "/reserves/h/index" do %><img src="/new-images/yoyaku.png" class="button"><% end %></li>
-               <!--<li><= link_to 'ご予約', "/reserves/h/index" %></li>-->
+                  <li><%= link_to registration_completed?.size > 0 ? "/users/edit" : "/reserves/machine_select" do %><img src="/new-images/yoyaku.png" class="button"><% end %></li>
+               <!--<li><= link_to 'ご予約', "/reserves/machine_select" %></li>-->
                <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
                <li><%= link_to '回数券', payments_pay_select_path %></li>
                   <% if staff_info %>

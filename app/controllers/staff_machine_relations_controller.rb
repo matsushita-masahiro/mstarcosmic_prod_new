@@ -53,6 +53,8 @@ class StaffMachineRelationsController < ApplicationController
         case machine
         when 'h', 'stem', 'w'
           'holistic'
+        when 'e'
+          'esute'
         else
           'seitai'
         end

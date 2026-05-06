@@ -26,26 +26,57 @@
           </div>
           <div style="display:flex;border-bottom:1px solid #eee;padding:10px 0;">
             <span style="width:70px;color:#888;font-size:0.85rem;">サービス</span>
-            <span style="font-weight:600;">ホリスティック</span>
+            <span style="font-weight:600;"><%= { 'h' => 'ホリスティック', 'e' => 'エステ', 'seitai' => '整体' }[@machine] || 'ホリスティック' %></span>
           </div>
           <div style="display:flex;padding:10px 0;">
             <span style="width:70px;color:#888;font-size:0.85rem;">スタッフ</span>
             <span style="flex:1;">
-              <% available = AvailabilityService.new('holistic', @date.to_date, num_days: 1, user_signed_in: true).available_staff(@date.to_date, format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i), duration_minutes: 60) %>
-              <select name="reserve[staff_id]" id="staff-select" style="width:100%;padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;background:#fff;" onchange="updateNominationFee(this)">
-                <option value="0">指名なし</option>
-                <% available.select { |s| s.nomination_fee > 0 }.each do |s| %>
-                  <option value="<%= s.id %>" data-fee="<%= s.nomination_fee %>"><%= s.name %>（+<%= number_with_delimiter(s.nomination_fee) %>円）</option>
+              <% service_name = { 'h' => 'holistic', 'e' => 'esute', 'seitai' => 'seitai' }[@machine] || 'holistic' %>
+              <% available = AvailabilityService.new(service_name, @date.to_date, num_days: 1, user_signed_in: true).available_staff(@date.to_date, format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i), duration_minutes: 60) %>
+              <% if @machine == 'e' || @machine == 'seitai' %>
+                <%# エステ・整体は担当スタッフ固定 %>
+                <% staff = available.first %>
+                <% if staff %>
+                  <span style="font-weight:600;"><%= staff.name_kanji.present? ? staff.name_kanji : staff.name %></span>
+                  <input type="hidden" name="reserve[staff_id]" value="<%= staff.id %>">
+                <% else %>
+                  <span style="color:#e74c3c;">担当スタッフが出勤していません</span>
+                  <input type="hidden" name="reserve[staff_id]" value="0">
                 <% end %>
-              </select>
-              <div id="nomination-fee-notice" style="color:#e74c3c;margin-top:4px;font-size:0.8rem;display:none;">指名料: <span id="fee-amount"></span>円</div>
+              <% else %>
+                <select name="reserve[staff_id]" id="staff-select" style="width:100%;padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;background:#fff;" onchange="updateNominationFee(this)">
+                  <option value="0">指名なし</option>
+                  <% available.select { |s| s.nomination_fee > 0 }.each do |s| %>
+                    <option value="<%= s.id %>" data-fee="<%= s.nomination_fee %>"><%= s.name %>（+<%= number_with_delimiter(s.nomination_fee) %>円）</option>
+                  <% end %>
+                </select>
+                <div id="nomination-fee-notice" style="color:#e74c3c;margin-top:4px;font-size:0.8rem;display:none;">指名料: <span id="fee-amount"></span>円</div>
+              <% end %>
             </span>
           </div>
         </div>
 
         <div style="margin-bottom:16px;">
           <div style="color:#888;font-size:0.8rem;margin-bottom:6px;">予約時間</div>
-          <% if user_signed_in? && admin_user? %>
+          <% if @machine == 'e' %>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label style="padding:8px 20px;border-radius:20px;background:#fff3cd;color:#856404;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                <%= f.radio_button :frames, "60", checked: true %> 60分
+              </label>
+              <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                <%= f.radio_button :frames, "90" %> 90分
+              </label>
+              <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                <%= f.radio_button :frames, "120" %> 120分
+              </label>
+              <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                <%= f.radio_button :frames, "150" %> 150分
+              </label>
+            </div>
+          <% elsif @machine == 'seitai' %>
+            <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;">60分</div>
+            <%= f.hidden_field :frames, value: "60" %>
+          <% elsif user_signed_in? && admin_user? %>
             <div style="display:flex;gap:8px;">
               <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
                 <%= f.radio_button :frames, "30" %> 30分

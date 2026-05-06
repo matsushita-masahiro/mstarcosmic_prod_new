@@ -135,7 +135,9 @@ class Reserve < ApplicationRecord
 
       service = case machine
                 when 'h' then 'holistic'
-                when 'w' then 'wellbeing'
+                when 'w' then 'holistic'
+                when 'e' then 'esute'
+                when 'seitai' then 'seitai'
                 else 'holistic'
                 end
 

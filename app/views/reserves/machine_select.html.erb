@@ -1,4 +1,97 @@
-<ul>
-    <li><%= link_to "Holistic", '/reserves/h/index' %></li>
-    <li><%= link_to "Wellbeing", '/reserves/w/index' %></li>
-</ul>
+<div class="service-select">
+  <h2 class="service-select-title">施術を選択してください</h2>
+  <div class="service-select-cards">
+    <%= link_to '/reserves/h/index', class: "service-card service-card-holistic" do %>
+      <div class="service-card-icon">💆</div>
+      <div class="service-card-name">ホリスティック</div>
+      <div class="service-card-desc">60分〜</div>
+    <% end %>
+
+    <%= link_to '/reserves/e/index', class: "service-card service-card-esute" do %>
+      <div class="service-card-icon">✨</div>
+      <div class="service-card-name">エステ</div>
+      <div class="service-card-desc">60分〜150分</div>
+    <% end %>
+
+    <%= link_to '/reserves/seitai/index', class: "service-card service-card-seitai" do %>
+      <div class="service-card-icon">🦴</div>
+      <div class="service-card-name">整体</div>
+      <div class="service-card-desc">60分</div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.service-select {
+  max-width: 600px;
+  margin: 120px auto 40px;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.service-select-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 32px;
+}
+
+.service-select-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 12px;
+  text-decoration: none !important;
+  color: #1a1a2e !important;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.service-card-holistic {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border: 2px solid #90caf9;
+}
+
+.service-card-esute {
+  background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+  border: 2px solid #f48fb1;
+}
+
+.service-card-seitai {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border: 2px solid #a5d6a7;
+}
+
+.service-card-icon {
+  font-size: 2rem;
+}
+
+.service-card-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.service-card-desc {
+  font-size: 0.85rem;
+  color: #666;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .service-select {
+    margin-top: 80px;
+  }
+}
+</style>

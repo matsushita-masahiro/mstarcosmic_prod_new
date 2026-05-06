@@ -29,7 +29,8 @@ class ReservesController < ApplicationController
 
         # 60分確保できるか事前チェック
         slot_time = format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i)
-        @available_staff = AvailabilityService.new('holistic', @date.to_date, num_days: 1, user_signed_in: user_signed_in? || false)
+        service_name = machine_to_service_name(@machine)
+        @available_staff = AvailabilityService.new(service_name, @date.to_date, num_days: 1, user_signed_in: user_signed_in? || false)
                                               .available_staff(@date.to_date, slot_time, duration_minutes: 60)
 
         respond_to do |format|
@@ -207,6 +208,9 @@ class ReservesController < ApplicationController
 
 
   
+  def machine_select
+  end
+
   def index
     logger.debug("------------------ reserve index machine_id  = #{params[:machine]}")
     require 'date'
@@ -215,11 +219,14 @@ class ReservesController < ApplicationController
     @reserves = Reserve.where("reserved_date >= :date ", date: @today)
     # 新予約は下記コメント外す
     if params[:staff_id].present?
-      @staff = Staff.find(params[:staff_id])   # 1:聖子 2:ゆうき 3:花香 4:奈緒 5:夏子 6:由香 7:可奈 8:佐藤
+      @staff = Staff.find(params[:staff_id])
     else
-      if params[:machine] == "o" || params[:machine] == "e"
-        # エステのスタッフ(2023/9/24時点はなるみ)
-        @staff = Staff.find(StaffMachineRelation.find_by(machine: "e").staff_id)
+      if params[:machine] == "e"
+        @staff = Staff.find(StaffMachineRelation.find_by(machine: "e")&.staff_id || 0)
+      elsif params[:machine] == "seitai"
+        @staff = Staff.find(StaffMachineRelation.find_by(machine: "seitai")&.staff_id || 0)
+      elsif params[:machine] == "o"
+        @staff = Staff.find(StaffMachineRelation.find_by(machine: "e")&.staff_id || 0)
       else
         @staff = Staff.find(0)
       end
@@ -228,13 +235,19 @@ class ReservesController < ApplicationController
       @machine = "h"
     elsif params[:machine] == "w"
       @machine = "h"
-      # 2023/1/27 wellbeing 病気の方にレンタル中にてwellbeingの予約ができないようにした。
-      # @machine = "w"
+    elsif params[:machine] == "e"
+      @machine = "e"
+    elsif params[:machine] == "seitai"
+      @machine = "seitai"
     else
       @machine = params[:machine]
     end
     @reserves_by_staff = Reserve.where("reserved_date >= :date ", date: @today)
-    staffs = StaffMachineRelation.where(machine: @machine).order(id: :desc).pluck(:staff_id)
+    staffs = if @machine == "seitai"
+      StaffMachineRelation.where(machine: "seitai").order(id: :desc).pluck(:staff_id)
+    else
+      StaffMachineRelation.where(machine: @machine).order(id: :desc).pluck(:staff_id)
+    end
     @staffs = Staff.where(id: staffs, active_flag: true).order(:id)
 
 
@@ -600,7 +613,7 @@ class ReservesController < ApplicationController
 
     # AvailabilityServiceで週間空き状況を一括計算
     def load_weekly_availability
-      service_name = machine_to_service_name(@machine || 'h')
+      service_name = machine_to_service_name(params[:machine] || 'h')
       svc = AvailabilityService.new(
         service_name,
         @start_date.to_date,
@@ -619,9 +632,9 @@ class ReservesController < ApplicationController
       case machine.to_s
       when 'h' then 'holistic'
       when 'w' then 'holistic' # wellbeingはholistic扱い（レンタル中）
-      when 'o' then 'seitai'   # その他 → 整体（デフォルト）
-      when 'e' then 'seitai'
-      when 'b' then 'seitai'
+      when 'e' then 'esute'
+      when 'seitai', 'b' then 'seitai'
+      when 'o' then 'seitai'
       else 'holistic'
       end
     end
