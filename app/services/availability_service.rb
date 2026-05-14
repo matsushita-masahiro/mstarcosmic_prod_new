@@ -219,7 +219,11 @@ class AvailabilityService
 
     # この30分枠で予約が重複するスタッフを除外
     busy_staff_ids = slot_res.select { |r| r.staff_id.present? }.map(&:staff_id).uniq
+    # 指名なし予約の数（staff_idがnullの予約）= スタッフを1人ずつ消費
+    non_nominated_count = slot_res.count { |r| r.staff_id.blank? }
     free_ids = w_ids - busy_staff_ids
+    # 指名なし予約分もスタッフを消費（空きスタッフから減らす）
+    free_ids = free_ids.drop(non_nominated_count)
 
     # 出張中のスタッフを除外
     trip_records = (@unavail_idx[date] || []).select { |u| u.start_time < e && u.end_time > s }
