@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_06_132528) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_27_092755) do
   create_table "answers", force: :cascade do |t|
     t.integer "inquiry_id"
     t.integer "user_id"
@@ -42,6 +42,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_06_132528) do
     t.string "machine"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "staff_id"
   end
 
   create_table "machines", force: :cascade do |t|

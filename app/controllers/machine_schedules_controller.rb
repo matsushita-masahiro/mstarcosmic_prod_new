@@ -40,19 +40,19 @@ class MachineSchedulesController < ApplicationController
       if (defined? @start_date)
         if machine_reserved_check(@machine.short_word, params[:machine][:machine_schedule]).empty?
           # このmachineのこの1週間のスケジュールを全削除処理し、再度check入ったspaceを作成する
-          MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6)).delete_all
-          logger.debug("--------------------- schedule create params[:machine][:machine_schedule] = #{params[:machine][:machine_schedule]}")
           staff_id = (params[:staff_id] || 1).to_i
+          MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6), staff_id: staff_id).delete_all
+          logger.debug("--------------------- schedule create params[:machine][:machine_schedule] = #{params[:machine][:machine_schedule]}")
           params[:machine][:machine_schedule].each do |schedule|
             schedule_arr = schedule.split("&")
-            MachineSchedule.create(machine_schedule_date: schedule_arr[0], machine_schedule_space: schedule_arr[1], machine: @machine.short_word)
+            MachineSchedule.create(machine_schedule_date: schedule_arr[0], machine_schedule_space: schedule_arr[1], machine: @machine.short_word, staff_id: staff_id)
           end
 
           # ServiceUnavailabilityにも同期
           sync_machine_to_service_unavailability(@machine.short_word, @start_date, staff_id)
 
           flash[:notice] = "出張登録できました"
-          redirect_to machine_machine_schedules_path(@machine.short_word, calender_start_date: @start_date)
+          redirect_to machine_machine_schedules_path(@machine.short_word, calender_start_date: @start_date, staff_id: staff_id)
 
           # logger.debug("======= MachineSchedule.where(machine, @machine.short_word, schedule_date: start_date..(start_date+6)) = #{MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6)).count}")
         else
@@ -67,12 +67,12 @@ class MachineSchedulesController < ApplicationController
     else
       # この1週間で１つもチェックされてない場合は全削除
       logger.debug("================== checked none start_date = #{@start_date}")
-      MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6)).delete_all
       staff_id = (params[:staff_id] || 1).to_i
+      MachineSchedule.where(machine: @machine.short_word, machine_schedule_date: @start_date..(@start_date+6), staff_id: staff_id).delete_all
       sync_machine_to_service_unavailability(@machine.short_word, @start_date, staff_id)
       flash[:notice] = "出張修正できました"
       # schedule/indexへ
-      redirect_to machine_machine_schedules_path(@machine.short_word, calender_start_date: @start_date)
+      redirect_to machine_machine_schedules_path(@machine.short_word, calender_start_date: @start_date, staff_id: staff_id)
     end
   end  
   
@@ -133,19 +133,20 @@ class MachineSchedulesController < ApplicationController
             logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~ checked_date_space_arr = #{checked_date_space_arr}")
             # その枠のそのマシンの既予約数
              machine_reserved_numbers = Reserve.where(machine: machine, reserved_date: checked_date_space_arr[0], reserved_space: checked_date_space_arr[1]).count
-            # その枠の出張既登録数（今は１台しか出張登録考えてないので基本はゼロ）
-             machine_moved_numbers = MachineSchedule.where(machine_schedule_date: checked_date_space_arr[0], machine_schedule_space: checked_date_space_arr[1], machine: machine).count
+            # その枠の出張既登録数（自分以外のスタッフの出張分のみカウント）
+             staff_id = (params[:staff_id] || 1).to_i
+             machine_moved_numbers = MachineSchedule.where(machine_schedule_date: checked_date_space_arr[0], machine_schedule_space: checked_date_space_arr[1], machine: machine).where.not(staff_id: staff_id).count
             # その枠の出張可能な台数
              #　すでにその枠に出張登録されていた場合
-             masako_reserved = Reserve.find_by(reserved_date: checked_date_space_arr[0], reserved_space: checked_date_space_arr[1], staff_id: 1)
-             logger.debug("|||||||||||||||||||| masako_reserved = #{masako_reserved}")
+             staff_reserved = Reserve.find_by(reserved_date: checked_date_space_arr[0], reserved_space: checked_date_space_arr[1], staff_id: staff_id)
+             logger.debug("|||||||||||||||||||| staff_reserved = #{staff_reserved}")
              if machine_moved_numbers == 1
                machine_moved_numbers  = 0
              end
              available_machine_numbers = machine_numbers - machine_reserved_numbers - machine_moved_numbers
              logger.debug("======================== available_machine_numbers = #{available_machine_numbers} machine_reserved_numbers = #{machine_reserved_numbers} machine_moved_numbers = #{machine_moved_numbers}")
             # 出張不可能な枠が１つでもある場合
-            if available_machine_numbers <= 0 || masako_reserved
+            if available_machine_numbers <= 0 || staff_reserved
               not_available_array << [checked_date_space_arr[0], checked_date_space_arr[1]]
               available_flag = false
             end
@@ -175,7 +176,7 @@ class MachineSchedulesController < ApplicationController
        ServiceUnavailability.where(service: service, date: dates, staff_id: staff_id).destroy_all
 
        dates.each do |date|
-         spaces = MachineSchedule.where(machine: machine_code, machine_schedule_date: date)
+         spaces = MachineSchedule.where(machine: machine_code, machine_schedule_date: date, staff_id: staff_id)
                                   .pluck(:machine_schedule_space).sort
          next if spaces.empty?
 

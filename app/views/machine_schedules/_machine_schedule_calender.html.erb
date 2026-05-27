@@ -17,7 +17,7 @@
   <div class="nc-actions" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
     <div>
       <label style="font-weight:600; margin-right:8px;">出張スタッフ:</label>
-      <select name="staff_id" class="form-select" style="display:inline-block; width:auto;">
+      <select name="staff_id" class="form-select" style="display:inline-block; width:auto;" onchange="location.href='/admin/machines/<%= @machine.short_word %>/machine_schedules?calender_start_date=<%= @start_date %>&staff_id=' + this.value">
         <option value="1" <%= 'selected' if (@staff_id || 1) == 1 %>>まさこ</option>
         <option value="2" <%= 'selected' if @staff_id == 2 %>>ゆうき</option>
       </select>
@@ -45,7 +45,7 @@
             <% if d == Date.current %>
               <td><span class="nc-icon nc-icon-empty"></span></td>
             <% else %>
-              <% checked = MachineSchedule.find_by(machine: @machine.short_word, machine_schedule_date: d, machine_schedule_space: space) %>
+              <% checked = MachineSchedule.find_by(machine: @machine.short_word, machine_schedule_date: d, machine_schedule_space: space, staff_id: @staff_id) %>
               <td class="nc-check-cell">
                 <input type="checkbox" <%= 'checked' if checked %> name="machine[machine_schedule][]" value="<%= d %>&<%= space %>&1" class="nc-check day_check_<%= k %>" style="accent-color:#e74c3c;">
               </td>
