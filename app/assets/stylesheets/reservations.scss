@@ -263,3 +263,32 @@ td.table-frame-header {
 .mr-table tbody tr.mr-medirosa td:first-child {
   background: #f0f7f7;
 }
+
+// スマホ対応
+@media screen and (max-width: 792px) {
+  .mr-container {
+    margin: 80px auto 30px;
+    padding: 0 8px;
+  }
+
+  .mr-table-wrap {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mr-table {
+    min-width: 600px;
+    font-size: 0.8rem;
+
+    thead th {
+      padding: 8px 8px;
+    }
+
+    tbody td {
+      padding: 8px 8px;
+    }
+  }
+
+  .mr-remarks {
+    max-width: 100px;
+  }
+}
