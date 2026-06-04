@@ -126,46 +126,32 @@ class MachineSchedulesController < ApplicationController
        
        available_flag = true
        not_available_array = []
+       staff_id = (params[:staff_id] || 1).to_i
        
         # 例[2022-08-31, 11.0, 1] 
         checked_array.each do |checked_date_space|
             checked_date_space_arr = checked_date_space.split("&")
             logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~ checked_date_space_arr = #{checked_date_space_arr}")
-            # その枠のそのマシンの既予約数
-             machine_reserved_numbers = Reserve.where(machine: machine, reserved_date: checked_date_space_arr[0], reserved_space: checked_date_space_arr[1]).count
-            # その枠の出張既登録数（自分以外のスタッフの出張分のみカウント）
-             staff_id = (params[:staff_id] || 1).to_i
-             machine_moved_numbers = MachineSchedule.where(machine_schedule_date: checked_date_space_arr[0], machine_schedule_space: checked_date_space_arr[1], machine: machine).where.not(staff_id: staff_id).count
-            # その枠の出張可能な台数
-             #　すでにその枠に出張登録されていた場合
-             staff_reserved = Reserve.find_by(reserved_date: checked_date_space_arr[0], reserved_space: checked_date_space_arr[1], staff_id: staff_id)
-             logger.debug("|||||||||||||||||||| staff_reserved = #{staff_reserved}")
-             if machine_moved_numbers == 1
-               machine_moved_numbers  = 0
-             end
-             available_machine_numbers = machine_numbers - machine_reserved_numbers - machine_moved_numbers
-             logger.debug("======================== available_machine_numbers = #{available_machine_numbers} machine_reserved_numbers = #{machine_reserved_numbers} machine_moved_numbers = #{machine_moved_numbers}")
-            # 出張不可能な枠が１つでもある場合
-            if available_machine_numbers <= 0 || staff_reserved
+            
+            # そのスタッフ自身に予約が入っていたら出張不可
+            staff_reserved = Reserve.find_by(reserved_date: checked_date_space_arr[0], reserved_space: checked_date_space_arr[1], staff_id: staff_id)
+            
+            if staff_reserved
               not_available_array << [checked_date_space_arr[0], checked_date_space_arr[1]]
               available_flag = false
             end
           
         end # each end
        
-       
-       if available_flag
-         return not_available_array
-       else
-         return not_available_array
-       end
+       return not_available_array
      end
      
      def machine_schedule_error_mail(machine, info, calender_start_day)
+           staff_id = (params[:staff_id] || 1).to_i
            respond_to do |format|
                 AdminMailer.machine_schedule_error(machine, info).deliver
                 @flash_msg = "出張登録不可な枠がありましたメールを確認下さい"
-                format.html { redirect_to machine_machine_schedules_path(machine, calender_start_date: calender_start_day), alert: @flash_msg }
+                format.html { redirect_to machine_machine_schedules_path(machine, calender_start_date: calender_start_day, staff_id: staff_id), alert: @flash_msg }
           end
      end
 

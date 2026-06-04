@@ -5,7 +5,7 @@ namespace :staff do
       machines = StaffMachineRelation.where(staff_id: sid).pluck(:machine)
       services = machines.map { |m|
         case m
-        when 'h', 'stem', 'w' then 'holistic'
+        when 'h', 'w' then 'holistic'
         when 'e' then 'esute'
         when 'seitai' then 'seitai'
         else nil

@@ -134,7 +134,7 @@ class StaffsController < ApplicationController
 
     def machine_to_service(machine)
       case machine
-      when 'h', 'stem', 'w'
+      when 'h', 'w'
         'holistic'
       when 'e'
         'esute'
