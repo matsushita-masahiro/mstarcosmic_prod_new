@@ -222,10 +222,9 @@ td.table-frame-header {
 }
 
 .mr-remarks {
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
+  white-space: normal;
+  min-width: 120px;
 }
 
 .mr-delete-btn {
@@ -289,6 +288,6 @@ td.table-frame-header {
   }
 
   .mr-remarks {
-    max-width: 100px;
+    min-width: 80px;
   }
 }
