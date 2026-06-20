@@ -7,6 +7,12 @@
       <div class="service-card-desc">60分〜</div>
     <% end %>
 
+    <%= link_to 'https://www.medirosa.jp/', class: "service-card service-card-stem", target: "_blank", rel: "noopener noreferrer" do %>
+      <div class="service-card-icon">🧬</div>
+      <div class="service-card-name">幹細胞培養上清液<br class="sp-br">（MedirosaのHPへ）</div>
+      <div class="service-card-desc"></div>
+    <% end %>
+
     <%= link_to '/reserves/e/index', class: "service-card service-card-esute" do %>
       <div class="service-card-icon">✨</div>
       <div class="service-card-name">エステ</div>
@@ -70,6 +76,11 @@
 }
 
 .service-card-seitai {
+  background: linear-gradient(135deg, #FEF3C7, #FCD34D);
+  border: 2px solid #F59E0B;
+}
+
+.service-card-stem {
   background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
   border: 2px solid #a5d6a7;
 }
@@ -89,9 +100,12 @@
   margin-left: auto;
 }
 
+.sp-br { display: none; }
+
 @media (max-width: 768px) {
   .service-select {
     margin-top: 80px;
   }
+  .sp-br { display: inline; }
 }
 </style>
