@@ -133,12 +133,12 @@ class SchedulesController < ApplicationController
           # if @start_date > Date.today + 28
           #   # @start_date = Date.today + 35
           # 今日以前は今日
-          if @start_date < Date.today + 1
-            @start_date = Date.today + 1
+          if @start_date < Date.today
+            @start_date = Date.today
           end
         else
           logger.debug("--------------------------- calender_start =  nil or false")
-          @start_date = Date.today + 1
+          @start_date = Date.today
         end
      end     
      
