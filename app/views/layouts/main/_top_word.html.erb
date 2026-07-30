@@ -1,5 +1,21 @@
 <section class="top-word">
-    <img src="/new-images/new_top.png" class="top-image" >
+    <img src="/new_images_2026_5/2.png" class="top-image" >
+    <% unless user_signed_in? %>
+        <div class="top-nav-overlay">
+            <%= link_to new_user_session_path, class: "top-nav-login", data: { turbo: false } do %>
+                <img src="/new_images_2026_5/login_button_transparent.png" alt="ログイン">
+            <% end %>
+            <%= link_to new_user_session_path, class: "top-nav-reserve", data: { turbo: false } do %>
+                <img src="/new_images_2026_5/reserve_button_transparent.png" alt="ご予約">
+            <% end %>
+            <%= link_to new_inquiry_path, class: "top-nav-contact" do %>
+                <img src="/new_images_2026_5/contact_button_transparent.png" alt="お問合せ">
+            <% end %>
+            <%= link_to price_plan_path, class: "top-nav-price" do %>
+                <img src="/new_images_2026_5/price_button_transparent.png" alt="料金表">
+            <% end %>
+        </div>
+    <% end %>
     <a href="/metatron_sale"><div class="sale-metatron"></div></a>
 </section>
 

@@ -7,6 +7,8 @@
 
 .top-image {
     width: 100%;
+    height: auto;
+    display: block;
 }
 
 @media screen and (max-width: 792px) {
@@ -108,8 +110,50 @@ $top-height: 662.66px;
     
         .top-word {
             position: relative;
+
+            // 未ログイン時のみ、トップ画像(2.png)の左上にボタンを重ねる。
+            // top/left/width/gap はすべて画像を包む .top-word (position: relative) 基準の % 指定。
+            // 元画像 1366x768 に対する実測値: left 83px / top 28px / gap 6px。
+            .top-nav-overlay {
+                position: absolute;
+                top: 3.646%;   // 28 / 768
+                left: 0;
+                width: 100%;
+                display: flex;
+                align-items: flex-start;
+                gap: 0.439%;   // 6 / 1366
+                z-index: 2;
+
+                a {
+                    display: block;
+                }
+
+                a:first-child {
+                    margin-left: 6.076%;   // 83 / 1366
+                }
+
+                a:hover {
+                    opacity: 0.8;
+                }
+
+                img {
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                }
+
+                .top-nav-login   { width: 9.151%; }    // 125 / 1366
+                .top-nav-reserve { width: 8.346%; }    // 114 / 1366
+                .top-nav-contact { width: 10.249%; }   // 140 / 1366
+                .top-nav-price   { width: 8.346%; }    // 114 / 1366
+
+                // スマホ幅では小さくなりすぎて押せないため非表示（既存のSPヘッダーを使う）
+                @media screen and (max-width: 792px) {
+                    display: none;
+                }
+            }
         }
-        
+
         .sale-metatron {
             position: absolute;
             top: 34vw;
