@@ -1,3 +1,5 @@
+<%# 未ログイン時のトップのみ、PC幅(793px以上)で共通ヘッダーを隠す。ボタンは .top-nav-overlay を使う %>
+<% unless user_signed_in? %><% content_for :body_class, 'top-no-header' %><% end %>
 <div id="main-top" class="main-top">
     <%= render 'layouts/main/price_banner' %>
     <% if !user_signed_in? %><%= render 'layouts/main/new_customer_banner' %><% end %>

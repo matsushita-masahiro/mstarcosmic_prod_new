@@ -27,6 +27,22 @@
 }
 
 
+// 未ログイン時のトップページ (body.top-no-header) のみ共通ヘッダーを隠す。
+// 793px以上に限定するのは、792px以下では .top-nav-overlay が display:none になり、
+// ここでヘッダーも消すとSPからナビゲーションが完全に失われるため。
+// #new-header の中身 ul.new-header は position:fixed なので div 自体の高さは 0。
+// 80px の余白は .main-main の margin-top が作っているので、そちらも同条件で 0 にする。
+@media screen and (min-width: 793px) {
+    .top-no-header #new-header {
+        display: none;
+    }
+
+    .top-no-header .main-main {
+        margin-top: 0;
+    }
+}
+
+
 .top-word-word {
     position: absolute;
     top: 110px;
