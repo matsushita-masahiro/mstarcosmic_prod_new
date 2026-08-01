@@ -427,11 +427,16 @@ $top-height: 662.66px;
     #plan_price {
         width: 80%;
         margin: 0 auto 50px;
-        font-size: 11px;;
+        font-size: 16px;
         /*position: relative;*/
         /*background: gray;*/
     }
-    
+
+    // 項目間に余白。ul/li 構造は維持し、折り返し2行目のインデントはブラウザ任せにする
+    #plan_price .detail li {
+        margin-bottom: 15px;
+    }
+
     #plan_price > img {
         display: inline-block;
         margin: 50px 0;
@@ -471,14 +476,20 @@ $top-height: 662.66px;
             position: relative;
             width: 80%;
             margin: 0 auto 50px;
+            // PC は 16px。SP で 16px 固定だと大きすぎるため 14px にする
+            font-size: 14px;
 
-            
+
             .plan_price_img {
                 width: 100%;
                 margin: 30px 0;
             }
-            
-        } 
+
+            .detail li {
+                margin-bottom: 15px;
+            }
+
+        }
         
         .sp-price_link_div {
             background: #fff;
