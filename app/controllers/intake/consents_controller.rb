@@ -1,7 +1,5 @@
 module Intake
   class ConsentsController < BaseController
-    MAX_SIGNATURE_BYTES = 2.megabytes
-
     def new
       @document = ConsentDocument.current
       return redirect_to intake_expired_path if @document.nil?
@@ -25,11 +23,16 @@ module Intake
         user_agent: request.user_agent&.truncate(255)
       )
 
-      attach_signature_image
-
       if @consent.save
+        # 画像は保存後に添付する（blob のキーに患者IDを含めるため）
+        KarteAttachment.attach!(
+          record: @consent, name: :signature_image,
+          data_url: params[:signature_image],
+          user_id: current_patient.id, label: "consent"
+        )
+
         session[:completed_signer_name] = @consent.signer_name
-        # トークンをまだ失効させない。問診票提出時に失効する。
+        # トークンはまだ失効させない。問診票の提出時に失効する。
         render json: { redirect_to: intake_questionnaire_path }, status: :created
       else
         render json: { errors: @consent.errors.full_messages }, status: :unprocessable_entity
@@ -39,8 +42,7 @@ module Intake
     private
 
     def default_signer_name
-      current_patient.patient_profile&.name_kana.presence ||
-        current_patient.try(:name).presence || "本人"
+      current_patient.name_kana.presence || current_patient.name.presence || "本人"
     end
 
     def parsed_strokes
@@ -49,24 +51,6 @@ module Intake
       JSON.parse(raw)
     rescue JSON::ParserError
       nil
-    end
-
-    # data:image/png;base64,... を ActiveStorage に取り込む
-    def attach_signature_image
-      data_url = params[:signature_image].to_s
-      return if data_url.blank? || data_url.bytesize > MAX_SIGNATURE_BYTES
-
-      match = data_url.match(%r{\Adata:image/png;base64,(?<payload>[A-Za-z0-9+/=\s]+)\z})
-      return unless match
-
-      binary = Base64.strict_decode64(match[:payload].gsub(/\s/, ""))
-      @consent.signature_image.attach(
-        io: StringIO.new(binary),
-        filename: "consent_#{current_patient.id}_#{Time.current.to_i}.png",
-        content_type: "image/png"
-      )
-    rescue ArgumentError
-      nil # 不正な base64 は無視。署名なしとして validation で弾かれる
     end
   end
 end

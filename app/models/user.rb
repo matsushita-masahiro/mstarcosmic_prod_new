@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  include UserKarte
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -22,10 +24,7 @@ class User < ApplicationRecord
   has_many :payments, :dependent => :destroy
   has_many :schedules, :dependent => :destroy
   has_one :staff, :dependent => :destroy
-  has_one  :patient_profile, dependent: :destroy
-  has_many :medical_questionnaires, dependent: :destroy
-  has_many :consents, dependent: :destroy
-  has_many :intake_sessions, dependent: :destroy
+  # カルテ関連の関連定義は UserKarte の included do に集約している
   
   
   def self.search(search) #self.でクラスメソッドとしている

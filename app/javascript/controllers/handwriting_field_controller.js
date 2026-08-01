@@ -2,12 +2,6 @@ import { Controller } from "@hotwired/stimulus"
 import SignaturePad from "signature_pad"
 
 // 自由記述欄。ペン手書きとキーボード入力を切り替えられる。
-//
-// <div data-controller="handwriting-field" data-handwriting-field-key-value="q1_purpose">
-//   <div data-handwriting-field-target="tabs">…</div>
-//   <canvas data-handwriting-field-target="canvas"></canvas>
-//   <textarea data-handwriting-field-target="textarea"></textarea>
-// </div>
 export default class extends Controller {
   static targets = ["canvas", "textarea", "penTab", "keyboardTab", "penPane", "keyboardPane"]
   static values = { key: String, mode: { type: String, default: "pen" } }
@@ -50,6 +44,8 @@ export default class extends Controller {
     this.pad?.off()
   }
 
+  // Retina 対応。canvas の実ピクセルを DPR 倍にしないと線がぼやける。
+  // サイズ変更で内容が消えるため退避・復元する。
   resize() {
     const data = this.pad.isEmpty() ? null : this.pad.toData()
     const ratio = Math.max(window.devicePixelRatio || 1, 1)
@@ -95,14 +91,13 @@ export default class extends Controller {
   }
 
   notifyChange() {
-    // 親（questionnaire コントローラ）に変更を伝え、自動保存をトリガする
     this.dispatch("changed", { detail: { key: this.keyValue }, prefix: "handwriting-field" })
   }
 
-  // 親から呼ばれる。保存用のデータを返す。
   serialize() {
     if (this.modeValue === "keyboard") {
-      return { mode: "keyboard", text: this.textareaTarget.value }
+      const text = this.textareaTarget.value
+      return text.trim() ? { mode: "keyboard", text } : null
     }
     if (this.pad.isEmpty()) return null
 
@@ -116,7 +111,6 @@ export default class extends Controller {
     }
   }
 
-  // 下書き復元用
   restore(data) {
     if (!data) return
     if (data.mode === "keyboard") {

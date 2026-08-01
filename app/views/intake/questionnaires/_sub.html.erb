@@ -1,0 +1,20 @@
+<%#
+  サブ項目・付随項目の枠。ラベルと入力欄をまとめて出し分ける。
+
+  show_when はこの枠が持ち、内側の _field には渡さない
+  （二重に data-conditional が付くと clearInputs が二度走るため）。
+
+  CSS に .q-sub[hidden] { display: none; } が必要。
+  hidden 属性は display 指定を持つ要素では効かないことがあるため明示する。
+%>
+<% sw = sub[:show_when] %>
+<div class="q-sub"
+     <% if sw %>
+       data-conditional="true"
+       data-depends-on="<%= sw[:key] %>"
+       data-depends-value="<%= Array(sw[:values] || sw[:value]).join(",") %>"
+       hidden
+     <% end %>>
+  <p class="q-sub-label"><%= sub[:label] %></p>
+  <%= render "intake/questionnaires/field", question: sub.except(:show_when) %>
+</div>

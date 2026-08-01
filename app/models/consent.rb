@@ -8,7 +8,8 @@ class Consent < ApplicationRecord
   enum :signer_relation, { self_signed: 0, guardian: 1, other: 2 }, prefix: :signer
 
   validates :agreed_at, presence: true
-  validate  :signature_present
+  # 署名画像は保存後に添付するため、ここでは strokes の有無のみ検証する
+  validate :signature_present
 
   scope :latest_first, -> { order(agreed_at: :desc) }
 
@@ -20,7 +21,7 @@ class Consent < ApplicationRecord
   private
 
   def signature_present
-    return if signature_image.attached? || signature_strokes.present?
+    return if signature_strokes.present? || signature_image.attached?
     errors.add(:base, "署名が入力されていません")
   end
 end

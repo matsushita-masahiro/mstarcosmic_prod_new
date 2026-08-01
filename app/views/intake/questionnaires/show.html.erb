@@ -1,11 +1,11 @@
 <h1>問診票のご記入</h1>
 
 <p class="intake-meta">
-  <%= current_patient.patient_profile&.name_kana.presence || current_patient.try(:name) %> 様
-  ／ 会員No. <%= format("%06d", current_patient.id) %>
+  <%= current_patient.name_kana.presence || current_patient.name %> 様
+  ／ 会員No. <%= current_patient.karte_member_no %>
 </p>
 
-<div data-controller="questionnaire"
+<div data-controller="questionnaire conditional-field"
      data-questionnaire-update-url-value="<%= intake_questionnaire_path %>"
      data-questionnaire-create-url-value="<%= intake_questionnaires_path %>"
      data-questionnaire-storage-key-value="intake_draft_<%= current_patient.id %>">
@@ -14,12 +14,37 @@
 
   <form data-questionnaire-target="form" onsubmit="return false;">
 
-    <% @questions.each do |q| %>
+    <%# ── 性別（users に無い場合のみ聞く）──────────── %>
+    <% unless @gender_known %>
       <section class="q-block">
+        <h2 class="q-label">性別を教えてください</h2>
+        <div class="q-choices">
+          <label class="q-choice">
+            <input type="radio" name="answers[q0_gender]" value="female"
+                   data-action="questionnaire#genderChanged"> 女性
+          </label>
+          <label class="q-choice">
+            <input type="radio" name="answers[q0_gender]" value="male"
+                   data-action="questionnaire#genderChanged"> 男性
+          </label>
+        </div>
+      </section>
+    <% end %>
+
+    <% @questions.each do |q| %>
+      <section class="q-block"
+               <% if q[:female_only] %>
+                 data-female-only="true"
+                 <%= "hidden" unless @is_female %>
+               <% end %>>
         <h2 class="q-label">
           <span class="q-no">【<%= q[:no] %>】</span><%= q[:label] %>
-          <% if q[:optional] %><span class="q-optional">（該当する方のみ）</span><% end %>
+          <% if q[:required] %><span class="q-required">必須</span><% end %>
         </h2>
+
+        <% if q[:hint] %>
+          <p class="q-hint" style="margin-bottom:10px;"><%= q[:hint] %></p>
+        <% end %>
 
         <% if q[:warning] %>
           <p class="q-warning"><%= q[:warning] %></p>
@@ -73,12 +98,19 @@
   .q-block { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
   .q-label { font-size: 16px; font-weight: 600; margin: 0 0 12px; line-height: 1.6; }
   .q-no { color: #6b7280; margin-right: 4px; }
-  .q-optional { font-size: 13px; color: #9ca3af; font-weight: normal; }
+  .q-required {
+    display: inline-block; margin-left: 8px; padding: 2px 8px;
+    background: #dc2626; color: #fff; border-radius: 4px;
+    font-size: 12px; font-weight: normal; vertical-align: middle;
+  }
   .q-warning {
     background: #fef3c7; border-left: 4px solid #f59e0b;
     padding: 10px 14px; margin: 0 0 12px; font-size: 14px; color: #92400e;
   }
   .q-hint { font-size: 14px; color: #6b7280; margin: 8px 0 0; }
+
+  .q-field[hidden] { display: none; }
+  .q-sub[hidden] { display: none; }
 
   .q-choices { display: flex; flex-wrap: wrap; gap: 10px; }
   .q-choice {
@@ -95,6 +127,10 @@
     border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;
   }
   .q-select { min-height: 44px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
+  .q-select-lg {
+    min-height: 52px; padding: 12px; border: 1px solid #d1d5db;
+    border-radius: 8px; font-size: 16px; background: #fff; min-width: 200px;
+  }
   .q-btn-small {
     min-height: 44px; padding: 0 16px; border: 1px solid #d1d5db;
     border-radius: 6px; background: #fff; font-size: 14px; cursor: pointer;
@@ -109,12 +145,12 @@
   }
   .hw-tab.is-active { background: #fff; border-bottom-color: #fff; font-weight: 600; color: #1d4ed8; }
   .hw-canvas {
-    width: 100%; height: 160px; display: block;
+    width: 100%; height: 140px; display: block;
     border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
     touch-action: none; -webkit-user-select: none; user-select: none;
   }
   .hw-textarea {
-    width: 100%; min-height: 160px; padding: 12px;
+    width: 100%; min-height: 140px; padding: 12px;
     border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; line-height: 1.7;
   }
 
