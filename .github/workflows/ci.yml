@@ -56,15 +56,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # services:
-    #  redis:
-    #    image: redis
-    #    ports:
-    #      - 6379:6379
-    #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config google-chrome-stable
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev libpq-dev pkg-config google-chrome-stable
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,7 +82,11 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          # REDIS_URL: redis://localhost:6379/0
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          AR_ENCRYPTION_PRIMARY_KEY: dummy_key_for_ci_only_32chars_xx
+          AR_ENCRYPTION_DETERMINISTIC_KEY: dummy_key_for_ci_only_32chars_yy
+          AR_ENCRYPTION_KEY_DERIVATION_SALT: dummy_salt_for_ci_only_32chars_z
         run: bin/rails db:test:prepare test test:system
 
       - name: Keep screenshots from failed system tests

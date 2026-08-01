@@ -1,0 +1,54 @@
+class MedicalQuestionnaire < ApplicationRecord
+  FORM_VERSION = "2026-04-17".freeze
+
+  belongs_to :user
+  belongs_to :intake_session, optional: true
+  belongs_to :reviewed_by, class_name: "User", optional: true
+
+  has_many :handwriting_entries, dependent: :destroy
+  has_many :body_marks, dependent: :destroy
+
+  accepts_nested_attributes_for :handwriting_entries, :body_marks, allow_destroy: true
+
+  enum :status, { draft: 0, submitted: 1, reviewed: 2 }, prefix: true
+
+  validates :form_version, presence: true
+  validates :pregnancy_weeks, numericality: { in: 1..45 }, allow_nil: true
+
+  before_save :promote_flags_from_answers
+
+  scope :latest_first, -> { order(Arel.sql("COALESCE(submitted_at, created_at) DESC")) }
+
+  def contraindicated? = has_pacemaker? || is_pregnant?
+
+  def contraindication_reasons
+    [].tap do |r|
+      r << "ペースメーカー装着" if has_pacemaker?
+      r << "植込み型医療機器あり" if has_implanted_device?
+      r << "妊娠中" if is_pregnant?
+      r << "妊娠の可能性（不明と回答）" if pregnancy_unknown?
+    end
+  end
+
+  def submit!(intake_session: nil)
+    update!(status: :submitted, submitted_at: Time.current, intake_session: intake_session)
+  end
+
+  def answer(key) = answers[key.to_s]
+
+  private
+
+  def promote_flags_from_answers
+    a = answers || {}
+    self.under_treatment      = truthy?(a["q2_under_treatment"])
+    self.taking_medication    = truthy?(a["q4_medication"])
+    self.has_pacemaker        = truthy?(a["q10_pacemaker"])
+    self.has_implanted_device = truthy?(a["q10_other_device"])
+    self.is_pregnant          = truthy?(a["q13_pregnant"])
+    self.pregnancy_unknown    = a["q13_pregnant"].to_s == "unknown"
+    self.pregnancy_weeks      = a["q13_pregnancy_weeks"].presence&.to_i
+    self.is_breastfeeding     = truthy?(a["q13_breastfeeding"])
+  end
+
+  def truthy?(v) = [true, "true", "yes", "はい", 1, "1"].include?(v)
+end
