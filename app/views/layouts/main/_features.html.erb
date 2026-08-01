@@ -98,6 +98,42 @@
         </div>
 </section>
 
+<%# エステ / 整体。カラム・見出し・本文・画像・レスポンシブは metatron-features の既存CSSをそのまま使い、
+    esthe-features は背景を白に戻すためだけの上書き用クラス %>
+<section id="esthe-seitai" class="metatron-features esthe-features">
+        <div class="metatron-feature">
+            <div class="metatron-feature-each">
+                <img src="/new_images_2026_5/esthe.png" class="feature-img fadein" alt="エステ">
+                <div class="title">エステ</div>
+                <div class="detail">
+                    一人ひとり違うお身体だから、施術も一人ひとり違います。<br>
+その日の体調や筋肉の状態を見極めながら、細かな筋肉や深層部まで丁寧にアプローチ。首・肩・腰・脚のお疲れから、お顔のむくみや肌のお悩みまで、全身をトータルでケアし、本来の軽さと美しさを引き出します。心地よさだけで終わらない、変化を実感していただける施術を目指しています。
+                </div>
+                <div class="sp-detail">
+                    一人ひとり違うお身体だから、施術も一人ひとり違います。<br>
+その日の体調や筋肉の状態を見極めながら、細かな筋肉や深層部まで丁寧にアプローチ。首・肩・腰・脚のお疲れから、お顔のむくみや肌のお悩みまで、全身をトータルでケアし、本来の軽さと美しさを引き出します。心地よさだけで終わらない、変化を実感していただける施術を目指しています。
+                </div>
+                <div class="esthe-note">メタトロンとエステ同時ご予約の方はメタトロン2,000円割引</div>
+            </div>
+            <div class="metatron-feature-each">
+                <img src="/new_images_2026_5/seitai.png" class="feature-img fadein" alt="整体">
+                <div class="title">整体</div>
+                <div class="detail">
+                    結果には必ず原因があります。痛みや違和感も同じです。<br>
+施術した時は良くてもすぐに戻ってしまうのは、根本的な原因にアプローチで出来てない可能性があります。<br>
+カウンセリングや評価によってなぜ良くならないのか？どうすれば改善するのかを明確にし、【改善率91.7%】のエビデンスのある施術でしっかりと結果につなげます！<br>
+どこに行っても良くならなかった方はぜひご相談ください！
+                </div>
+                <div class="sp-detail">
+                    結果には必ず原因があります。痛みや違和感も同じです。<br>
+施術した時は良くてもすぐに戻ってしまうのは、根本的な原因にアプローチで出来てない可能性があります。<br>
+カウンセリングや評価によってなぜ良くならないのか？どうすれば改善するのかを明確にし、【改善率91.7%】のエビデンスのある施術でしっかりと結果につなげます！<br>
+どこに行っても良くならなかった方はぜひご相談ください！
+                </div>
+            </div>
+        </div>
+</section>
+
 <style>
     .sp-about-button {
         display: none;
@@ -122,9 +158,27 @@
         
          .about-button {
             display: none;
-         }       
-        
+         }
+
     }
-    
-    
+
+    /* エステ / 整体セクション。既存の #main-top .metatron-features は ID を含むため、
+       上書きには同じく #main-top から始める必要がある */
+    #main-top .metatron-features.esthe-features {
+        background: #fff;
+    }
+
+    #main-top .esthe-features .esthe-note {
+        color: #e60000;
+        font-size: 1vw;
+        margin-top: 15px;
+    }
+
+    @media screen and (max-width: 792px) {
+        #main-top .esthe-features .esthe-note {
+            font-size: 11px;
+        }
+    }
+
+
 </style>
