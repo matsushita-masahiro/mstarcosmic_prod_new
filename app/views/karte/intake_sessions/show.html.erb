@@ -1,7 +1,10 @@
 <div class="container" style="max-width:600px;margin:0 auto;padding:32px 16px;text-align:center;">
   <h2 style="font-size:20px;margin-bottom:8px;">iPad で読み取ってください</h2>
-  <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
+  <p style="color:#6b7280;font-size:14px;margin-bottom:8px;">
     <%= @user.try(:name) %> 様 ／ 有効期限 <%= l @intake_session.expires_at, format: :short %>
+  </p>
+  <p style="color:#b45309;font-size:13px;margin-bottom:24px;">
+    ※ この画面を再読み込みすると QR は表示できなくなります（再発行してください）
   </p>
 
   <div style="display:inline-block;padding:20px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;">
@@ -14,8 +17,11 @@
     <%= @entry_url %>
   </p>
 
-  <p style="margin-top:32px;">
+  <div style="margin-top:32px;display:flex;gap:12px;justify-content:center;">
     <%= link_to "カルテに戻る", karte_user_path(@user),
-          style: "color:#1d4ed8;text-decoration:none;" %>
-  </p>
+          style: "padding:10px 20px;border-radius:6px;border:1px solid #d1d5db;color:#374151;text-decoration:none;" %>
+    <%= button_to "このリンクを無効化", karte_intake_session_path(@intake_session),
+          method: :delete,
+          style: "padding:10px 20px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer;" %>
+  </div>
 </div>

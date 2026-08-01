@@ -17,7 +17,7 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
       resources :intake_sessions, only: %i[create]
     end
-    resources :intake_sessions, only: %i[destroy]
+    resources :intake_sessions, only: %i[show destroy]
   end
 
   # API
@@ -163,6 +163,12 @@ Rails.application.routes.draw do
    
    resources :meishikis, only: [:new, :create, :index, :show, :destroy]
 
-   get '*anything' => 'errors#routing_error'
+   # ActiveStorage のルート（/rails/active_storage/*）はエンジンからアプリの
+   # ルートセットへ直接追記されるが、その位置がこの catch-all より後ろになるため、
+   # 何もしないと catch-all に食われて署名画像などが 404 になる。
+   # ActiveStorage::Engine 自身はルートを持たない（0件）ため mount しても解決せず、
+   # catch-all 側で Rails 内部向けのパスを除外する方式にしている。
+   get '*anything' => 'errors#routing_error',
+       constraints: ->(req) { !req.path.start_with?("/rails/") }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
