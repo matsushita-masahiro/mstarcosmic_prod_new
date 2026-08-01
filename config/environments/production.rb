@@ -22,7 +22,12 @@ Rails.application.configure do
   # config.asset_host = "http://assets.example.com"
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # ステージ / 本番でバケットを分ける（KARTE_STORAGE_SERVICE で指定）
+  config.active_storage.service = ENV.fetch("KARTE_STORAGE_SERVICE", "karte_prod").to_sym
+
+  # 署名画像はコントローラ経由で配信し、認証を通せるようにする
+  # （デフォルトの redirect 方式だと URL を知る者は誰でも閲覧できてしまう）
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true

@@ -72,6 +72,9 @@ gem 'recaptcha',  require: "recaptcha/rails"
 # fot SEO
 gem 'meta-tags'
 gem 'dotenv-rails'
+# ActiveStorage の S3 バックエンド（カルテ画像・署名の保存先）
+gem 'aws-sdk-s3', require: false
+
 gem 'carrierwave'
 gem 'fog-aws'
 
