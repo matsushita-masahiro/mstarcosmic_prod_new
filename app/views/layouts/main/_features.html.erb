@@ -185,9 +185,26 @@
 
     /* /esthe へのボタン。値は .about-button を踏襲するが、依存はさせず独立して定義する。
        注記のすぐ下なので上マージンは .about-button の 50px より控えめにしている */
+    /* 左カラムだけ赤字注記があり本文量も違うため、カラムを flex column にして
+       ボタンを下端に寄せ、左右で上端を揃える。#esthe-seitai 配下に限定しており
+       #metatron-features 側の .metatron-feature-each には影響しない */
+    #main-top .esthe-features .metatron-feature-each {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* flex 化すると画像は直接の flex アイテムになり text-align: center が効かないため、
+       画像だけ align-self で中央に戻す。本文の div は stretch のままにして折り返し幅を保つ */
+    #main-top .esthe-features .metatron-feature-each .feature-img {
+        align-self: center;
+    }
+
     #main-top .esthe-features .esthe-link-wrap,
     #main-top .esthe-features .seitai-link-wrap {
-        margin-top: 30px;
+        /* auto で下端に寄せる。margin-top は auto に使うため、
+           直前の要素との最低限の間隔は padding-top で確保する */
+        margin-top: auto;
+        padding-top: 30px;
         text-align: center;
     }
 
