@@ -16,6 +16,9 @@ class MainController < ApplicationController
 
   def esthe
   end
+
+  def seitai
+  end
   
   def price_plan_admin
     logger.debug("=========== price_plan_admin")

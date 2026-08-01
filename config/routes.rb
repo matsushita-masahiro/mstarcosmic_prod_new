@@ -16,6 +16,7 @@ Rails.application.routes.draw do
    # root "main#top_mente"
    get "about_metatron" => "main#about_metatron"
    get "esthe" => "main#esthe"
+   get "seitai" => "main#seitai"
    get "intestinal" => "main#intestinal"
    get "price_plan" => "main#price_plan"
    get "price_plan_coupon" => "main#price_plan_coupon"
