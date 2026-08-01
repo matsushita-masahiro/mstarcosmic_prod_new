@@ -29,6 +29,11 @@ Rails.application.configure do
   # （デフォルトの redirect 方式だと URL を知る者は誰でも閲覧できてしまう）
   config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
+  # 署名・手書き画像に metadata 解析は不要。
+  # 解析すると ActiveStorage::AnalyzeJob が enqueue され、
+  # Solid Queue 未整備の環境で 500 になる。
+  config.active_storage.analyzers = []
+
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
 
