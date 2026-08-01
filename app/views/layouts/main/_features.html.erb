@@ -114,7 +114,9 @@
 その日の体調や筋肉の状態を見極めながら、細かな筋肉や深層部まで丁寧にアプローチ。首・肩・腰・脚のお疲れから、お顔のむくみや肌のお悩みまで、全身をトータルでケアし、本来の軽さと美しさを引き出します。心地よさだけで終わらない、変化を実感していただける施術を目指しています。
                 </div>
                 <div class="esthe-note">メタトロンとエステ同時ご予約の方はメタトロン2,000円割引</div>
-                <%# ボタン画像 esthe_button.png は未配置のため、設置は後日別コミットで行う %>
+                <div class="esthe-link-wrap">
+                    <a href="/esthe"><img src="/new_images_2026_5/esthe_button.png" class="esthe-link" alt="エステはこちら"></a>
+                </div>
             </div>
             <div class="metatron-feature-each">
                 <img src="/new_images_2026_5/seitai.png" class="feature-img fadein" alt="整体">
@@ -178,9 +180,29 @@
         margin-top: 15px;
     }
 
+    /* /esthe へのボタン。値は .about-button を踏襲するが、依存はさせず独立して定義する。
+       注記のすぐ下なので上マージンは .about-button の 50px より控えめにしている */
+    #main-top .esthe-features .esthe-link-wrap {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    #main-top .esthe-features .esthe-link {
+        display: inline-block;
+        width: 18vw;
+    }
+
+    #main-top .esthe-features .esthe-link:hover {
+        opacity: 0.8;
+    }
+
     @media screen and (max-width: 792px) {
         #main-top .esthe-features .esthe-note {
             font-size: 11px;
+        }
+
+        #main-top .esthe-features .esthe-link {
+            width: 80%;
         }
     }
 
