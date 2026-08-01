@@ -24,3 +24,5 @@ pin "recaptcha_reload", to: "recaptcha_reload.js"
 
 
 pin "@rails/ujs", to: "@rails--ujs.js" # @7.1.3
+pin "signature_pad" # @5.1.3
+pin "perfect-freehand" # @1.2.3
