@@ -1,7 +1,9 @@
 <div id="esthe_page">
 
   <div class="esthe_image">
-    <img src="/new_images_2026_5/esthe_facial_flow.png" alt="フェイシャルエステ 施術の流れ">
+    <a href="/new_images_2026_5/esthe_facial_flow.png" target="_blank" rel="noopener">
+      <img src="/new_images_2026_5/esthe_facial_flow.png" alt="フェイシャルエステ 施術の流れ">
+    </a>
   </div>
 
   <div class="esthe_text">
@@ -28,19 +30,27 @@
   </div>
 
   <div class="esthe_image">
-    <img src="/new_images_2026_5/esthe_mask_option.png" alt="マルチマスキング・オプション">
+    <a href="/new_images_2026_5/esthe_mask_option.png" target="_blank" rel="noopener">
+      <img src="/new_images_2026_5/esthe_mask_option.png" alt="マルチマスキング・オプション">
+    </a>
   </div>
 
   <div class="esthe_image">
-    <img src="/new_images_2026_5/esthe_body_intro.png" alt="施術内容 ボディ">
+    <a href="/new_images_2026_5/esthe_body_intro.png" target="_blank" rel="noopener">
+      <img src="/new_images_2026_5/esthe_body_intro.png" alt="施術内容 ボディ">
+    </a>
   </div>
 
   <div class="esthe_image">
-    <img src="/new_images_2026_5/esthe_body_hip_leg.png" alt="臀部・脚部／筋骨フロントオイルトリートメントマッサージ">
+    <a href="/new_images_2026_5/esthe_body_hip_leg.png" target="_blank" rel="noopener">
+      <img src="/new_images_2026_5/esthe_body_hip_leg.png" alt="臀部・脚部／筋骨フロントオイルトリートメントマッサージ">
+    </a>
   </div>
 
   <div class="esthe_image">
-    <img src="/new_images_2026_5/esthe_body_leg_arm_hand.png" alt="脚部・アーム・ハンド">
+    <a href="/new_images_2026_5/esthe_body_leg_arm_hand.png" target="_blank" rel="noopener">
+      <img src="/new_images_2026_5/esthe_body_leg_arm_hand.png" alt="脚部・アーム・ハンド">
+    </a>
   </div>
 
   <div class="esthe_text">
@@ -127,6 +137,13 @@
     max-width: 1200px;
     margin: 50px auto;
     padding: 0 20px;
+  }
+
+  /* 縮小表示では文字が細かいため、全幅で原寸を別タブに開けるようにする。
+     a を block にして img と同じ箱にし、余白・表示サイズは従来のまま保つ */
+  #esthe_page .esthe_image a {
+    display: block;
+    cursor: zoom-in;
   }
 
   #esthe_page .esthe_image img {
