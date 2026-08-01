@@ -71,4 +71,11 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate!
   config.hosts.clear
   config.action_dispatch.allow_browser = ->(user_agent) { true }
+
+  # intake.localhost をサブドメインとして認識させる（開発環境のみ）。
+  # 既定の tld_length = 1 では "intake.localhost" の subdomain が "" になり、
+  # routes.rb の constraints(subdomain: "intake") が一致しない。
+  # 本番の intake.mstarcosmic.com は既定値のままで正しく "intake" と判定されるため、
+  # ここでの変更は開発環境に閉じている。
+  config.action_dispatch.tld_length = 0
 end

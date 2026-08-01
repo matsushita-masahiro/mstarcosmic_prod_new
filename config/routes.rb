@@ -1,5 +1,25 @@
 Rails.application.routes.draw do
 
+  # ── 患者用（intake サブドメイン）──────────────
+  # 管理者セッションが届かない隔離環境。iPad で患者が記入する。
+  constraints subdomain: "intake" do
+    namespace :intake, path: "/" do
+      get "s/:token", to: "sessions#show", as: :entry
+      resource :consent, only: %i[new create]
+      get "expired", to: "sessions#expired", as: :expired
+      get "thanks",  to: "sessions#thanks",  as: :thanks
+      root to: "sessions#expired", as: :root
+    end
+  end
+
+  # ── スタッフ用カルテ（既存ドメイン）──────────────
+  namespace :karte do
+    resources :users, only: %i[index show] do
+      resources :intake_sessions, only: %i[create]
+    end
+    resources :intake_sessions, only: %i[destroy]
+  end
+
   # API
   namespace :api do
     namespace :v1 do

@@ -1,0 +1,21 @@
+<div class="container" style="max-width:600px;margin:0 auto;padding:32px 16px;text-align:center;">
+  <h2 style="font-size:20px;margin-bottom:8px;">iPad で読み取ってください</h2>
+  <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
+    <%= @user.try(:name) %> 様 ／ 有効期限 <%= l @intake_session.expires_at, format: :short %>
+  </p>
+
+  <div style="display:inline-block;padding:20px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;">
+    <%= raw RQRCode::QRCode.new(@entry_url).as_svg(
+          module_size: 6, standalone: true, use_path: true
+        ) %>
+  </div>
+
+  <p style="margin-top:24px;font-size:13px;color:#9ca3af;word-break:break-all;">
+    <%= @entry_url %>
+  </p>
+
+  <p style="margin-top:32px;">
+    <%= link_to "カルテに戻る", karte_user_path(@user),
+          style: "color:#1d4ed8;text-decoration:none;" %>
+  </p>
+</div>

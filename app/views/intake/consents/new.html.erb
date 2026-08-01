@@ -1,0 +1,41 @@
+<h1>メタトロン測定に関する同意</h1>
+
+<p class="intake-meta">
+  <%= current_patient.patient_profile&.name_kana.presence || current_patient.try(:name) %> 様
+  ／ 会員No. <%= format("%06d", current_patient.id) %>
+</p>
+
+<div data-controller="scroll-guard">
+  <div class="intake-doc is-unread"
+       data-scroll-guard-target="doc"
+       data-action="scroll->scroll-guard#check"><%= @document.body %></div>
+  <p class="intake-hint" data-scroll-guard-target="hint">
+    ※ 最後までスクロールしてお読みください。
+  </p>
+</div>
+
+<div data-controller="signature-pad"
+     data-signature-pad-submit-url-value="<%= intake_consent_path %>">
+
+  <p class="intake-hint" style="margin-top:20px;">
+    下の枠内に、Apple Pencil または指でご署名ください。
+  </p>
+
+  <div class="intake-signature">
+    <canvas data-signature-pad-target="canvas"></canvas>
+    <div class="baseline"></div>
+  </div>
+
+  <div class="intake-actions">
+    <button type="button" data-action="signature-pad#clear">書き直す</button>
+    <button type="button" class="primary"
+            data-action="signature-pad#submit"
+            data-signature-pad-target="submit" disabled>
+      上記に同意して送信
+    </button>
+  </div>
+
+  <p class="intake-status" data-signature-pad-target="status" role="status" aria-live="polite"></p>
+</div>
+
+<p class="intake-version">同意書バージョン: <%= @document.version %></p>
