@@ -9,6 +9,12 @@
 #   )
 #
 # data_url は "data:image/png;base64,..." 形式を想定する。
+#
+# 【前版からの修正】
+# 前版は blob.karte_context に情報を持たせ、ActiveStorage::Blob#key の
+# 差し替えでキーを組み立てていたが、self[:key] は Blob.new の時点で既に
+# 埋まっているため差し替えが働かなかった。
+# key: を明示的に渡す方式に変更し、Blob への monkey-patch は廃止した。
 class KarteAttachment
   MAX_BYTES = 3.megabytes
   PNG_DATA_URL = %r{\Adata:image/png;base64,(?<payload>[A-Za-z0-9+/=\s]+)\z}
@@ -24,7 +30,12 @@ class KarteAttachment
         byte_size: binary.bytesize,
         checksum: OpenSSL::Digest::MD5.base64digest(binary)
       )
-      blob.karte_context = { user_id: user_id, label: label }
+
+      # nil を代入すると既定のランダムキーを消してしまうため、
+      # 組み立てられたときだけ差し替える。
+      karte_key = KarteStorageKey.build(user_id: user_id, label: label)
+      blob.key = karte_key if karte_key.present?
+
       blob.upload_without_unfurling(StringIO.new(binary))
       blob.save!
 

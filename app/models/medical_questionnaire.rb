@@ -1,8 +1,6 @@
 class MedicalQuestionnaire < ApplicationRecord
   include MedicalQuestionnaireFlags
 
-  FORM_VERSION = "2026-04-17".freeze
-
   belongs_to :user
   belongs_to :intake_session, optional: true
   belongs_to :reviewed_by, class_name: "User", optional: true
@@ -37,8 +35,4 @@ class MedicalQuestionnaire < ApplicationRecord
   end
 
   def answer(key) = answers[key.to_s]
-
-  private
-
-  def truthy?(v) = [true, "true", "yes", "はい", 1, "1"].include?(v)
 end

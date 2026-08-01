@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_02_010000) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_02_052015) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -238,23 +238,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_02_010000) do
 
   create_table "patient_profiles", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.string "name_kana"
     t.string "name_roman"
-    t.date "birth_date"
-    t.integer "sex"
     t.integer "blood_type"
     t.string "postal_code"
     t.string "prefecture"
     t.string "city"
     t.string "address_line"
     t.string "building"
-    t.string "phone"
     t.string "nearest_station"
     t.integer "referral_source"
     t.string "referral_detail"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name_kana"], name: "index_patient_profiles_on_name_kana"
     t.index ["postal_code"], name: "index_patient_profiles_on_postal_code"
     t.index ["user_id"], name: "index_patient_profiles_on_user_id", unique: true
   end
