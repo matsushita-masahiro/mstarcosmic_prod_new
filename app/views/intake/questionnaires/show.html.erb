@@ -1,0 +1,124 @@
+<h1>問診票のご記入</h1>
+
+<p class="intake-meta">
+  <%= current_patient.patient_profile&.name_kana.presence || current_patient.try(:name) %> 様
+  ／ 会員No. <%= format("%06d", current_patient.id) %>
+</p>
+
+<div data-controller="questionnaire"
+     data-questionnaire-update-url-value="<%= intake_questionnaire_path %>"
+     data-questionnaire-create-url-value="<%= intake_questionnaires_path %>"
+     data-questionnaire-storage-key-value="intake_draft_<%= current_patient.id %>">
+
+  <p class="intake-status" data-questionnaire-target="status" role="status" aria-live="polite"></p>
+
+  <form data-questionnaire-target="form" onsubmit="return false;">
+
+    <% @questions.each do |q| %>
+      <section class="q-block">
+        <h2 class="q-label">
+          <span class="q-no">【<%= q[:no] %>】</span><%= q[:label] %>
+          <% if q[:optional] %><span class="q-optional">（該当する方のみ）</span><% end %>
+        </h2>
+
+        <% if q[:warning] %>
+          <p class="q-warning"><%= q[:warning] %></p>
+        <% end %>
+
+        <%= render "intake/questionnaires/field", question: q %>
+      </section>
+    <% end %>
+
+    <%# ── 人体図 ────────────────────────────── %>
+    <section class="q-block" data-controller="body-map">
+      <h2 class="q-label">痛いところや気になるところを教えてください</h2>
+
+      <div class="body-type-row">
+        <label>種類:</label>
+        <select data-body-map-target="typeSelect" class="q-select">
+          <option value="pain">痛み</option>
+          <option value="numbness">しびれ</option>
+          <option value="stiffness">こり・張り</option>
+          <option value="other">その他</option>
+        </select>
+        <button type="button" class="q-btn-small" data-action="body-map#clear">すべて消す</button>
+      </div>
+
+      <div class="body-figures">
+        <figure>
+          <figcaption>表</figcaption>
+          <%= render "intake/questionnaires/body_figure", side: "front" %>
+        </figure>
+        <figure>
+          <figcaption>裏</figcaption>
+          <%= render "intake/questionnaires/body_figure", side: "back" %>
+        </figure>
+      </div>
+
+      <p class="q-hint" data-body-map-target="list"></p>
+    </section>
+  </form>
+
+  <div class="intake-actions" style="margin-top:32px;">
+    <span class="q-hint" data-questionnaire-target="progress" style="flex:1;align-self:center;"></span>
+    <button type="button" class="primary"
+            data-action="questionnaire#submit"
+            data-questionnaire-target="submit">
+      記入内容を送信する
+    </button>
+  </div>
+</div>
+
+<style>
+  .q-block { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+  .q-label { font-size: 16px; font-weight: 600; margin: 0 0 12px; line-height: 1.6; }
+  .q-no { color: #6b7280; margin-right: 4px; }
+  .q-optional { font-size: 13px; color: #9ca3af; font-weight: normal; }
+  .q-warning {
+    background: #fef3c7; border-left: 4px solid #f59e0b;
+    padding: 10px 14px; margin: 0 0 12px; font-size: 14px; color: #92400e;
+  }
+  .q-hint { font-size: 14px; color: #6b7280; margin: 8px 0 0; }
+
+  .q-choices { display: flex; flex-wrap: wrap; gap: 10px; }
+  .q-choice {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 52px; padding: 0 20px;
+    border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
+    font-size: 16px; cursor: pointer; touch-action: manipulation;
+  }
+  .q-choice input { width: 20px; height: 20px; }
+  .q-choice:has(input:checked) { border-color: #1d4ed8; background: #eff6ff; }
+
+  .q-text {
+    width: 100%; min-height: 52px; padding: 12px;
+    border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;
+  }
+  .q-select { min-height: 44px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
+  .q-btn-small {
+    min-height: 44px; padding: 0 16px; border: 1px solid #d1d5db;
+    border-radius: 6px; background: #fff; font-size: 14px; cursor: pointer;
+  }
+  .q-sub { margin-top: 12px; padding-left: 16px; border-left: 3px solid #e5e7eb; }
+  .q-sub-label { font-size: 14px; color: #4b5563; margin: 0 0 6px; }
+
+  .hw-tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+  .hw-tab {
+    min-height: 44px; padding: 0 18px; border: 1px solid #d1d5db;
+    border-radius: 6px 6px 0 0; background: #f9fafb; font-size: 15px; cursor: pointer;
+  }
+  .hw-tab.is-active { background: #fff; border-bottom-color: #fff; font-weight: 600; color: #1d4ed8; }
+  .hw-canvas {
+    width: 100%; height: 160px; display: block;
+    border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
+    touch-action: none; -webkit-user-select: none; user-select: none;
+  }
+  .hw-textarea {
+    width: 100%; min-height: 160px; padding: 12px;
+    border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; line-height: 1.7;
+  }
+
+  .body-type-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .body-figures { display: flex; gap: 24px; justify-content: center; }
+  .body-figures figcaption { text-align: center; font-size: 14px; color: #6b7280; margin-bottom: 6px; }
+</style>

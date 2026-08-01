@@ -6,6 +6,8 @@ Rails.application.routes.draw do
     namespace :intake, path: "/" do
       get "s/:token", to: "sessions#show", as: :entry
       resource :consent, only: %i[new create]
+      resource :questionnaire, only: %i[show update], controller: "questionnaires"
+      resources :questionnaires, only: %i[create]
       get "expired", to: "sessions#expired", as: :expired
       get "thanks",  to: "sessions#thanks",  as: :thanks
       root to: "sessions#expired", as: :root

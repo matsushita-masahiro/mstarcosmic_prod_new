@@ -29,8 +29,8 @@ module Intake
 
       if @consent.save
         session[:completed_signer_name] = @consent.signer_name
-        intake_session.complete!(ip: request.remote_ip, user_agent: request.user_agent)
-        render json: { redirect_to: intake_thanks_path }, status: :created
+        # トークンをまだ失効させない。問診票提出時に失効する。
+        render json: { redirect_to: intake_questionnaire_path }, status: :created
       else
         render json: { errors: @consent.errors.full_messages }, status: :unprocessable_entity
       end

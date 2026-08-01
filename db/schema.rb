@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_01_140056) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_02_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -114,6 +114,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_01_140056) do
     t.text "transcribed_text"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "input_mode", default: 0, null: false
     t.index ["medical_questionnaire_id", "question_key"], name: "idx_handwriting_unique_per_question", unique: true
     t.index ["medical_questionnaire_id"], name: "idx_handwriting_on_questionnaire"
   end

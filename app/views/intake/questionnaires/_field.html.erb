@@ -1,0 +1,71 @@
+<%#
+  設問1件を描画する。MedicalQuestionnaireForm::QUESTIONS の定義に対応。
+  name は必ず answers[キー名] の形にすること（JS 側の収集がこの形式に依存している）。
+%>
+<% case question[:type] %>
+<% when :boolean %>
+  <div class="q-choices">
+    <label class="q-choice">
+      <input type="radio" name="answers[<%= question[:key] %>]" value="no"> いいえ
+    </label>
+    <label class="q-choice">
+      <input type="radio" name="answers[<%= question[:key] %>]" value="yes"> はい
+    </label>
+  </div>
+
+<% when :radio %>
+  <div class="q-choices">
+    <% question[:options].each do |opt| %>
+      <label class="q-choice">
+        <input type="radio" name="answers[<%= question[:key] %>]" value="<%= opt %>"> <%= opt %>
+      </label>
+    <% end %>
+  </div>
+
+<% when :checkboxes %>
+  <div class="q-choices">
+    <% question[:options].each do |opt| %>
+      <label class="q-choice">
+        <input type="checkbox" name="answers[<%= question[:key] %>][]" value="<%= opt %>"> <%= opt %>
+      </label>
+    <% end %>
+  </div>
+
+<% when :text %>
+  <input type="text" class="q-text" name="answers[<%= question[:key] %>]">
+
+<% when :handwriting %>
+  <%= render "intake/questionnaires/handwriting", key: question[:key] %>
+
+<% when :composite %>
+  <% question[:subs].each do |sub| %>
+    <div class="q-sub">
+      <p class="q-sub-label"><%= sub[:label] %></p>
+      <%= render "intake/questionnaires/field", question: sub.merge(no: nil) %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# ── 付随項目 ───────────────────────────── %>
+<% if question[:detail] %>
+  <div class="q-sub">
+    <p class="q-sub-label"><%= question[:detail][:label] %></p>
+    <%= render "intake/questionnaires/field", question: question[:detail].merge(no: nil) %>
+  </div>
+<% end %>
+
+<% if question[:subs] && question[:type] != :composite %>
+  <% question[:subs].each do |sub| %>
+    <div class="q-sub">
+      <p class="q-sub-label"><%= sub[:label] %></p>
+      <%= render "intake/questionnaires/field", question: sub.merge(no: nil) %>
+    </div>
+  <% end %>
+<% end %>
+
+<% if question[:other] %>
+  <div class="q-sub">
+    <p class="q-sub-label"><%= question[:other][:label] %></p>
+    <input type="text" class="q-text" name="answers[<%= question[:other][:key] %>]">
+  </div>
+<% end %>
