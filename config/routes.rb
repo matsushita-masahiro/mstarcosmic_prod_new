@@ -2,7 +2,9 @@ Rails.application.routes.draw do
 
   # ── 患者用（intake サブドメイン）──────────────
   # 管理者セッションが届かない隔離環境。iPad で患者が記入する。
-  constraints subdomain: "intake" do
+  # サブドメイン名は環境ごとに異なる（staging は intake-staging）。
+  # 未設定時は "intake"（開発の intake.localhost と本番が該当）。
+  constraints subdomain: ENV.fetch("INTAKE_SUBDOMAIN", "intake") do
     namespace :intake, path: "/" do
       get "s/:token", to: "sessions#show", as: :entry
       resource :consent, only: %i[new create]

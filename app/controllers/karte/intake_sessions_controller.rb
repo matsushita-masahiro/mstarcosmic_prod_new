@@ -44,7 +44,10 @@ module Karte
                            alert: "この入力用リンクは既に無効です。もう一度発行してください。"
       end
 
-      @entry_url = intake_entry_url(token: raw_token, host: intake_host)
+      # url_helper は routes の subdomain 制約を満たすようホスト名を組み直すため、
+      # host: を渡しても intake-staging が intake に書き換えられてしまう。
+      # ここでは制約の影響を受けない文字列組み立てにする。
+      @entry_url = "#{request.protocol}#{intake_host}/s/#{raw_token}"
     end
 
     def destroy
