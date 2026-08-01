@@ -1,0 +1,92 @@
+<div class="container" style="max-width:900px;margin:0 auto;padding:24px 16px;">
+  <p style="margin-bottom:8px;">
+    <%= link_to "← カルテ一覧", karte_users_path, style: "color:#6b7280;text-decoration:none;font-size:14px;" %>
+  </p>
+
+  <h2 style="font-size:22px;margin-bottom:4px;">
+    <%= @user.try(:name) %>
+    <span style="font-size:15px;color:#6b7280;">（会員No. <%= format("%06d", @user.id) %>）</span>
+  </h2>
+
+  <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
+    初診日:
+    <%= @first_visit_at ? l(@first_visit_at.to_date, format: :long) : "未登録" %>
+  </p>
+
+  <%# ── 禁忌の警告 ───────────────────────────── %>
+  <% if @latest_questionnaire&.contraindicated? %>
+    <div style="border:2px solid #dc2626;background:#fef2f2;border-radius:8px;padding:16px;margin-bottom:24px;">
+      <strong style="color:#dc2626;">施術できません</strong>
+      <p style="margin:6px 0 0;color:#991b1b;">
+        <%= @latest_questionnaire.contraindication_reasons.join(" / ") %>
+      </p>
+    </div>
+  <% end %>
+
+  <%# ── 同意書 ──────────────────────────────── %>
+  <section style="margin-bottom:32px;">
+    <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">同意書</h3>
+
+    <% if @consents.any? %>
+      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;">
+        <% @consents.each do |consent| %>
+          <tr>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">
+              <%= consent.consent_document.title %>
+              <span style="color:#9ca3af;font-size:13px;">（<%= consent.consent_document.version %>）</span>
+            </td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">
+              <%= l consent.agreed_at, format: :long %>
+            </td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;text-align:right;">
+              <% if consent.signature_image.attached? %>
+                <%= image_tag consent.signature_image,
+                      style: "max-height:56px;background:#fff;border:1px solid #e5e7eb;border-radius:4px;" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% else %>
+      <p style="color:#9ca3af;padding:12px 0;">まだ署名がありません。</p>
+    <% end %>
+  </section>
+
+  <%# ── iPad での記入開始 ───────────────────── %>
+  <section style="margin-bottom:32px;">
+    <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">iPad で記入してもらう</h3>
+
+    <% if @active_intake %>
+      <p style="color:#b45309;margin:12px 0;">
+        有効な入力用リンクがあります（<%= l @active_intake.expires_at, format: :short %> まで）
+      </p>
+      <%= button_to "無効化する", karte_intake_session_path(@active_intake),
+            method: :delete,
+            style: "padding:10px 20px;border-radius:6px;border:1px solid #d1d5db;background:#fff;cursor:pointer;" %>
+    <% else %>
+      <p style="color:#6b7280;font-size:14px;margin:12px 0;">
+        ボタンを押すと 30 分間有効な QR コードを表示します。iPad で読み取ってください。
+      </p>
+      <%= button_to "問診票の記入を開始", karte_user_intake_sessions_path(@user),
+            method: :post,
+            style: "padding:12px 24px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:16px;cursor:pointer;" %>
+    <% end %>
+  </section>
+
+  <%# ── 問診票（Phase 2 で拡張）──────────────── %>
+  <section>
+    <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">問診票</h3>
+    <% if @questionnaires.any? %>
+      <ul style="padding-left:20px;margin-top:12px;">
+        <% @questionnaires.each do |q| %>
+          <li style="margin-bottom:6px;">
+            <%= q.submitted_at ? l(q.submitted_at, format: :long) : "下書き" %>
+            <span style="color:#9ca3af;font-size:13px;">（<%= q.form_version %>）</span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p style="color:#9ca3af;padding:12px 0;">まだ問診票がありません。</p>
+    <% end %>
+  </section>
+</div>

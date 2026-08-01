@@ -1,5 +1,27 @@
 Rails.application.routes.draw do
 
+  # ── 患者用（intake サブドメイン）──────────────
+  # 管理者セッションが届かない隔離環境。iPad で患者が記入する。
+  constraints subdomain: "intake" do
+    namespace :intake, path: "/" do
+      get "s/:token", to: "sessions#show", as: :entry
+      resource :consent, only: %i[new create]
+      resource :questionnaire, only: %i[show update], controller: "questionnaires"
+      resources :questionnaires, only: %i[create]
+      get "expired", to: "sessions#expired", as: :expired
+      get "thanks",  to: "sessions#thanks",  as: :thanks
+      root to: "sessions#expired", as: :root
+    end
+  end
+
+  # ── スタッフ用カルテ（既存ドメイン）──────────────
+  namespace :karte do
+    resources :users, only: %i[index show] do
+      resources :intake_sessions, only: %i[create]
+    end
+    resources :intake_sessions, only: %i[show destroy]
+  end
+
   # API
   namespace :api do
     namespace :v1 do
@@ -143,6 +165,12 @@ Rails.application.routes.draw do
    
    resources :meishikis, only: [:new, :create, :index, :show, :destroy]
 
-   get '*anything' => 'errors#routing_error'
+   # ActiveStorage のルート（/rails/active_storage/*）はエンジンからアプリの
+   # ルートセットへ直接追記されるが、その位置がこの catch-all より後ろになるため、
+   # 何もしないと catch-all に食われて署名画像などが 404 になる。
+   # ActiveStorage::Engine 自身はルートを持たない（0件）ため mount しても解決せず、
+   # catch-all 側で Rails 内部向けのパスを除外する方式にしている。
+   get '*anything' => 'errors#routing_error',
+       constraints: ->(req) { !req.path.start_with?("/rails/") }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end

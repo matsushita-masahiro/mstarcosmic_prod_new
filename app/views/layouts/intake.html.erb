@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>ご記入のお願い | mStar COSMIC</title>
+    <meta charset="utf-8">
+    <%# 誤操作防止のためピンチズームを無効化 %>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="robots" content="noindex,nofollow">
+    <%= csrf_meta_tags %>
+    <%# ナビゲーション・ヘッダ・フッタは意図的に一切置かない %>
+    <%= javascript_importmap_tags %>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f9fafb; }
+      .intake-shell {
+        max-width: 900px; margin: 0 auto; padding: 24px 20px 64px;
+        font-family: system-ui, -apple-system, "Hiragino Sans", sans-serif;
+        line-height: 1.9; color: #1f2937; -webkit-text-size-adjust: 100%;
+      }
+      .intake-shell h1 { font-size: 20px; margin: 0 0 8px; }
+      .intake-meta { font-size: 15px; color: #6b7280; margin: 0 0 16px; }
+      .intake-doc {
+        border: 1px solid #d1d5db; border-radius: 8px; padding: 20px;
+        max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        background: #fff; font-size: 15px; white-space: pre-wrap;
+      }
+      .intake-doc.is-unread { border-color: #f59e0b; border-width: 2px; }
+      .intake-hint { font-size: 14px; color: #6b7280; margin: 8px 0 0; }
+      .intake-signature {
+        margin-top: 20px; border: 2px dashed #9ca3af; border-radius: 8px;
+        background: #fff; position: relative;
+      }
+      .intake-signature canvas {
+        display: block; width: 100%; height: 220px;
+        touch-action: none;                 /* 描画中のスクロールを止める */
+        -webkit-user-select: none; user-select: none;
+      }
+      .intake-signature .baseline {
+        position: absolute; left: 24px; right: 24px; bottom: 56px;
+        border-bottom: 1px solid #e5e7eb; pointer-events: none;
+      }
+      .intake-actions { display: flex; gap: 12px; margin-top: 16px; }
+      .intake-actions button {
+        flex: 1; min-height: 56px; font-size: 17px; border-radius: 8px;
+        border: 1px solid #d1d5db; background: #fff; cursor: pointer;
+        touch-action: manipulation;
+      }
+      .intake-actions button.primary {
+        background: #1d4ed8; color: #fff; border-color: #1d4ed8; font-weight: 600;
+      }
+      .intake-actions button:disabled { opacity: .4; }
+      .intake-status { margin-top: 12px; min-height: 24px; color: #b45309; font-size: 15px; }
+      .intake-version { font-size: 13px; color: #9ca3af; margin-top: 24px; }
+    </style>
+  </head>
+  <body>
+    <main class="intake-shell"><%= yield %></main>
+  </body>
+</html>

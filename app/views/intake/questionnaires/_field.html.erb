@@ -1,0 +1,75 @@
+<%#
+  設問1件を描画する。MedicalQuestionnaireForm::QUESTIONS の定義に対応。
+
+  【注意】ERB の case 式は case と最初の when の間に出力を挟めない。
+  空行やコメントを入れると SyntaxError になるため、密着させること。
+  （このコメント内に ERB の区切り記号を書くと、そこでコメントが終了して
+  　同じ SyntaxError を起こすため、記号を外して記述している）
+
+  name は必ず answers[キー名] の形にする（JS 側の収集がこの形式に依存）。
+  :boolean / :radio は value と表示ラベルを分離する。ラベル文言の変更で
+  禁忌判定が壊れるのを防ぐため。
+%>
+<% case question[:type]
+   when :boolean %>
+  <div class="q-choices">
+    <% MedicalQuestionnaireForm::YES_NO.each do |opt| %>
+      <label class="q-choice">
+        <input type="radio" name="answers[<%= question[:key] %>]" value="<%= opt[:value] %>">
+        <%= opt[:label] %>
+      </label>
+    <% end %>
+  </div>
+<% when :radio %>
+  <div class="q-choices">
+    <% question[:options].each do |opt| %>
+      <label class="q-choice">
+        <input type="radio" name="answers[<%= question[:key] %>]" value="<%= opt[:value] %>">
+        <%= opt[:label] %>
+      </label>
+    <% end %>
+  </div>
+<% when :checkboxes %>
+  <div class="q-choices">
+    <% question[:options].each do |opt| %>
+      <label class="q-choice">
+        <input type="checkbox" name="answers[<%= question[:key] %>][]" value="<%= opt %>">
+        <%= opt %>
+      </label>
+    <% end %>
+  </div>
+<% when :text %>
+  <input type="text" class="q-text" name="answers[<%= question[:key] %>]">
+<% when :handwriting %>
+  <%= render "intake/questionnaires/handwriting", key: question[:key] %>
+<% when :composite %>
+  <% question[:subs].each do |sub| %>
+    <div class="q-sub">
+      <p class="q-sub-label"><%= sub[:label] %></p>
+      <%= render "intake/questionnaires/field", question: sub.merge(no: nil) %>
+    </div>
+  <% end %>
+<% end %>
+
+<% if question[:detail] %>
+  <div class="q-sub">
+    <p class="q-sub-label"><%= question[:detail][:label] %></p>
+    <%= render "intake/questionnaires/field", question: question[:detail].merge(no: nil) %>
+  </div>
+<% end %>
+
+<% if question[:subs] && question[:type] != :composite %>
+  <% question[:subs].each do |sub| %>
+    <div class="q-sub">
+      <p class="q-sub-label"><%= sub[:label] %></p>
+      <%= render "intake/questionnaires/field", question: sub.merge(no: nil) %>
+    </div>
+  <% end %>
+<% end %>
+
+<% if question[:other] %>
+  <div class="q-sub">
+    <p class="q-sub-label"><%= question[:other][:label] %></p>
+    <input type="text" class="q-text" name="answers[<%= question[:other][:key] %>]">
+  </div>
+<% end %>

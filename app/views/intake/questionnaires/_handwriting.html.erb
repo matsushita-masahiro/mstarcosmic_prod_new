@@ -1,0 +1,29 @@
+<%#
+  ペン手書き / キーボード入力を切り替えられる自由記述欄。
+  ペンの場合は strokes(JSON) と PNG の両方を保存する。
+  PNG は表示用、strokes は将来の手書き認識用。PNG しかないと後からテキスト化できない。
+%>
+<div data-controller="handwriting-field"
+     data-handwriting-field-key-value="<%= key %>"
+     data-handwriting-field-mode-value="pen">
+
+  <div class="hw-tabs">
+    <button type="button" class="hw-tab is-active"
+            data-handwriting-field-target="penTab"
+            data-action="handwriting-field#usePen">✎ 手書き</button>
+    <button type="button" class="hw-tab"
+            data-handwriting-field-target="keyboardTab"
+            data-action="handwriting-field#useKeyboard">⌨ キーボード</button>
+    <button type="button" class="q-btn-small" style="margin-left:auto;"
+            data-action="handwriting-field#clear">消す</button>
+  </div>
+
+  <div data-handwriting-field-target="penPane">
+    <canvas class="hw-canvas" data-handwriting-field-target="canvas"></canvas>
+  </div>
+
+  <div data-handwriting-field-target="keyboardPane" hidden>
+    <textarea class="hw-textarea" data-handwriting-field-target="textarea"
+              placeholder="こちらにご記入ください"></textarea>
+  </div>
+</div>

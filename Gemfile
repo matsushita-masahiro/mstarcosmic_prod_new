@@ -97,3 +97,4 @@ gem 'jp_prefecture'
 
 # API
 gem 'rack-cors'
+gem "rqrcode", "~> 2.2"

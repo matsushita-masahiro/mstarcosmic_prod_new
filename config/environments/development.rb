@@ -71,4 +71,19 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate!
   config.hosts.clear
   config.action_dispatch.allow_browser = ->(user_agent) { true }
+
+  # intake.localhost をサブドメインとして認識させる（開発環境のみ）。
+  #
+  # Rails は subdomain を「ホスト名から末尾 tld_length + 1 個の要素を除いた残り」として
+  # 求める。既定の tld_length = 1 だと "intake.localhost" は要素が2つしかないため
+  # 残りが空になり、subdomain が "" と判定される。その結果 routes.rb の
+  # constraints(subdomain: "intake") が一致せず、開発環境では intake 画面に
+  # 一切到達できない（/s/:token が 404 になる）。
+  #
+  # tld_length = 0 にすると "intake.localhost" → "intake" と正しく解釈される。
+  # "localhost" 単体は要素が1つなので subdomain は "" のままで、既存画面に影響しない。
+  #
+  # 本番の "intake.mstarcosmic.com" は要素が3つあるため既定値のままで "intake" と
+  # 判定される。したがってこの設定は development に閉じており、production では不要。
+  config.action_dispatch.tld_length = 0
 end
