@@ -13,6 +13,9 @@ class MainController < ApplicationController
   def about_metatron
     logger.debug("=========== about_metatron")
   end
+
+  def esthe
+  end
   
   def price_plan_admin
     logger.debug("=========== price_plan_admin")
