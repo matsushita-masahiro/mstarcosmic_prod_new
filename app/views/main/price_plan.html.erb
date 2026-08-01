@@ -32,6 +32,10 @@
   </ul>
 </div>
 
+<div class="price_plan_cashless">
+  <img src="/new_images_2026_5/cashless.png" alt="支払い方法がキャッシュレスに変わります">
+</div>
+
 <style>
  #price_plan {
    width: 100%;
@@ -100,6 +104,19 @@
    line-height: 1.6;
  }
 
+ /* キャッシュレス決済の案内画像。幅と余白は .price_plan_basic_notice に合わせる */
+ .price_plan_cashless {
+   width: 65%;
+   margin: 50px auto;
+   text-align: center;
+ }
+
+ .price_plan_cashless img {
+   width: 100%;
+   height: auto;
+   display: block;
+ }
+
 @media screen and (max-width: 792px) {
    .price_plan_images {
      flex-direction: column;
@@ -125,6 +142,10 @@
    
    .price_plan_basic_notice > ul > li {
      font-size: 14px;
+   }
+
+   .price_plan_cashless {
+     width: 90%;
    }
 }
 </style>
