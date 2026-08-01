@@ -22,6 +22,10 @@ class User < ApplicationRecord
   has_many :payments, :dependent => :destroy
   has_many :schedules, :dependent => :destroy
   has_one :staff, :dependent => :destroy
+  has_one  :patient_profile, dependent: :destroy
+  has_many :medical_questionnaires, dependent: :destroy
+  has_many :consents, dependent: :destroy
+  has_many :intake_sessions, dependent: :destroy
   
   
   def self.search(search) #self.でクラスメソッドとしている
