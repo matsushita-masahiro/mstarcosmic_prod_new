@@ -59,8 +59,14 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
+  # ActiveJob は同期実行（:inline）。Solid Queue は導入しない。
+  #
+  # solid_queue_* のテーブルが無い状態で :solid_queue を指定していたため、
+  # 添付を持つレコードの destroy で ActiveStorage::PurgeJob の enqueue が
+  # PG::UndefinedTable で落ちていた。しかも after_commit のため DELETE は
+  # コミット済みで、「削除は成功したのに例外が上がる」状態だった。
+  # 非同期にしたいジョブが他に無いため、:inline に固定する。
+  config.active_job.queue_adapter = :inline
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Ignore bad email addresses and do not raise email delivery errors.
