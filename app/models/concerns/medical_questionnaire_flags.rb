@@ -54,6 +54,29 @@ module MedicalQuestionnaireFlags
   def covid_infected?   = answer_for("q17_infected") == "yes"
   def covid_infection_count = answer_for("q17_infection_count").presence
 
+  # ── 警告の出し分け ──────────────────────────
+  #
+  # 2段階に分ける。
+  #   contraindicated?     絶対禁忌。「施術できません」（既存・変更しない）
+  #   needs_confirmation?  要確認。「確認してください」
+  #
+  # 植込み型医療機器（ペースメーカー以外）と妊娠「わからない」は、
+  # 機器の種類や実際の状況によるためスタッフの確認が要る。
+  # 一律に「施術できません」と出すと運用が回らないが、
+  # 何も出ないと has_implanted_device を昇格させた意味が無い。
+  def needs_confirmation?
+    return false if contraindicated?
+
+    confirmation_reasons.any?
+  end
+
+  def confirmation_reasons
+    reasons = []
+    reasons << "植込み型医療機器あり（ペースメーカー以外）" if has_implanted_device?
+    reasons << "妊娠の可能性について確認が必要" if pregnancy_unknown?
+    reasons
+  end
+
   # ── 昇格 ────────────────────────────────────
   #
   # 既存の before_save コールバックから呼ばれる。

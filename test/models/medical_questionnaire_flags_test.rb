@@ -121,6 +121,36 @@ class MedicalQuestionnaireFlagsTest < ActiveSupport::TestCase
     assert_equal MedicalQuestionnaireForm::VERSION, q.form_version
   end
 
+  test "植込み型医療機器のみなら要確認になる" do
+    q = build_questionnaire("q10_pacemaker" => "no", "q10_other_device" => "yes")
+    q.promote_flags_from_answers
+    assert_not q.contraindicated?
+    assert q.needs_confirmation?
+    assert_includes q.confirmation_reasons.join, "植込み型医療機器"
+  end
+
+  test "妊娠わからないは要確認になる" do
+    q = build_questionnaire("q13_pregnant" => "unknown")
+    q.promote_flags_from_answers
+    assert_not q.contraindicated?
+    assert q.needs_confirmation?
+    assert_includes q.confirmation_reasons.join, "妊娠"
+  end
+
+  test "絶対禁忌のときは要確認を重ねて出さない" do
+    q = build_questionnaire("q10_pacemaker" => "yes", "q10_other_device" => "yes")
+    q.promote_flags_from_answers
+    assert q.contraindicated?
+    assert_not q.needs_confirmation?
+  end
+
+  test "該当なしなら要確認も出ない" do
+    q = build_questionnaire("q10_pacemaker" => "no", "q13_pregnant" => "no")
+    q.promote_flags_from_answers
+    assert_not q.contraindicated?
+    assert_not q.needs_confirmation?
+  end
+
   private
 
   def build_questionnaire(answers)

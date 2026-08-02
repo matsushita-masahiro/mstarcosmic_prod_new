@@ -27,6 +27,13 @@
         <%= @latest_questionnaire.contraindication_reasons.join(" / ") %>
       </p>
     </div>
+  <% elsif @latest_questionnaire&.needs_confirmation? %>
+    <div style="border:2px solid #f59e0b;background:#fffbeb;border-radius:8px;padding:16px;margin-bottom:24px;">
+      <strong style="color:#b45309;font-size:17px;">確認してください</strong>
+      <p style="margin:6px 0 0;color:#92400e;">
+        <%= @latest_questionnaire.confirmation_reasons.join(" / ") %>
+      </p>
+    </div>
   <% end %>
 
   <%# ── 同意書 ──────────────────────────────── %>
@@ -96,6 +103,8 @@
             <span style="color:#9ca3af;font-size:13px;">（<%= q.form_version %>）</span>
             <% if q.contraindicated? %>
               <span style="color:#dc2626;font-size:13px;">⚠ <%= q.contraindication_reasons.join(" / ") %></span>
+            <% elsif q.needs_confirmation? %>
+              <span style="color:#b45309;font-size:13px;">⚠ <%= q.confirmation_reasons.join(" / ") %></span>
             <% end %>
           </li>
         <% end %>
