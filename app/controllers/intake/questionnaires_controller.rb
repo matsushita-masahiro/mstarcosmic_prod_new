@@ -34,7 +34,7 @@ module Intake
       end
 
       intake_session.complete!(ip: request.remote_ip, user_agent: request.user_agent)
-      session[:completed_signer_name] = current_patient.name_kana
+      session[:completed_signer_name] = current_patient.name.presence || current_patient.name_kana
 
       render json: { redirect_to: intake_thanks_path }, status: :created
     rescue ActiveRecord::RecordInvalid => e

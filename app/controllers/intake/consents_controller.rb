@@ -41,8 +41,10 @@ module Intake
 
     private
 
+    # 署名者名は漢字の氏名を優先する。
+    # カナは同意書の署名欄としては不自然なため、name が無い場合の代替に留める。
     def default_signer_name
-      current_patient.name_kana.presence || current_patient.name.presence || "本人"
+      current_patient.name.presence || current_patient.name_kana.presence || "本人"
     end
 
     def parsed_strokes
