@@ -3,13 +3,6 @@
 class Users::SessionsController < Devise::SessionsController
   layout 'main/main'
   
-  # skip_before_action do |controller|
-  #   controller.class._process_action_callbacks.any? do |cb|
-  #     cb.filter.is_a?(Proc) &&
-  #       cb.filter.source_location&.first&.include?("allow_browser.rb")
-  #   end
-  # end
-  
   respond_to :html, :turbo_stream
 
   # GET /resource/sign_in
