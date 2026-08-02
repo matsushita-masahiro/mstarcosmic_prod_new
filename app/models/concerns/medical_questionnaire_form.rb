@@ -5,15 +5,26 @@
 #
 # 【重要】禁忌判定に使うキーと値は
 # MedicalQuestionnaire#promote_flags_from_answers と対応している。
-#   q10_pacemaker  → has_pacemaker
-#   q13_pregnant   → is_pregnant / pregnancy_unknown（"unknown" で判定）
+#   q10_pacemaker → has_pacemaker（"yes" で真）
+#   q13_pregnant  → is_pregnant("yes") / pregnancy_unknown("unknown")
 # キー名または value を変える場合は必ず両方を直すこと。
 #
-# :radio / :boolean の選択肢は { value:, label: } で表示と値を分離する。
+# 選択肢は { value:, label: } で表示と値を分離する。
 # 表示ラベルをそのまま値にすると、文言を変えただけで判定が壊れるため。
 # :checkboxes は値そのものに意味がある（病名など）ため文字列のまま扱う。
+#
+# type:
+#   :boolean      いいえ / はい
+#   :radio        単一選択
+#   :select       プルダウン（選択肢が多い場合）
+#   :checkboxes   複数選択
+#   :text         1行テキスト
+#   :handwriting  ペン or キーボード切替の自由記述
+#   :composite    サブ項目を持つ
+#
+# female_only: true を指定した設問は、女性と判定された場合のみ表示する。
 module MedicalQuestionnaireForm
-  VERSION = "2026-04-17".freeze
+  VERSION = "2026-08-02".freeze
 
   YES_NO = [
     { value: "no",  label: "いいえ" },
@@ -28,7 +39,8 @@ module MedicalQuestionnaireForm
     {
       no: 2, key: "q2_under_treatment", type: :boolean,
       label: "現在治療中の病気はありますか？",
-      detail: { key: "q2_disease_name", label: "病名", type: :handwriting }
+      detail: { key: "q2_disease_name", label: "病名", type: :handwriting,
+                show_when: { key: "q2_under_treatment", value: "yes" } }
     },
     {
       no: 3, key: "q3_history", type: :handwriting,
@@ -37,7 +49,8 @@ module MedicalQuestionnaireForm
     {
       no: 4, key: "q4_medication", type: :boolean,
       label: "普段、飲んでいるお薬はありますか？　たまに飲むものも教えてください。",
-      detail: { key: "q4_medicine_name", label: "薬名", type: :handwriting }
+      detail: { key: "q4_medicine_name", label: "薬名", type: :handwriting,
+                show_when: { key: "q4_medication", value: "yes" } }
     },
     {
       no: 5, key: "q5_occupation", type: :handwriting,
@@ -58,49 +71,92 @@ module MedicalQuestionnaireForm
       ]
     },
     {
-      no: 8, key: "q8_smoking", type: :boolean,
+      no: 8, key: "q8_smoking", type: :radio,
       label: "喫煙しますか？",
+      options: [
+        { value: "no",   label: "吸わない" },
+        { value: "yes",  label: "吸う" },
+        { value: "past", label: "以前吸っていた" }
+      ],
       subs: [
-        { key: "q8_per_day", label: "1日の本数", type: :text },
-        { key: "q8_past",    label: "過去喫煙あり（何年前？）", type: :text }
+        { key: "q8_per_day", label: "1日の本数", type: :select,
+          show_when: { key: "q8_smoking", value: "yes" },
+          options: [
+            { value: "1-5",   label: "1〜5本" },
+            { value: "6-10",  label: "6〜10本" },
+            { value: "11-20", label: "11〜20本" },
+            { value: "21+",   label: "21本以上" }
+          ] },
+        { key: "q8_quit_years", label: "禁煙してからの年数", type: :select,
+          show_when: { key: "q8_smoking", value: "past" },
+          options: [
+            { value: "under1", label: "1年未満" },
+            { value: "1-3",    label: "1〜3年" },
+            { value: "4-10",   label: "4〜10年" },
+            { value: "over10", label: "10年以上" }
+          ] }
       ]
     },
     {
-      no: 9, key: "q9_drinking", type: :boolean,
+      no: 9, key: "q9_drinking", type: :radio,
       label: "飲酒しますか？",
-      detail: { key: "q9_amount", label: "1日あたりの量", type: :text }
+      options: [
+        { value: "no",        label: "飲まない" },
+        { value: "sometimes", label: "ときどき" },
+        { value: "daily",     label: "毎日" }
+      ],
+      subs: [
+        { key: "q9_amount", label: "1日あたりの量（ビール中瓶換算）", type: :radio,
+          show_when: { key: "q9_drinking", values: %w[sometimes daily] },
+          options: [
+            { value: "1",   label: "1本程度" },
+            { value: "2-3", label: "2〜3本" },
+            { value: "4+",  label: "4本以上" }
+          ] }
+      ]
     },
     {
       no: 10, key: "q10_pacemaker", type: :boolean,
       label: "身体の中に埋め込まれている医療機器（ペースメーカー）はありますか？",
       warning: "「はい」の場合、メタトロン測定は受けられません。",
+      required: true,
       subs: [
-        { key: "q10_other_device", label: "その他の医療機器がある", type: :boolean },
-        { key: "q10_device_name",  label: "機器名", type: :text }
+        { key: "q10_other_device", label: "ペースメーカー以外の医療機器がある", type: :boolean },
+        { key: "q10_device_name",  label: "機器名", type: :text,
+          show_when: { key: "q10_other_device", value: "yes" } }
       ]
     },
     {
-      no: 11, key: "q11_water", type: :boolean,
-      label: "お水は飲むようにしていますか？",
-      detail: { key: "q11_liters", label: "1日あたり（ℓ）", type: :text }
+      no: 11, key: "q11_water", type: :radio,
+      label: "お水は1日どのくらい飲みますか？",
+      options: [
+        { value: "under0.5", label: "0.5ℓ未満" },
+        { value: "0.5-1",    label: "0.5〜1ℓ" },
+        { value: "1-1.5",    label: "1〜1.5ℓ" },
+        { value: "over1.5",  label: "1.5ℓ以上" }
+      ]
     },
     {
       no: 12, key: "q12_supplement_advice", type: :boolean,
       label: "健康補助食品（サプリメント）等のアドバイスは必要ですか？",
-      detail: { key: "q12_current", label: "現在摂取しているもの", type: :handwriting }
+      detail: { key: "q12_current", label: "現在摂取しているもの", type: :handwriting,
+                show_when: { key: "q12_supplement_advice", value: "yes" } }
     },
     {
-      no: 13, key: "q13_female_only", type: :composite,
-      label: "女性の方のみ回答ください",
+      no: 13, key: "q13_pregnant", type: :radio,
+      label: "現在、妊娠中ですか？",
       warning: "妊娠中の方はメタトロン測定を受けられません。",
+      female_only: true,
+      required: true,
+      options: [
+        { value: "no",      label: "いいえ" },
+        { value: "yes",     label: "はい" },
+        { value: "unknown", label: "わからない" }
+      ],
       subs: [
-        { key: "q13_pregnant", label: "現在、妊娠中ですか？", type: :radio,
-          options: [
-            { value: "no",      label: "いいえ" },
-            { value: "yes",     label: "はい" },
-            { value: "unknown", label: "不明" }
-          ] },
-        { key: "q13_pregnancy_weeks", label: "妊娠週数", type: :text },
+        { key: "q13_pregnancy_weeks", label: "妊娠週数", type: :select,
+          show_when: { key: "q13_pregnant", value: "yes" },
+          options: (1..42).map { |w| { value: w.to_s, label: "#{w}週" } } },
         { key: "q13_breastfeeding", label: "授乳中ですか？", type: :boolean }
       ]
     },
@@ -114,6 +170,7 @@ module MedicalQuestionnaireForm
       detail: {
         key: "q15_items", type: :checkboxes,
         label: "ご希望の項目",
+        show_when: { key: "q15_other_advice", value: "yes" },
         options: [
           "整体", "鍼灸", "インソール", "ヒプノバーシング", "妊活", "栄養指導",
           "腸活", "ソマチッド", "美容", "エステ",
@@ -127,59 +184,75 @@ module MedicalQuestionnaireForm
       label: "現在悩んでいること、気になることなどありましたら教えてください"
     },
     {
-      no: 17, key: "q17_additional", type: :composite,
-      label: "下記も該当する方は記入お願い致します",
-      optional: true,
+      no: 17, key: "q17_has_additional", type: :boolean,
+      label: "下記に該当する項目はありますか？",
+      hint: "摘出臓器 / 抗がん剤 / 放射線 / 先進医療 / 幹細胞・エクソソーム / コロナ関係",
       subs: [
-        { key: "q17_removed_organ", label: "摘出臓器", type: :text },
-        { key: "q17_anticancer",    label: "抗がん剤", type: :text },
-        { key: "q17_radiation",     label: "放射線", type: :text },
-        { key: "q17_advanced",      label: "先進医療", type: :text },
-        { key: "q17_exosome",       label: "エクソソーム・幹細胞・骨髄幹細胞培養上清液", type: :text },
-        { key: "q17_vaccine_count", label: "コロナワクチン接種回数", type: :text },
-        { key: "q17_covid_count",   label: "コロナ感染回数", type: :text },
-        { key: "q17_other",         label: "その他", type: :text }
+        { key: "q17_removed_organ", label: "摘出臓器", type: :handwriting,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_anticancer", label: "抗がん剤", type: :handwriting,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_radiation", label: "放射線", type: :handwriting,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_advanced", label: "先進医療", type: :handwriting,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_exosome", label: "エクソソーム・幹細胞・骨髄幹細胞培養上清液", type: :handwriting,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_vaccinated", label: "コロナワクチンを接種しましたか？", type: :boolean,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_vaccine_count", label: "接種回数", type: :select,
+          show_when: { key: "q17_vaccinated", value: "yes" },
+          options: (1..7).map { |n| { value: n.to_s, label: "#{n}回" } } +
+                   [{ value: "8+", label: "8回以上" }] },
+        { key: "q17_infected", label: "コロナに感染しましたか？", type: :boolean,
+          show_when: { key: "q17_has_additional", value: "yes" } },
+        { key: "q17_infection_count", label: "感染回数", type: :select,
+          show_when: { key: "q17_infected", value: "yes" },
+          options: (1..5).map { |n| { value: n.to_s, label: "#{n}回" } } },
+        { key: "q17_other", label: "その他", type: :handwriting,
+          show_when: { key: "q17_has_additional", value: "yes" } }
       ]
     }
   ].freeze
 
   # ペン or キーボード入力の対象キー
   def self.handwriting_keys
-    QUESTIONS.flat_map do |q|
-      keys = []
-      keys << q[:key] if q[:type] == :handwriting
-      keys << q.dig(:detail, :key) if q.dig(:detail, :type) == :handwriting
-      (q[:subs] || []).each { |s| keys << s[:key] if s[:type] == :handwriting }
-      keys
-    end.compact
+    collect_all.select { |q| q[:type] == :handwriting }.map { |q| q[:key] }
+  end
+
+  # 必須回答のキー（禁忌判定に関わるもの）
+  def self.required_questions
+    QUESTIONS.select { |q| q[:required] }
+  end
+
+  # 女性のみ表示する設問
+  def self.female_only_keys
+    QUESTIONS.select { |q| q[:female_only] }.map { |q| q[:key] }
   end
 
   def self.find(key)
-    QUESTIONS.find { |q| q[:key] == key.to_s }
+    collect_all.find { |q| q[:key] == key.to_s }
   end
 
-  # スタッフ画面での表示用。value からラベルを引く。
+  # 表示用。value からラベルを引く。
   def self.label_for(key, value)
-    q = find_recursive(key)
+    q = find(key)
     return value unless q
 
     case q[:type]
     when :boolean
       YES_NO.find { |o| o[:value] == value }&.dig(:label) || value
-    when :radio
-      q[:options].find { |o| o[:value] == value }&.dig(:label) || value
+    when :radio, :select
+      Array(q[:options]).find { |o| o[:value] == value }&.dig(:label) || value
     else
       value
     end
   end
 
-  def self.find_recursive(key)
-    key = key.to_s
-    QUESTIONS.each do |q|
-      return q if q[:key] == key
-      return q[:detail] if q.dig(:detail, :key) == key
-      (q[:subs] || []).each { |s| return s if s[:key] == key }
+  # 設問・付随項目・サブ項目をすべてフラットに集める
+  def self.collect_all
+    @collect_all ||= QUESTIONS.flat_map do |q|
+      [q, q[:detail], *Array(q[:subs])].compact
     end
-    nil
   end
 end

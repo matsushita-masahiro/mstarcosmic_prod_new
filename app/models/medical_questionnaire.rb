@@ -1,5 +1,5 @@
 class MedicalQuestionnaire < ApplicationRecord
-  FORM_VERSION = "2026-04-17".freeze
+  include MedicalQuestionnaireFlags
 
   belongs_to :user
   belongs_to :intake_session, optional: true
@@ -35,20 +35,4 @@ class MedicalQuestionnaire < ApplicationRecord
   end
 
   def answer(key) = answers[key.to_s]
-
-  private
-
-  def promote_flags_from_answers
-    a = answers || {}
-    self.under_treatment      = truthy?(a["q2_under_treatment"])
-    self.taking_medication    = truthy?(a["q4_medication"])
-    self.has_pacemaker        = truthy?(a["q10_pacemaker"])
-    self.has_implanted_device = truthy?(a["q10_other_device"])
-    self.is_pregnant          = truthy?(a["q13_pregnant"])
-    self.pregnancy_unknown    = a["q13_pregnant"].to_s == "unknown"
-    self.pregnancy_weeks      = a["q13_pregnancy_weeks"].presence&.to_i
-    self.is_breastfeeding     = truthy?(a["q13_breastfeeding"])
-  end
-
-  def truthy?(v) = [true, "true", "yes", "はい", 1, "1"].include?(v)
 end

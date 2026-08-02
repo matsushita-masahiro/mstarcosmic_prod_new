@@ -2,7 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 // 問診票フォーム全体の制御。
 //   - 30秒ごとに localStorage へ下書き保存（通信断でも記入内容が消えない）
-//   - 同時にサーバへも下書きを送る（端末が変わっても復元できる）
+//   - 同時にサーバへも下書きを送る
+//   - 性別に応じて女性専用設問を出し分ける
 //   - 送信時に handwriting / body_marks を集約
 export default class extends Controller {
   static targets = ["form", "status", "submit", "progress"]
@@ -28,7 +29,6 @@ export default class extends Controller {
     this.element.addEventListener("handwriting-field:changed", this.onInput)
     this.element.addEventListener("body-map:changed", this.onInput)
 
-    // 離脱時の警告
     this.onBeforeUnload = (e) => {
       if (!this.dirty || this.submitting) return
       e.preventDefault()
@@ -44,6 +44,24 @@ export default class extends Controller {
     this.element.removeEventListener("handwriting-field:changed", this.onInput)
     this.element.removeEventListener("body-map:changed", this.onInput)
     window.removeEventListener("beforeunload", this.onBeforeUnload)
+  }
+
+  // 冒頭で性別を選んだとき、女性専用設問を出し分ける
+  genderChanged(event) {
+    const isFemale = event.target.value === "female"
+    this.femaleOnlySections().forEach((section) => {
+      section.hidden = !isFemale
+      if (!isFemale) {
+        section.querySelectorAll("input, select, textarea").forEach((el) => {
+          if (el.type === "radio" || el.type === "checkbox") el.checked = false
+          else el.value = ""
+        })
+      }
+    })
+  }
+
+  femaleOnlySections() {
+    return Array.from(this.element.querySelectorAll('[data-female-only="true"]'))
   }
 
   // ── 収集 ────────────────────────────────────
@@ -65,6 +83,8 @@ export default class extends Controller {
   collectHandwriting() {
     const result = {}
     this.handwritingControllers().forEach((ctrl) => {
+      // 非表示の項目は送らない
+      if (ctrl.element.closest("[hidden]")) return
       const data = ctrl.serialize()
       if (data) result[ctrl.keyValue] = data
     })
@@ -91,10 +111,8 @@ export default class extends Controller {
   async autosave() {
     if (!this.dirty || this.submitting) return
 
-    // まず localStorage（通信不要・確実）
     this.saveLocalDraft()
 
-    // 次にサーバ。失敗しても localStorage は残るので致命的ではない。
     try {
       const body = new FormData()
       body.append("answers", JSON.stringify(this.collectAnswers()))
@@ -125,7 +143,7 @@ export default class extends Controller {
         bodyMarks: this.collectBodyMarks()
       }))
     } catch (_e) {
-      // 容量超過など。無視して続行する（ペン画像が大きい場合に起きうる）
+      // 容量超過など。サーバ側の下書きが代替になるため握りつぶす。
     }
   }
 
@@ -162,6 +180,8 @@ export default class extends Controller {
     })
     this.bodyMapController()?.restore(draft.bodyMarks)
 
+    // 復元後に条件付き表示を再評価する
+    this.element.dispatchEvent(new Event("change", { bubbles: true }))
     this.setStatus("前回の記入内容を復元しました", "#059669")
   }
 
@@ -176,6 +196,8 @@ export default class extends Controller {
     const missing = this.validateRequired()
     if (missing.length) {
       this.setStatus(`未回答の項目があります: ${missing.join("、")}`, "#dc2626")
+      const first = this.formTarget.querySelector(`[name^="answers[${missing[0].key}]"]`)
+      first?.closest(".q-block")?.scrollIntoView({ behavior: "smooth", block: "center" })
       return
     }
 
@@ -205,7 +227,6 @@ export default class extends Controller {
       const { errors } = await res.json().catch(() => ({ errors: ["送信に失敗しました"] }))
       this.setStatus(errors.join(" / "), "#dc2626")
     } catch (_e) {
-      // 記入内容は消さない。再送できるようにする。
       this.setStatus("通信に失敗しました。電波状況を確認して、もう一度お試しください。", "#dc2626")
     } finally {
       this.submitting = false
@@ -213,21 +234,38 @@ export default class extends Controller {
     }
   }
 
-  // 禁忌に関わる設問だけは必須にする
+  // 必須項目の検証。非表示の設問（女性専用など）は対象外にする。
   validateRequired() {
-    const required = [
-      { key: "q10_pacemaker", label: "【10】医療機器" },
-      { key: "q13_pregnant",  label: "【13】妊娠" }
-    ]
-    return required
-      .filter(({ key }) => !this.formTarget.querySelector(`[name^="answers[${key}]"]:checked`))
-      .map(({ label }) => label)
+    const missing = []
+    this.formTarget.querySelectorAll(".q-block").forEach((block) => {
+      if (block.hidden) return
+      const required = block.querySelector(".q-required")
+      if (!required) return
+
+      const input = block.querySelector('[name^="answers["]')
+      if (!input) return
+      const key = input.name.replace(/^answers\[|\]$/g, "")
+
+      if (!block.querySelector(`[name="answers[${key}]"]:checked`)) {
+        const label = block.querySelector(".q-label")?.textContent.trim().slice(0, 20)
+        missing.push({ key, label })
+      }
+    })
+
+    // 性別未選択のチェック（冒頭で聞いている場合のみ）
+    const genderField = this.formTarget.querySelector('[name="answers[q0_gender]"]')
+    if (genderField && !this.formTarget.querySelector('[name="answers[q0_gender]"]:checked')) {
+      missing.unshift({ key: "q0_gender", label: "性別" })
+    }
+
+    return missing.map((m) => m.label || m.key)
   }
 
   updateProgress() {
     if (!this.hasProgressTarget) return
     const groups = new Set()
-    this.formTarget.querySelectorAll("[name^='answers[']:checked, [name^='answers[']").forEach((el) => {
+    this.formTarget.querySelectorAll('[name^="answers["]').forEach((el) => {
+      if (el.closest("[hidden]")) return
       if (el.type === "radio" || el.type === "checkbox") {
         if (el.checked) groups.add(el.name)
       } else if (el.value.trim()) {
