@@ -55,6 +55,13 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
+  # production と挙動を揃えるため :inline にする。
+  # 既定の :async はスレッドプール実行のため、bin/rails runner のような短命
+  # プロセスでは ActiveStorage::PurgeJob が走り切らずに消え、添付ファイルが
+  # 静かに孤児として残る。development で例外も残骸も見えないと、この種の
+  # 問題が本番/staging まで発覚しない。
+  config.active_job.queue_adapter = :inline
+
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
