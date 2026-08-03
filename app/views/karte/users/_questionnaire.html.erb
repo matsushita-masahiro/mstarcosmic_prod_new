@@ -7,7 +7,9 @@
 
   ローカル変数:
     questionnaire MedicalQuestionnaire
+    expanded      true なら全設問を開いた状態で出す（履歴から選んだとき）
 %>
+<% expanded = local_assigns.fetch(:expanded, false) %>
 <% entries = questionnaire.handwriting_entries.index_by(&:question_key) %>
 
 <%# ── 要点 ────────────────────────────────── %>
@@ -47,7 +49,7 @@
 <% end %>
 
 <%# ── 全設問 ──────────────────────────────── %>
-<details style="margin-top:20px;">
+<details style="margin-top:20px;" <%= "open" if expanded %>>
   <summary style="cursor:pointer;font-size:15px;color:#1d4ed8;padding:8px 0;">
     すべての回答を見る
   </summary>

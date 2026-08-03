@@ -96,33 +96,46 @@
   <section>
     <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">問診票</h3>
     <% if @questionnaires.any? %>
-      <%# 2回目以降の来店ぶんは切り替えて見る。既定は最新。 %>
-      <% if @questionnaires.size > 1 %>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-          <% @questionnaires.each do |q| %>
-            <% current = (q.id == @questionnaire.id) %>
-            <%= link_to karte_user_path(@user, questionnaire_id: q.id),
-                  style: "padding:6px 12px;border-radius:6px;font-size:14px;text-decoration:none;" \
-                         "border:1px solid #{current ? '#1d4ed8' : '#d1d5db'};" \
-                         "background:#{current ? '#1d4ed8' : '#fff'};" \
-                         "color:#{current ? '#fff' : '#374151'};" do %>
-              <%= q.submitted_at ? l(q.submitted_at.to_date, format: :long) : "下書き" %>
-            <% end %>
-          <% end %>
-        </div>
-      <% end %>
-
-      <p style="color:#6b7280;font-size:14px;margin-top:12px;">
-        <%= @questionnaire.submitted_at ? l(@questionnaire.submitted_at, format: :long) : "下書き（未提出）" %>
-        <span style="color:#9ca3af;font-size:13px;">（様式 <%= @questionnaire.form_version %>）</span>
-        <% if @questionnaire.contraindicated? %>
-          <span style="color:#dc2626;">⚠ <%= @questionnaire.contraindication_reasons.join(" / ") %></span>
-        <% elsif @questionnaire.needs_confirmation? %>
-          <span style="color:#b45309;">⚠ <%= @questionnaire.confirmation_reasons.join(" / ") %></span>
+      <%# 提出履歴。1件でも常に出す。
+          行をクリックするとその回の内容が下に開く。既定は最新。 %>
+      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;">
+        <% @questionnaires.each do |q| %>
+          <% selected = (q.id == @questionnaire.id) %>
+          <tr style="background:<%= selected ? "#eff6ff" : "transparent" %>;">
+            <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;width:1%;">
+              <%= link_to karte_user_path(@user, questionnaire_id: q.id),
+                    style: "text-decoration:none;color:#{selected ? '#1d4ed8' : '#374151'};" \
+                           "font-weight:#{selected ? '600' : '400'};" do %>
+                <%= q.submitted_at ? l(q.submitted_at.to_date, format: :long) : "下書き" %>
+              <% end %>
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#9ca3af;white-space:nowrap;">
+              様式 <%= q.form_version %>
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #f3f4f6;font-size:13px;">
+              <% if q.contraindicated? %>
+                <span style="color:#dc2626;">⚠ <%= q.contraindication_reasons.join(" / ") %></span>
+              <% elsif q.needs_confirmation? %>
+                <span style="color:#b45309;">⚠ <%= q.confirmation_reasons.join(" / ") %></span>
+              <% end %>
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #f3f4f6;text-align:right;white-space:nowrap;">
+              <% if selected %>
+                <span style="color:#1d4ed8;font-size:13px;">表示中</span>
+              <% else %>
+                <%= link_to "この回を見る", karte_user_path(@user, questionnaire_id: q.id),
+                      style: "color:#1d4ed8;text-decoration:none;font-size:14px;" %>
+              <% end %>
+            </td>
+          </tr>
         <% end %>
-      </p>
+      </table>
 
-      <%= render "karte/users/questionnaire", questionnaire: @questionnaire %>
+      <%# 履歴から明示的に選んだときは、全設問を開いた状態で出す。
+          最新をそのまま開いたときは要点だけ見る運用が多いため折りたたむ。 %>
+      <%= render "karte/users/questionnaire",
+            questionnaire: @questionnaire,
+            expanded: params[:questionnaire_id].present? %>
     <% else %>
       <p style="color:#9ca3af;padding:12px 0;">まだ問診票がありません。</p>
     <% end %>
