@@ -33,6 +33,15 @@ export default class extends Controller {
     window.addEventListener("resize", this.onResize)
     window.addEventListener("orientationchange", this.onResize)
 
+    // 幅が 0 → 正 に変わった瞬間を捉える。
+    // connect 時にレイアウトが確定していない場合と、条件付き表示で
+    // 後から現れた場合の両方の保険になる。
+    if (typeof ResizeObserver !== "undefined") {
+      this.observer = new ResizeObserver(() => this.resize())
+      this.observer.observe(this.canvasTarget)
+    }
+
+    this.lastWidth = 0
     this.resize()
     this.applyMode()
   }
@@ -41,16 +50,20 @@ export default class extends Controller {
     this.canvasTarget.removeEventListener("pointerdown", this.onPointerDown, true)
     window.removeEventListener("resize", this.onResize)
     window.removeEventListener("orientationchange", this.onResize)
+    this.observer?.disconnect()
     this.pad?.off()
   }
 
   // Retina 対応。canvas の実ピクセルを DPR 倍にしないと線がぼやける。
   // サイズ変更で内容が消えるため退避・復元する。
   resize() {
+    const rect = this.canvasTarget.getBoundingClientRect()
+    if (rect.width === 0) return                     // 非表示時はスキップ
+    if (rect.width === this.lastWidth) return        // 同じ幅なら退避・復元を省く
+    this.lastWidth = rect.width
+
     const data = this.pad.isEmpty() ? null : this.pad.toData()
     const ratio = Math.max(window.devicePixelRatio || 1, 1)
-    const rect = this.canvasTarget.getBoundingClientRect()
-    if (rect.width === 0) return   // 非表示時はスキップ
 
     this.canvasTarget.width = rect.width * ratio
     this.canvasTarget.height = rect.height * ratio
