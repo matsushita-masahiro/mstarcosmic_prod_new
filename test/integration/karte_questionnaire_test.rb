@@ -36,6 +36,11 @@ require "test_helper"
 #    全設問を開くかどうかは params[:questionnaire_id] の有無で決まる。
 #    「最新かどうか」ではなく「明示的に選んだかどうか」が判定基準。
 #
+# 7. 未回答の出し分け
+#    最上位の設問は答えていなければ出さない。
+#    ただし show_when を満たして画面に出ていた項目は、空でも
+#    「未選択 / 未記入」として出す（聞いたが答えなかった、と区別するため）。
+#
 # 積み残しに「人体図 SVG の差し替え」がある。差し替え時は 1 の限界を踏まえ、
 # 2 と 3 が通ることを確認したうえで、実際の見た目を必ず目視すること。
 class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
@@ -187,7 +192,18 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
     assert_match "摘出臓器", body
   end
 
-  test "未記入の設問は表示しない" do
+  # ── 7. 未回答の出し分け ────────────────────────
+  #
+  # 最上位の設問は、答えていなければ出さない（18問すべてを毎回読む運用ではなく、
+  # 「いいえ」と「未記入」が並ぶと目が滑るため）。
+  #
+  # ただし show_when を満たして画面に出ていた項目だけは例外で、
+  # 空でも「未選択 / 未記入」として出す。
+  # 【19】感染したか「はい」→ 回数を選ばず送信、を黙って隠すと
+  # 「感染していないから聞かれていない」のか「聞いたが答えなかった」のか
+  # 区別できず、問診票として意味が変わる。回数は必須にしていないので
+  # この状態は実際に起きる（本番で発生済み）。
+  test "最上位の未回答の設問は表示しない" do
     user = patient("sparse")
     make_questionnaire(user, answers: { "q10_pacemaker" => "no" })
 
@@ -195,9 +211,118 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_match MedicalQuestionnaireForm.find("q10_pacemaker")[:label], response.body
-    # 回答していない設問のラベルは出さない
+    # 回答していない最上位の設問のラベルは出さない（show_when を持たない）
     assert_no_match(/#{Regexp.escape(MedicalQuestionnaireForm.find('q5_occupation')[:label])}/,
                     response.body)
+    assert_equal 0, unanswered_markers.size, "未回答の印を出さないこと"
+  end
+
+  test "条件を満たすのに空の項目は「未選択」として出す" do
+    user = patient("unanswered-select")
+    # 【19】はい → 感染回数を選ばずに送信（キーごと無い場合と空文字の両方）
+    make_questionnaire(user, answers: { "q19_infected" => "yes" })
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match "感染回数", response.body, "条件を満たしていれば行を出すこと"
+    assert_match "未選択", response.body
+
+    blank = patient("blank-select")
+    make_questionnaire(blank, answers: { "q19_infected" => "yes",
+                                         "q19_infection_count" => "" })
+    get karte_user_path(blank)
+    assert_match "感染回数", response.body, "空文字でも行を出すこと"
+    assert_match "未選択", response.body
+  end
+
+  test "条件を満たさない項目は出さない" do
+    user = patient("not-asked")
+    make_questionnaire(user, answers: { "q19_infected" => "no" })
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match MedicalQuestionnaireForm.find("q19_infected")[:label], response.body
+    assert_no_match(/感染回数/, response.body, "聞かれていない項目は出さないこと")
+    assert_equal 0, unanswered_markers.size
+  end
+
+  test "値が入っていれば従来どおり値を出す" do
+    user = patient("answered-select")
+    make_questionnaire(user, answers: { "q19_infected" => "yes",
+                                        "q19_infection_count" => "2" })
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match "感染回数", response.body
+    assert_match "2回", response.body
+    assert_equal 0, unanswered_markers.size, "値があるなら未回答の印は出さないこと"
+  end
+
+  test "【18】も【19】と同じ出し分けになる" do
+    asked = patient("q18-asked")
+    make_questionnaire(asked, answers: { "q18_vaccinated" => "yes" })
+    get karte_user_path(asked)
+    assert_match "接種回数", response.body
+    assert_match "未選択", response.body
+
+    not_asked = patient("q18-not-asked")
+    make_questionnaire(not_asked, answers: { "q18_vaccinated" => "no" })
+    get karte_user_path(not_asked)
+    assert_no_match(/接種回数/, response.body)
+  end
+
+  # 要点ブロックの4項目（q1/q2/q4/q16）自体は show_when を持たないので従来どおりだが、
+  # 【2】治療中・【4】服薬 は show_when 付きの detail（病名・薬名）を連れている。
+  # そのため要点ブロックにも「病名 未記入」が出るようになる。
+  # 治療中と答えながら病名が空、は臨床的に意味があるのでこの挙動を採る。
+  # 要点をあくまで4行に保ちたくなったら、ここを見て意図的に変えること。
+  test "要点ブロックでも条件を満たす詳細は未記入として出る" do
+    user = patient("summary-detail")
+    make_questionnaire(user, answers: { "q2_under_treatment" => "yes",
+                                        "q4_medication" => "yes" })
+
+    get karte_user_path(user)
+    assert_response :success
+
+    summary = summary_block
+    assert_match "病名", summary
+    assert_match "薬名", summary
+    assert_equal %w[未記入 未記入],
+                 summary.scan(%r{<span style="color:#9ca3af;">(未選択|未記入)</span>}).flatten
+  end
+
+  # 「いいえ」なら detail は聞かれていないので、要点は従来どおり4行のまま
+  test "要点ブロックは条件を満たさない詳細を出さない" do
+    user = patient("summary-plain")
+    make_questionnaire(user, answers: { "q2_under_treatment" => "no",
+                                        "q4_medication" => "no" })
+
+    get karte_user_path(user)
+    assert_response :success
+
+    summary = summary_block
+    assert_no_match(/病名/, summary)
+    assert_no_match(/薬名/, summary)
+    assert_equal 0, summary.scan(%r{<span style="color:#9ca3af;">(未選択|未記入)</span>}).size
+  end
+
+  # 手書きは「未記入」。【17】のサブ項目は全て手書き。
+  test "条件を満たすのに手書きが無い項目は「未記入」として出す" do
+    user = patient("no-handwriting")
+    make_questionnaire(user, answers: { "q17_has_additional" => "yes" },
+                       pen_keys: %w[q17_removed_organ])
+
+    get karte_user_path(user)
+    assert_response :success
+
+    # 書いたものは画像で出る
+    assert_match "摘出臓器", response.body
+    # 書かなかったサブ項目は未記入として出る
+    assert_match "抗がん剤", response.body
+    assert_match "未記入", response.body
   end
 
   test "複数回提出があると日付で切り替えられる" do
@@ -379,6 +504,22 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
 
   def path_data(html)
     html.scan(/<path d="([^"]+)"/).flatten
+  end
+
+  # 要点ブロック（全設問の details より前）だけを切り出す
+  def summary_block
+    body = response.body
+    start = body.index("background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;")
+    finish = body.index("<details")
+    raise "要点ブロックが見つかりません" if start.nil? || finish.nil?
+
+    body[start...finish]
+  end
+
+  # 「未選択 / 未記入」の印。ページ末尾の注記（※ 未記入の項目は…）と混ざらないよう、
+  # パーシャルが出す span の形で数える。
+  def unanswered_markers
+    response.body.scan(%r{<span style="color:#9ca3af;">(未選択|未記入)</span>}).flatten
   end
 
   # 全設問の details が開いた状態か。

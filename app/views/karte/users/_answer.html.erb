@@ -9,13 +9,26 @@
 
   無回答の項目は出さない。18問すべてを毎回読む運用ではないため、
   「いいえ」と「未記入」が並ぶと目が滑る。
+
+  ただし「聞いたが答えなかった」項目は例外で、未回答と分かる形で出す。
+  出し分けの条件（show_when）を満たしているのに値が無いものがそれにあたる。
+  例: 【19】コロナに感染したか「はい」→ 感染回数を選ばずに送信。
+  これを黙って隠すと「感染していないから聞かれていない」のか
+  「聞いたが答えなかった」のかが区別できず、問診票として意味が変わる。
 %>
 <% value = questionnaire.answer_for(question[:key]) %>
 <% entry = entries[question[:key]] %>
 <% handwriting = question[:type] == :handwriting %>
 <% answered = handwriting ? entry.present? : value.present? %>
 
-<% if answered %>
+<%# 出し分けの条件を満たして画面に出ていたか %>
+<% asked = begin
+     sw = question[:show_when]
+     sw.present? &&
+       Array(sw[:values] || sw[:value]).include?(questionnaire.answer_for(sw[:key]).to_s)
+   end %>
+
+<% if answered || asked %>
   <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;
               <%= "padding-left:#{depth * 16}px;" if depth.positive? %>">
     <div style="flex:0 0 38%;font-size:<%= depth.zero? ? 15 : 14 %>px;
@@ -27,7 +40,9 @@
     </div>
 
     <div style="flex:1;font-size:15px;color:#111827;">
-      <% if handwriting %>
+      <% if !answered %>
+        <span style="color:#9ca3af;"><%= handwriting ? "未記入" : "未選択" %></span>
+      <% elsif handwriting %>
         <% if entry.input_mode_keyboard? %>
           <%= simple_format entry.transcribed_text, style: "margin:0;" %>
         <% elsif entry.image.attached? %>
