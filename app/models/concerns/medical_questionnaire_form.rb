@@ -24,7 +24,7 @@
 #
 # female_only: true を指定した設問は、女性と判定された場合のみ表示する。
 module MedicalQuestionnaireForm
-  VERSION = "2026-08-02".freeze
+  VERSION = "2026-08-03".freeze
 
   YES_NO = [
     { value: "no",  label: "いいえ" },
@@ -186,7 +186,7 @@ module MedicalQuestionnaireForm
     {
       no: 17, key: "q17_has_additional", type: :boolean,
       label: "下記に該当する項目はありますか？",
-      hint: "摘出臓器 / 抗がん剤 / 放射線 / 先進医療 / 幹細胞・エクソソーム / コロナ関係",
+      hint: "摘出臓器 / 抗がん剤 / 放射線 / 先進医療 / 幹細胞・エクソソーム",
       subs: [
         { key: "q17_removed_organ", label: "摘出臓器", type: :handwriting,
           show_when: { key: "q17_has_additional", value: "yes" } },
@@ -198,19 +198,29 @@ module MedicalQuestionnaireForm
           show_when: { key: "q17_has_additional", value: "yes" } },
         { key: "q17_exosome", label: "エクソソーム・幹細胞・骨髄幹細胞培養上清液", type: :handwriting,
           show_when: { key: "q17_has_additional", value: "yes" } },
-        { key: "q17_vaccinated", label: "コロナワクチンを接種しましたか？", type: :boolean,
-          show_when: { key: "q17_has_additional", value: "yes" } },
-        { key: "q17_vaccine_count", label: "接種回数", type: :select,
-          show_when: { key: "q17_vaccinated", value: "yes" },
-          options: (1..7).map { |n| { value: n.to_s, label: "#{n}回" } } +
-                   [{ value: "8+", label: "8回以上" }] },
-        { key: "q17_infected", label: "コロナに感染しましたか？", type: :boolean,
-          show_when: { key: "q17_has_additional", value: "yes" } },
-        { key: "q17_infection_count", label: "感染回数", type: :select,
-          show_when: { key: "q17_infected", value: "yes" },
-          options: (1..5).map { |n| { value: n.to_s, label: "#{n}回" } } },
         { key: "q17_other", label: "その他", type: :handwriting,
           show_when: { key: "q17_has_additional", value: "yes" } }
+      ]
+    },
+    # コロナ関係は【17】の「はい」に関係なく常に聞く。
+    # 全員に確認したい項目のため、【17】のサブ項目から独立させた。
+    {
+      no: 18, key: "q18_vaccinated", type: :boolean,
+      label: "新型コロナウイルスのワクチンを接種しましたか？",
+      subs: [
+        { key: "q18_vaccine_count", label: "接種回数", type: :select,
+          show_when: { key: "q18_vaccinated", value: "yes" },
+          options: (1..7).map { |n| { value: n.to_s, label: "#{n}回" } } +
+                   [{ value: "8+", label: "8回以上" }] }
+      ]
+    },
+    {
+      no: 19, key: "q19_infected", type: :boolean,
+      label: "新型コロナウイルスに感染したことはありますか？",
+      subs: [
+        { key: "q19_infection_count", label: "感染回数", type: :select,
+          show_when: { key: "q19_infected", value: "yes" },
+          options: (1..5).map { |n| { value: n.to_s, label: "#{n}回" } } }
       ]
     }
   ].freeze

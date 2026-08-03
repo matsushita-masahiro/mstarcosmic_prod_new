@@ -38,8 +38,8 @@ module MedicalQuestionnaireFlags
   # 昇格させないが、カルテ表示・集計で参照するキー
   REFERENCE_KEYS = %w[
     q17_has_additional
-    q17_vaccinated q17_vaccine_count
-    q17_infected q17_infection_count
+    q18_vaccinated q18_vaccine_count
+    q19_infected q19_infection_count
   ].freeze
 
   # answers から安全に1件取り出す（answers が nil でも落ちない）
@@ -49,10 +49,10 @@ module MedicalQuestionnaireFlags
 
   # ── 参照用（カラムには持たない）────────────────
   def additional_items? = answer_for("q17_has_additional") == "yes"
-  def vaccinated?       = answer_for("q17_vaccinated") == "yes"
-  def vaccine_count     = answer_for("q17_vaccine_count").presence
-  def covid_infected?   = answer_for("q17_infected") == "yes"
-  def covid_infection_count = answer_for("q17_infection_count").presence
+  def vaccinated?       = answer_for("q18_vaccinated") == "yes"
+  def vaccine_count     = answer_for("q18_vaccine_count").presence
+  def covid_infected?   = answer_for("q19_infected") == "yes"
+  def covid_infection_count = answer_for("q19_infection_count").presence
 
   # ── 警告の出し分け ──────────────────────────
   #
