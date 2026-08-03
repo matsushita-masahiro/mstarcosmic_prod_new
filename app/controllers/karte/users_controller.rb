@@ -32,8 +32,14 @@ module Karte
     def show
       @user = User.find(params[:id])
       @profile = @user.patient_profile
-      @questionnaires = @user.medical_questionnaires.latest_first.limit(10)
+      # 手書き画像と人体図マーカーを先に読む。
+      # 設問18問ぶんを1件ずつ引くと表示のたびに数十クエリになる。
+      @questionnaires = @user.medical_questionnaires
+                             .includes(:body_marks,
+                                       handwriting_entries: { image_attachment: :blob })
+                             .latest_first.limit(10)
       @latest_questionnaire = @questionnaires.first
+      @questionnaire = selected_questionnaire
       @consents = @user.consents.includes(:consent_document).latest_first
       @first_visit_at = @user.first_visit_at
       @active_intake = @user.intake_sessions.active.first
@@ -42,6 +48,14 @@ module Karte
     end
 
     private
+
+    # 2回目以降の来店ぶんを切り替えて見る。
+    # 読み込み済みの配列から選ぶので追加クエリは出ない。
+    # 他人の問診票 ID を渡されても @questionnaires の中にしか無いため拾えない。
+    def selected_questionnaire
+      requested = params[:questionnaire_id].presence
+      (requested && @questionnaires.find { |q| q.id == requested.to_i }) || @questionnaires.first
+    end
 
     def apply_search(scope)
       like = "%#{ActiveRecord::Base.sanitize_sql_like(@q)}%"

@@ -1,0 +1,63 @@
+<%#
+  問診票1件の表示。
+
+  構成は「要点を上に、詳細は折りたたみ」。
+  禁忌と主訴だけ見て、必要なときだけ全設問を開く運用に合わせている。
+  人体図は視覚情報で一目で伝わるため折りたたまない。
+
+  ローカル変数:
+    questionnaire MedicalQuestionnaire
+%>
+<% entries = questionnaire.handwriting_entries.index_by(&:question_key) %>
+
+<%# ── 要点 ────────────────────────────────── %>
+<% summary_keys = %w[q1_purpose q2_under_treatment q4_medication q16_concerns] %>
+<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
+            padding:4px 16px;margin-top:12px;">
+  <% summary_keys.each do |key| %>
+    <% question = MedicalQuestionnaireForm.find(key) %>
+    <% next if question.nil? %>
+    <%= render "karte/users/answer", question: question,
+          questionnaire: questionnaire, entries: entries, depth: 0 %>
+  <% end %>
+</div>
+
+<%# ── 人体図 ──────────────────────────────── %>
+<% marks = questionnaire.body_marks.to_a %>
+<% if marks.any? %>
+  <div style="margin-top:20px;">
+    <p style="font-size:15px;color:#374151;margin:0 0 8px;">痛み・気になるところ</p>
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+      <%= render "karte/users/body_marks", side: "front", body_marks: marks %>
+      <%= render "karte/users/body_marks", side: "back",  body_marks: marks %>
+      <ul style="list-style:none;padding:0;margin:20px 0 0;font-size:13px;color:#6b7280;">
+        <li><span style="color:#dc2626;">●</span> 痛み</li>
+        <li><span style="color:#2563eb;">●</span> しびれ</li>
+        <li><span style="color:#d97706;">●</span> こり</li>
+        <li><span style="color:#6b7280;">●</span> その他</li>
+      </ul>
+    </div>
+    <% notes = marks.select { |m| m.note.present? } %>
+    <% if notes.any? %>
+      <ul style="margin:8px 0 0;padding-left:20px;font-size:14px;color:#374151;">
+        <% notes.each { |m| %><li><%= m.note %></li><% } %>
+      </ul>
+    <% end %>
+  </div>
+<% end %>
+
+<%# ── 全設問 ──────────────────────────────── %>
+<details style="margin-top:20px;">
+  <summary style="cursor:pointer;font-size:15px;color:#1d4ed8;padding:8px 0;">
+    すべての回答を見る
+  </summary>
+  <div style="margin-top:8px;">
+    <% MedicalQuestionnaireForm::QUESTIONS.each do |question| %>
+      <%= render "karte/users/answer", question: question,
+            questionnaire: questionnaire, entries: entries, depth: 0 %>
+    <% end %>
+  </div>
+  <p style="color:#9ca3af;font-size:13px;margin-top:12px;">
+    ※ 未記入の項目は表示していません。
+  </p>
+</details>

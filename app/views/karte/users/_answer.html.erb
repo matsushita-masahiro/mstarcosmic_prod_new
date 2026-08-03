@@ -1,0 +1,66 @@
+<%#
+  設問1件ぶんの回答表示。付随項目（detail）とサブ項目（subs）を再帰的に描く。
+
+  ローカル変数:
+    question      MedicalQuestionnaireForm の設問定義（top / detail / sub いずれも同じ形）
+    questionnaire MedicalQuestionnaire
+    entries       question_key => HandwritingEntry のハッシュ
+    depth         入れ子の深さ（0 が最上位）
+
+  無回答の項目は出さない。18問すべてを毎回読む運用ではないため、
+  「いいえ」と「未記入」が並ぶと目が滑る。
+%>
+<% value = questionnaire.answer_for(question[:key]) %>
+<% entry = entries[question[:key]] %>
+<% handwriting = question[:type] == :handwriting %>
+<% answered = handwriting ? entry.present? : value.present? %>
+
+<% if answered %>
+  <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;
+              <%= "padding-left:#{depth * 16}px;" if depth.positive? %>">
+    <div style="flex:0 0 38%;font-size:<%= depth.zero? ? 15 : 14 %>px;
+                color:<%= depth.zero? ? "#374151" : "#6b7280" %>;">
+      <% if depth.zero? && question[:no] %>
+        <span style="color:#9ca3af;">【<%= question[:no] %>】</span>
+      <% end %>
+      <%= question[:label] %>
+    </div>
+
+    <div style="flex:1;font-size:15px;color:#111827;">
+      <% if handwriting %>
+        <% if entry.input_mode_keyboard? %>
+          <%= simple_format entry.transcribed_text, style: "margin:0;" %>
+        <% elsif entry.image.attached? %>
+          <%= link_to url_for(entry.image), target: "_blank", rel: "noopener" do %>
+            <%= image_tag entry.image,
+                  style: "max-width:100%;max-height:120px;background:#fff;
+                          border:1px solid #e5e7eb;border-radius:4px;" %>
+          <% end %>
+        <% else %>
+          <span style="color:#9ca3af;">（手書きあり・画像なし）</span>
+        <% end %>
+      <% elsif question[:type] == :checkboxes %>
+        <%= Array(value).join("、") %>
+      <% else %>
+        <%= MedicalQuestionnaireForm.label_for(question[:key], value) %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# その他欄（複数選択の自由記入） %>
+<% if question[:other] && questionnaire.answer_for(question[:other][:key]).present? %>
+  <%= render "karte/users/answer",
+        question: question[:other].merge(type: :text),
+        questionnaire: questionnaire, entries: entries, depth: depth + 1 %>
+<% end %>
+
+<% if question[:detail] %>
+  <%= render "karte/users/answer", question: question[:detail],
+        questionnaire: questionnaire, entries: entries, depth: depth + 1 %>
+<% end %>
+
+<% Array(question[:subs]).each do |sub| %>
+  <%= render "karte/users/answer", question: sub,
+        questionnaire: questionnaire, entries: entries, depth: depth + 1 %>
+<% end %>

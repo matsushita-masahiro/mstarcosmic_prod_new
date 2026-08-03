@@ -96,22 +96,33 @@
   <section>
     <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">問診票</h3>
     <% if @questionnaires.any? %>
-      <ul style="padding-left:20px;margin-top:12px;">
-        <% @questionnaires.each do |q| %>
-          <li style="margin-bottom:6px;">
-            <%= q.submitted_at ? l(q.submitted_at, format: :long) : "下書き" %>
-            <span style="color:#9ca3af;font-size:13px;">（<%= q.form_version %>）</span>
-            <% if q.contraindicated? %>
-              <span style="color:#dc2626;font-size:13px;">⚠ <%= q.contraindication_reasons.join(" / ") %></span>
-            <% elsif q.needs_confirmation? %>
-              <span style="color:#b45309;font-size:13px;">⚠ <%= q.confirmation_reasons.join(" / ") %></span>
+      <%# 2回目以降の来店ぶんは切り替えて見る。既定は最新。 %>
+      <% if @questionnaires.size > 1 %>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+          <% @questionnaires.each do |q| %>
+            <% current = (q.id == @questionnaire.id) %>
+            <%= link_to karte_user_path(@user, questionnaire_id: q.id),
+                  style: "padding:6px 12px;border-radius:6px;font-size:14px;text-decoration:none;" \
+                         "border:1px solid #{current ? '#1d4ed8' : '#d1d5db'};" \
+                         "background:#{current ? '#1d4ed8' : '#fff'};" \
+                         "color:#{current ? '#fff' : '#374151'};" do %>
+              <%= q.submitted_at ? l(q.submitted_at.to_date, format: :long) : "下書き" %>
             <% end %>
-          </li>
+          <% end %>
+        </div>
+      <% end %>
+
+      <p style="color:#6b7280;font-size:14px;margin-top:12px;">
+        <%= @questionnaire.submitted_at ? l(@questionnaire.submitted_at, format: :long) : "下書き（未提出）" %>
+        <span style="color:#9ca3af;font-size:13px;">（様式 <%= @questionnaire.form_version %>）</span>
+        <% if @questionnaire.contraindicated? %>
+          <span style="color:#dc2626;">⚠ <%= @questionnaire.contraindication_reasons.join(" / ") %></span>
+        <% elsif @questionnaire.needs_confirmation? %>
+          <span style="color:#b45309;">⚠ <%= @questionnaire.confirmation_reasons.join(" / ") %></span>
         <% end %>
-      </ul>
-      <p style="color:#9ca3af;font-size:13px;margin-top:12px;">
-        ※ 問診内容の表示は次のフェーズで実装します
       </p>
+
+      <%= render "karte/users/questionnaire", questionnaire: @questionnaire %>
     <% else %>
       <p style="color:#9ca3af;padding:12px 0;">まだ問診票がありません。</p>
     <% end %>
