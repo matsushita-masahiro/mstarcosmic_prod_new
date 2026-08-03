@@ -50,4 +50,14 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # intake.localhost をサブドメインとして認識させる（development.rb と同じ理由）。
+  #
+  # 既定の tld_length = 1 では "intake.localhost" の subdomain が "" と判定され、
+  # routes.rb の constraints(subdomain: "intake") に一致しない。テストからは
+  # intake 画面に到達できず、catch-all の errors#routing_error に落ちる。
+  #
+  # intake のテストを書くときは Capybara.app_host に "http://intake.localhost" を
+  # 指定すること（test/system/intake/body_map_test.rb が参考になる）。
+  config.action_dispatch.tld_length = 0
 end
