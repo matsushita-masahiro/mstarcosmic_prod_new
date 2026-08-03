@@ -28,8 +28,13 @@ require "test_helper"
 #
 # 4. preload（表示クエリが手書き欄の数に比例しないこと）
 #
-# 5. 表示そのもの（要点・人体図・全設問・手書き画像・日付切り替え）と
+# 5. 表示そのもの（要点・人体図・全設問・手書き画像）と
 #    問診票が無い / 下書きのみの患者で落ちないこと
+#
+# 6. 提出履歴と展開状態
+#    履歴は件数によらず常に全件出す（1件でも出す）。
+#    全設問を開くかどうかは params[:questionnaire_id] の有無で決まる。
+#    「最新かどうか」ではなく「明示的に選んだかどうか」が判定基準。
 #
 # 積み残しに「人体図 SVG の差し替え」がある。差し替え時は 1 の限界を踏まえ、
 # 2 と 3 が通ることを確認したうえで、実際の見た目を必ず目視すること。
@@ -206,12 +211,103 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
     get karte_user_path(user)
     assert_match "新しい方の記載", response.body
     assert_no_match(/古い方の記載/, response.body)
-    assert_match(/questionnaire_id=#{recent.id}/, response.body, "切り替えボタンが出ること")
+
+    # どちらを選んでいても履歴には全件並ぶ（選択中は「表示中」）
+    assert_match(/questionnaire_id=#{recent.id}/, response.body)
+    assert_match(/questionnaire_id=#{old.id}/, response.body, "選択中でない回も履歴に出ること")
+    assert_match "表示中", response.body
+    assert_match "この回を見る", response.body
 
     # 明示指定で切り替わる
     get karte_user_path(user, questionnaire_id: old.id)
     assert_match "古い方の記載", response.body
     assert_no_match(/新しい方の記載/, response.body)
+    assert_match(/questionnaire_id=#{recent.id}/, response.body, "切り替え後も全件並ぶこと")
+  end
+
+  # ── 6. 提出履歴と展開状態 ──────────────────────
+  #
+  # 履歴は件数によらず常に出す。以前は2件以上のときだけ日付ボタンを出していたため、
+  # 1件の患者では「いつ提出されたものか」が分かりにくかった。
+  # 「2件以上のときだけ」に戻す変更を弾くため、1件の場合を明示的に固定する。
+  test "問診票が1件でも提出履歴の一覧が出る" do
+    user = patient("single")
+    questionnaire = make_questionnaire(user, keyboard: { "q16_concerns" => "1件目の記載" })
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match(/questionnaire_id=#{questionnaire.id}/, response.body,
+                 "1件でも履歴の行が出ること")
+    assert_match "表示中", response.body
+    assert_match "様式 #{questionnaire.form_version}", response.body
+  end
+
+  # 履歴から選んだ回は全設問を開いて出す。
+  # 過去の回をわざわざ開くのは中身を読みたいときなので、毎回たたむのは手数が増える。
+  # 逆に最新は要点だけ見る運用が多いため折りたたむ。
+  test "履歴から選んだときは全設問が開き、最新をそのまま開いたときは折りたたむ" do
+    user = patient("expand")
+    old = make_questionnaire(user, keyboard: { "q16_concerns" => "古い方" },
+                             submitted_at: 3.months.ago)
+    make_questionnaire(user, keyboard: { "q16_concerns" => "新しい方" },
+                       submitted_at: 1.day.ago)
+
+    get karte_user_path(user)
+    assert_response :success
+    assert_not details_open?, "最新をそのまま開いたときは折りたたむこと"
+
+    get karte_user_path(user, questionnaire_id: old.id)
+    assert_response :success
+    assert details_open?, "履歴から選んだときは全設問を開くこと"
+  end
+
+  # 判定は「最新かどうか」ではなく「明示的に選んだかどうか」
+  test "最新でも明示的に選べば全設問が開く" do
+    user = patient("explicit")
+    questionnaire = make_questionnaire(user, keyboard: { "q16_concerns" => "本文" })
+
+    get karte_user_path(user, questionnaire_id: questionnaire.id)
+
+    assert_response :success
+    assert details_open?, "明示指定なら最新でも開くこと"
+  end
+
+  # expanded を渡さない呼び出しは折りたたみ側に倒す。
+  #
+  # show.html.erb は必ず expanded を渡すので、既定値はページ経由では確かめられない。
+  # 「渡さなくても壊れない」は _questionnaire の対外的な約束なので、
+  # パーシャルを直接描いて固定する。
+  test "expanded を渡さずに描くと折りたたまれる" do
+    user = patient("default-expanded")
+    questionnaire = make_questionnaire(user, keyboard: { "q16_concerns" => "本文" })
+
+    html = ApplicationController.render(
+      partial: "karte/users/questionnaire", locals: { questionnaire: questionnaire }
+    )
+
+    tag = html[/<details[^>]*>/m]
+    assert tag, "全設問の折りたたみが見つかりません"
+    assert_not tag.include?("open"), "expanded 未指定のときは折りたたむこと"
+  end
+
+  test "履歴が増えても表示クエリが比例しない" do
+    few = patient("hist-few")
+    make_questionnaire(few, keyboard: { "q16_concerns" => "1件目" })
+
+    many = patient("hist-many")
+    8.times do |i|
+      make_questionnaire(many, keyboard: { "q16_concerns" => "#{i}件目" },
+                         submitted_at: i.days.ago)
+    end
+
+    small = count_queries { get karte_user_path(few) }
+    assert_response :success
+    large = count_queries { get karte_user_path(many) }
+    assert_response :success
+
+    assert_operator (large - small), :<=, 3,
+                    "履歴を1→8件に増やしてクエリが #{large - small} 本増えています"
   end
 
   # 読み込み済みの @questionnaires からしか選ばないため、他人の ID は拾えない
@@ -283,6 +379,15 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
 
   def path_data(html)
     html.scan(/<path d="([^"]+)"/).flatten
+  end
+
+  # 全設問の details が開いた状態か。
+  # 展開の既定値を変える／expanded を渡し忘れる、のどちらでも落ちるようにここで見る。
+  def details_open?
+    tag = response.body[/<details[^>]*>/m]
+    raise "details が見つかりません（全設問の折りたたみが消えています）" if tag.nil?
+
+    tag.include?("open")
   end
 
   def count_queries
