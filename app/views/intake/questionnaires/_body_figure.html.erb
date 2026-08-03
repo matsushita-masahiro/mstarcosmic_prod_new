@@ -2,21 +2,33 @@
   人体図（表・裏）。
   viewBox は 0 0 100 100 の正規化座標系。JS 側は 0.0〜1.0 の相対座標で扱うため
   cx = x * 100 で対応する。図の差し替え時も座標系を変えないこと。
+
+  【前版からの修正】
+  腕が閉じた輪郭ではなく1本の折れ線で描かれており、肘から先が枝のように見えていた。
+  また胴体の輪郭に半袖状の出っ張りがあり、そこから棒線が伸びる二重構造になっていた。
+  胴体から袖を外し、肩から手首まで一続きの輪郭として描き直している。
+  手も指3本の線からミトン型の輪郭に変更。
+
+  座標系・data-body-map-target・stroke-width は変更していないため、
+  既存のマーキング座標および body_map_controller.js との互換は保たれる。
 %>
 <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"
      data-body-map-target="<%= side %>"
      style="width:100%;max-width:200px;height:auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;cursor:crosshair;touch-action:manipulation;">
-  <g fill="none" stroke="#4b5563" stroke-width="0.8" stroke-linejoin="round">
+  <g fill="none" stroke="#4b5563" stroke-width="0.8"
+     stroke-linejoin="round" stroke-linecap="round">
     <%# 頭 %>
     <ellipse cx="50" cy="9" rx="6" ry="7.5"/>
     <%# 首 %>
     <path d="M46.5 16 L46.5 19 M53.5 16 L53.5 19"/>
-    <%# 胴体 %>
-    <path d="M46.5 19 C40 20 34 22 32 26 L29 44 L33 45 L35 34 L35 58 L65 58 L65 34 L67 45 L71 44 L68 26 C66 22 60 20 53.5 19 Z"/>
-    <%# 腕 %>
-    <path d="M32 26 L27 46 L25 60 M68 26 L73 46 L75 60"/>
+    <%# 胴体（袖は持たせず、肩から脇へ直接つなぐ） %>
+    <path d="M46.5 19 C40 20 34 22 32 26 L35 33 L35 58 L65 58 L65 33 L68 26 C66 22 60 20 53.5 19 Z"/>
+    <%# 腕（肩→肘→手首→脇 の閉じた輪郭） %>
+    <path d="M32 26 L26.5 45 L23.5 59 L28 59 L32 45.5 L35 33 Z"/>
+    <path d="M68 26 L73.5 45 L76.5 59 L72 59 L68 45.5 L65 33 Z"/>
     <%# 手 %>
-    <path d="M25 60 L23.5 66 M25 60 L25 66.5 M25 60 L26.5 66 M75 60 L73.5 66 M75 60 L75 66.5 M75 60 L76.5 66"/>
+    <path d="M23.5 59 L22.3 64.5 L24.5 66.8 L27.4 65 L28 59 Z"/>
+    <path d="M76.5 59 L77.7 64.5 L75.5 66.8 L72.6 65 L72 59 Z"/>
     <%# 脚 %>
     <path d="M35 58 L36 78 L37 94 L43 94 L44 78 L47 60 M65 58 L64 78 L63 94 L57 94 L56 78 L53 60"/>
     <%# 足 %>
