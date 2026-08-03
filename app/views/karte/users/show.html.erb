@@ -99,17 +99,27 @@
       <%# 提出履歴。1件でも常に出す。
           行をクリックするとその回の内容が下に開く。既定は最新。
 
-          reserves.scss の `thead, tbody tr { display:table; table-layout:fixed }` が
-          スコープ無しで全テーブルに効いている（予約カレンダーのスクロール実装が
-          依存しているため、あちらは触らない）。
-          放置すると日付セルが 9px に潰れ、nowrap の中身が隣の「様式」セルに
-          はみ出して重なる。table-layout は継承しないので、
-          display:table が当たっている tr 側で打ち消すこと。 %>
-      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;table-layout:auto;">
+          【列幅について】
+          reserves.scss の `thead, tbody tr { display:table; width:100%; table-layout:fixed }`
+          がスコープ無しで全アプリのテーブルに効いている（予約カレンダーの
+          スクロール実装がこれに依存しているため、あちらは触らない）。
+          つまりこの表も fixed で組まれる。打ち消すのではなく明示幅を与える。
+
+          幅を指定しないと日付セルが潰れ、nowrap の中身が隣の「様式」セルに
+          はみ出して重なる（以前 width:1% で 9px に化けていた）。
+          逆に table-layout:auto で打ち消すと、各 tr が display:table で
+          独立したテーブルボックスになる構造は変わらないため、
+          行ごとに列幅がばらつき（実測で最大54pxのズレ）表として読めなくなる。
+          fixed を受け入れて日付列に固定幅を置くのが、この CSS 環境では正解。
+
+          日付は「2026年08月03日(月)」で桁数が一定。必要幅の実測は
+          通常 165px / 選択中（太字）169px で、フォント差を見込んで
+          14em(210px) を置いている。「下書き」表示はこれより短い。 %>
+      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;">
         <% @questionnaires.each do |q| %>
           <% selected = (q.id == @questionnaire.id) %>
-          <tr style="table-layout:auto;background:<%= selected ? "#eff6ff" : "transparent" %>;">
-            <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;">
+          <tr style="background:<%= selected ? "#eff6ff" : "transparent" %>;">
+            <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;width:14em;">
               <%= link_to karte_user_path(@user, questionnaire_id: q.id),
                     style: "text-decoration:none;color:#{selected ? '#1d4ed8' : '#374151'};" \
                            "font-weight:#{selected ? '600' : '400'};" do %>
