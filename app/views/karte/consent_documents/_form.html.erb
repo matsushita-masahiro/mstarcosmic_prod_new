@@ -1,0 +1,44 @@
+<%= form_with model: document, url: url, method: method, local: true do |f| %>
+  <% if document.errors.any? %>
+    <div style="border:1px solid #dc2626;background:#fef2f2;border-radius:6px;padding:12px;margin-bottom:16px;">
+      <ul style="margin:0;padding-left:20px;color:#991b1b;">
+        <% document.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div style="margin-bottom:16px;">
+    <%= f.label :version, "バージョン",
+          style: "display:block;font-size:14px;color:#374151;margin-bottom:4px;" %>
+    <%= f.text_field :version,
+          style: "width:100%;max-width:280px;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+    <p style="color:#9ca3af;font-size:13px;margin:4px 0 0;">
+      署名記録に残り、いつの文言かを追う手がかりになります。重複はできません。
+    </p>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <%= f.label :title, "タイトル",
+          style: "display:block;font-size:14px;color:#374151;margin-bottom:4px;" %>
+    <%= f.text_field :title,
+          style: "width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <%= f.label :body, "本文",
+          style: "display:block;font-size:14px;color:#374151;margin-bottom:4px;" %>
+    <%= f.text_area :body, rows: 20,
+          style: "width:100%;padding:12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;line-height:1.8;font-family:inherit;" %>
+    <p style="color:#9ca3af;font-size:13px;margin:4px 0 0;">
+      患者の画面では、ここに入力したままの文字が表示されます（改行はそのまま反映されます）。
+      HTML タグは使えません。
+    </p>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:center;">
+    <%= f.submit submit_label,
+          style: "padding:12px 24px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:16px;cursor:pointer;" %>
+    <%= link_to "キャンセル", cancel_path,
+          style: "color:#6b7280;text-decoration:none;" %>
+  </div>
+<% end %>

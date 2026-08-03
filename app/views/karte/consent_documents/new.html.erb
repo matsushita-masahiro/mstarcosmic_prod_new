@@ -1,0 +1,14 @@
+<div class="container" style="max-width:760px;margin:0 auto;padding:24px 16px;">
+  <p style="margin-bottom:8px;">
+    <%= link_to "← 同意書の管理", karte_consent_documents_path,
+          style: "color:#6b7280;text-decoration:none;font-size:14px;" %>
+  </p>
+  <h2 style="font-size:22px;margin-bottom:8px;">新しいバージョンを作る</h2>
+  <p style="color:#6b7280;font-size:14px;margin-bottom:20px;">
+    保存した時点では下書きです。内容を確認してから公開してください。
+  </p>
+
+  <%= render "form", document: @document, url: karte_consent_documents_path,
+        method: :post, submit_label: "下書きとして保存",
+        cancel_path: karte_consent_documents_path %>
+</div>

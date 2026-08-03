@@ -22,6 +22,12 @@ Rails.application.routes.draw do
       resources :intake_sessions, only: %i[create]
     end
     resources :intake_sessions, only: %i[show destroy]
+    resources :consent_documents do
+      member do
+        post :publish
+        post :archive
+      end
+    end
   end
 
   # API
