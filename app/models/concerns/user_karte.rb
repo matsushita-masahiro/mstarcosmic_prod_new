@@ -51,6 +51,13 @@ module UserKarte
     medical_questionnaires.status_submitted.latest_first.first
   end
 
+  # 一覧用。scope を使うと includes 済みでも行ごとにクエリが出るため、
+  # 読み込み済みの関連から Ruby 側で絞る。
+  def latest_submitted_questionnaire
+    medical_questionnaires.select(&:status_submitted?)
+                          .max_by { |q| q.submitted_at || Time.at(0) }
+  end
+
   # 初診日 = 最初の同意署名日。無ければ最初の問診票提出日。
   def first_visit_at
     consents.minimum(:agreed_at) || medical_questionnaires.minimum(:submitted_at)

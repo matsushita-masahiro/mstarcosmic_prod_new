@@ -129,6 +129,30 @@ class MedicalQuestionnaireFlagsTest < ActiveSupport::TestCase
     assert_includes q.confirmation_reasons.join, "植込み型医療機器"
   end
 
+  test "文言は REASONS 1箇所から引かれている" do
+    q = build_questionnaire("q10_pacemaker" => "yes", "q10_other_device" => "yes")
+    q.promote_flags_from_answers
+
+    reasons = q.contraindication_reasons
+    assert_equal reasons, reasons & MedicalQuestionnaireFlags::REASONS.values,
+                 "REASONS に無い文言が混ざっています"
+  end
+
+  test "赤のときは該当する理由をすべて出す" do
+    q = build_questionnaire(
+      "q10_pacemaker" => "yes", "q10_other_device" => "yes", "q13_pregnant" => "yes"
+    )
+    q.promote_flags_from_answers
+    assert_equal 3, q.contraindication_reasons.size
+  end
+
+  test "REASONS のキーが全て述語として呼べる" do
+    q = MedicalQuestionnaire.new(answers: {})
+    MedicalQuestionnaireFlags::REASONS.each_key do |predicate|
+      assert q.respond_to?(predicate), "#{predicate} が定義されていません"
+    end
+  end
+
   test "妊娠わからないは要確認になる" do
     q = build_questionnaire("q13_pregnant" => "unknown")
     q.promote_flags_from_answers

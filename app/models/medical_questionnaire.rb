@@ -19,17 +19,6 @@ class MedicalQuestionnaire < ApplicationRecord
 
   scope :latest_first, -> { order(Arel.sql("COALESCE(submitted_at, created_at) DESC")) }
 
-  def contraindicated? = has_pacemaker? || is_pregnant?
-
-  def contraindication_reasons
-    [].tap do |r|
-      r << "ペースメーカー装着" if has_pacemaker?
-      r << "植込み型医療機器あり" if has_implanted_device?
-      r << "妊娠中" if is_pregnant?
-      r << "妊娠の可能性（不明と回答）" if pregnancy_unknown?
-    end
-  end
-
   def submit!(intake_session: nil)
     update!(status: :submitted, submitted_at: Time.current, intake_session: intake_session)
   end

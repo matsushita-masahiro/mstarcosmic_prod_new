@@ -57,13 +57,38 @@ module MedicalQuestionnaireFlags
   # ── 警告の出し分け ──────────────────────────
   #
   # 2段階に分ける。
-  #   contraindicated?     絶対禁忌。「施術できません」（既存・変更しない）
-  #   needs_confirmation?  要確認。「確認してください」
+  #   contraindicated?     絶対禁忌。「施術できません」（赤）
+  #   needs_confirmation?  要確認。「確認してください」（黄）
   #
   # 植込み型医療機器（ペースメーカー以外）と妊娠「わからない」は、
   # 機器の種類や実際の状況によるためスタッフの確認が要る。
   # 一律に「施術できません」と出すと運用が回らないが、
   # 何も出ないと has_implanted_device を昇格させた意味が無い。
+  #
+  # 【重要】文言はこの REASONS 1箇所だけに置く。
+  # 赤と黄で同じ意味の文字列を別々に持つと、片方だけ直す事故が起きる。
+  # 表示順は定義順。
+  REASONS = {
+    has_pacemaker?:        "ペースメーカー装着",
+    has_implanted_device?: "植込み型医療機器あり（ペースメーカー以外）",
+    is_pregnant?:          "妊娠中",
+    pregnancy_unknown?:    "妊娠の可能性（不明と回答）"
+  }.freeze
+
+  # 赤にする条件
+  CONTRAINDICATION_PREDICATES = %i[has_pacemaker? is_pregnant?].freeze
+  # 黄にする条件
+  CONFIRMATION_PREDICATES = %i[has_implanted_device? pregnancy_unknown?].freeze
+
+  def contraindicated?
+    CONTRAINDICATION_PREDICATES.any? { |m| public_send(m) }
+  end
+
+  # 赤のときは該当する理由をすべて出す（機器や妊娠不明も併記する）
+  def contraindication_reasons
+    reasons_for(REASONS.keys)
+  end
+
   def needs_confirmation?
     return false if contraindicated?
 
@@ -71,10 +96,7 @@ module MedicalQuestionnaireFlags
   end
 
   def confirmation_reasons
-    reasons = []
-    reasons << "植込み型医療機器あり（ペースメーカー以外）" if has_implanted_device?
-    reasons << "妊娠の可能性について確認が必要" if pregnancy_unknown?
-    reasons
+    reasons_for(CONFIRMATION_PREDICATES)
   end
 
   # ── 昇格 ────────────────────────────────────
@@ -103,6 +125,10 @@ module MedicalQuestionnaireFlags
   end
 
   private
+
+  def reasons_for(predicates)
+    predicates.select { |m| public_send(m) }.map { |m| REASONS[m] }
+  end
 
   def answered_yes?(key)
     answer_for(key) == "yes"
