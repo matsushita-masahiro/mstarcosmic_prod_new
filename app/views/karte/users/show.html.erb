@@ -97,12 +97,19 @@
     <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">問診票</h3>
     <% if @questionnaires.any? %>
       <%# 提出履歴。1件でも常に出す。
-          行をクリックするとその回の内容が下に開く。既定は最新。 %>
-      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;">
+          行をクリックするとその回の内容が下に開く。既定は最新。
+
+          reserves.scss の `thead, tbody tr { display:table; table-layout:fixed }` が
+          スコープ無しで全テーブルに効いている（予約カレンダーのスクロール実装が
+          依存しているため、あちらは触らない）。
+          放置すると日付セルが 9px に潰れ、nowrap の中身が隣の「様式」セルに
+          はみ出して重なる。table-layout は継承しないので、
+          display:table が当たっている tr 側で打ち消すこと。 %>
+      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;table-layout:auto;">
         <% @questionnaires.each do |q| %>
           <% selected = (q.id == @questionnaire.id) %>
-          <tr style="background:<%= selected ? "#eff6ff" : "transparent" %>;">
-            <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;width:1%;">
+          <tr style="table-layout:auto;background:<%= selected ? "#eff6ff" : "transparent" %>;">
+            <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;">
               <%= link_to karte_user_path(@user, questionnaire_id: q.id),
                     style: "text-decoration:none;color:#{selected ? '#1d4ed8' : '#374151'};" \
                            "font-weight:#{selected ? '600' : '400'};" do %>
