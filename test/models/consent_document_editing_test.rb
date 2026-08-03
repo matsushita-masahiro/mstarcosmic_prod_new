@@ -8,8 +8,19 @@
 # なってしまい、同意書として成立しなくなる。
 # 「署名済みは編集させない」はこの案件で最も壊してはいけない不変条件。
 #
+# 【このテストの範囲】
+# ここで守るのはモデル層だけ。具体的には
+#   - destroy が dependent: :restrict_with_error で止まること
+#   - current の選び方（published のうち最新・アーカイブは除く）
+#   - ダイジェストによる改ざん検知
+#   - バージョンの一意性
+#
+# edit / update / destroy を画面から拒否する分岐（ensure_editable）は
+# コントローラ側にあり、test/integration/consent_admin_test.rb が守る。
+# 特に update はモデル層に守りが無く、ensure_editable が唯一の防波堤なので、
+# 「署名済みは編集させない」を確かめるときは両方を見ること。
+#
 # 【このテストの限界】
-# ここで守るのはモデル層とコントローラの分岐であって、
 # DB を直接更新された場合は防げない（intact? がその検知用）。
 require "test_helper"
 
