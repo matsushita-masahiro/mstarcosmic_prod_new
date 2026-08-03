@@ -158,7 +158,18 @@ class MedicalQuestionnaireFlagsTest < ActiveSupport::TestCase
     q.promote_flags_from_answers
     assert_not q.contraindicated?
     assert q.needs_confirmation?
-    assert_includes q.confirmation_reasons.join, "妊娠"
+  end
+
+  test "黄色は確認を促す文言になる" do
+    q = build_questionnaire("q13_pregnant" => "unknown")
+    q.promote_flags_from_answers
+    assert_equal [ "妊娠の可能性について確認が必要" ], q.confirmation_reasons
+  end
+
+  test "赤側の文言は変わらない" do
+    q = build_questionnaire("q13_pregnant" => "yes")
+    q.promote_flags_from_answers
+    assert_includes q.contraindication_reasons, "妊娠中"
   end
 
   test "絶対禁忌のときは要確認を重ねて出さない" do

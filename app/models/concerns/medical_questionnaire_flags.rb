@@ -65,14 +65,21 @@ module MedicalQuestionnaireFlags
   # 一律に「施術できません」と出すと運用が回らないが、
   # 何も出ないと has_implanted_device を昇格させた意味が無い。
   #
-  # 【重要】文言はこの REASONS 1箇所だけに置く。
+  # 【重要】文言の既定値はこの REASONS 1箇所に置く。
   # 赤と黄で同じ意味の文字列を別々に持つと、片方だけ直す事故が起きる。
+  # 黄で言い回しを変えたいものだけ、下の CONFIRMATION_LABELS に例外を書く。
   # 表示順は定義順。
   REASONS = {
     has_pacemaker?:        "ペースメーカー装着",
     has_implanted_device?: "植込み型医療機器あり（ペースメーカー以外）",
     is_pregnant?:          "妊娠中",
     pregnancy_unknown?:    "妊娠の可能性（不明と回答）"
+  }.freeze
+
+  # 黄色は「スタッフが確認する」ための表示なので、行動を促す言い方にする。
+  # 定義が無いものは REASONS をそのまま使う。
+  CONFIRMATION_LABELS = {
+    pregnancy_unknown?: "妊娠の可能性について確認が必要"
   }.freeze
 
   # 赤にする条件
@@ -96,7 +103,8 @@ module MedicalQuestionnaireFlags
   end
 
   def confirmation_reasons
-    reasons_for(CONFIRMATION_PREDICATES)
+    CONFIRMATION_PREDICATES.select { |m| public_send(m) }
+                           .map { |m| CONFIRMATION_LABELS[m] || REASONS[m] }
   end
 
   # ── 昇格 ────────────────────────────────────
