@@ -1,7 +1,8 @@
 module Karte
   class UsersController < BaseController
     # カルテ対象外の user_type（1=管理者 / 10=施術スタッフ）
-    NON_PATIENT_TYPES = %w[1 10].freeze
+    # 定義は UserKarte 側に置く。施術メモの担当者候補でも同じ区分を使うため。
+    NON_PATIENT_TYPES = UserKarte::STAFF_USER_TYPES
     PER_PAGE = 50
 
     # 電話番号検索で正規化を使う最小桁数。
@@ -41,6 +42,14 @@ module Karte
       @latest_questionnaire = @questionnaires.first
       @questionnaire = selected_questionnaire
       @consents = @user.consents.includes(:consent_document).latest_first
+
+      # 施術メモ。本文と券欄から絞り込める。
+      @note_q = params[:note_q].to_s.strip
+      notes = @user.treatment_notes.latest_first
+      notes = notes.search(@note_q) if @note_q.present?
+      @notes = notes.to_a
+      @new_note = @user.treatment_notes.new(visited_on: Date.current)
+      @staff_choices = User.karte_staff.pluck(:name).compact_blank
       @first_visit_at = @user.first_visit_at
       @active_intake = @user.intake_sessions.active.first
 

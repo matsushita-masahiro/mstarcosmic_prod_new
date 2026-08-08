@@ -1,0 +1,108 @@
+<%#
+  施術メモ。紙の様式（日付 / 券 / 担当 / メモ・引継ぎ）に対応する。
+
+  問診票が初回に聞くことなのに対し、こちらは来るたびに書くもの。
+  入力はキーボードのみ。手書きにすると後から探せなくなるため。
+
+  ローカル変数は使わず、@user / @notes / @new_note / @staff_choices / @note_q を参照する。
+%>
+<h3 id="notes" style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">
+  施術メモ
+</h3>
+
+<%# ── 新規入力 ───────────────────────────── %>
+<%= form_with model: [:karte, @user, @new_note], local: true,
+      url: karte_user_treatment_notes_path(@user) do |f| %>
+  <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
+              padding:16px;margin-top:16px;">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+      <div>
+        <%= f.label :visited_on, "日付",
+              style: "display:block;font-size:13px;color:#6b7280;margin-bottom:4px;" %>
+        <%= f.date_field :visited_on,
+              style: "padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+      </div>
+      <div>
+        <%= f.label :ticket, "券",
+              style: "display:block;font-size:13px;color:#6b7280;margin-bottom:4px;" %>
+        <%= f.text_field :ticket, placeholder: "例: 10回券 3回目",
+              style: "width:150px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+      </div>
+      <div>
+        <label style="display:block;font-size:13px;color:#6b7280;margin-bottom:4px;">担当</label>
+        <%# 代理入力に備えて選べるようにする。既定はログイン中の本人。 %>
+        <%= select_tag "treatment_note[author_name]",
+              options_for_select(@staff_choices, current_user.name),
+              style: "padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <%= f.label :body, "メモ・引継ぎ",
+            style: "display:block;font-size:13px;color:#6b7280;margin-bottom:4px;" %>
+      <%= f.text_area :body, rows: 3,
+            style: "width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;line-height:1.7;font-family:inherit;" %>
+    </div>
+
+    <div style="margin-top:12px;">
+      <%= f.submit "記録する",
+            style: "padding:10px 24px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:15px;cursor:pointer;" %>
+    </div>
+  </div>
+<% end %>
+
+<%# ── 検索 ──────────────────────────────── %>
+<% if @notes.any? || @note_q.present? %>
+  <%= form_with url: karte_user_path(@user), method: :get, local: true,
+        style: "margin-top:20px;" do %>
+    <%= text_field_tag :note_q, @note_q, placeholder: "メモの中を検索",
+          style: "width:220px;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+    <%= submit_tag "検索", name: nil,
+          style: "padding:8px 16px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:15px;cursor:pointer;" %>
+    <% if @note_q.present? %>
+      <%= link_to "解除", karte_user_path(@user),
+            style: "margin-left:8px;color:#6b7280;text-decoration:none;font-size:14px;" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# ── 一覧 ──────────────────────────────── %>
+<% if @notes.any? %>
+  <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:12px;">
+    <thead>
+      <tr style="background:#f3f4f6;text-align:left;">
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;width:14em;">日付</th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;width:10em;">券</th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;width:8em;">担当</th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">メモ・引継ぎ</th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;width:6em;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @notes.each do |note| %>
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;">
+            <%= l note.visited_on, format: :long %>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #f3f4f6;">
+            <%= note.ticket.presence || "—" %>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;">
+            <%= note.author_name %>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #f3f4f6;white-space:pre-wrap;">
+            <%= note.body %>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #f3f4f6;text-align:right;white-space:nowrap;">
+            <%= link_to "編集", edit_karte_user_treatment_note_path(@user, note),
+                  style: "color:#1d4ed8;text-decoration:none;font-size:14px;" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% elsif @note_q.present? %>
+  <p style="color:#9ca3af;padding:20px 0;">「<%= @note_q %>」に一致するメモはありません。</p>
+<% else %>
+  <p style="color:#9ca3af;padding:12px 0;">まだ施術メモがありません。</p>
+<% end %>

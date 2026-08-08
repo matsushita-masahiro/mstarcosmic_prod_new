@@ -1,0 +1,60 @@
+<%#
+  施術メモの編集。
+  担当者は記録時のものを保持し、ここでは変更させない。
+  あとから書き換えると「誰が施術したか」の記録として成立しなくなるため。
+%>
+<div class="container" style="max-width:760px;margin:0 auto;padding:24px 16px;">
+  <p style="margin-bottom:8px;">
+    <%= link_to "← カルテに戻る", karte_user_path(@patient, anchor: "notes"),
+          style: "color:#6b7280;text-decoration:none;font-size:14px;" %>
+  </p>
+  <h2 style="font-size:22px;margin-bottom:4px;">施術メモの編集</h2>
+  <p style="color:#6b7280;font-size:14px;margin-bottom:20px;">
+    <%= @patient.name %> 様 ／ 記録者 <%= @note.author_name %>
+  </p>
+
+  <%= form_with model: [:karte, @patient, @note], local: true,
+        url: karte_user_treatment_note_path(@patient, @note), method: :patch do |f| %>
+    <% if @note.errors.any? %>
+      <div style="border:1px solid #dc2626;background:#fef2f2;border-radius:6px;padding:12px;margin-bottom:16px;">
+        <ul style="margin:0;padding-left:20px;color:#991b1b;">
+          <% @note.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <div>
+        <%= f.label :visited_on, "日付",
+              style: "display:block;font-size:13px;color:#6b7280;margin-bottom:4px;" %>
+        <%= f.date_field :visited_on,
+              style: "padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+      </div>
+      <div>
+        <%= f.label :ticket, "券",
+              style: "display:block;font-size:13px;color:#6b7280;margin-bottom:4px;" %>
+        <%= f.text_field :ticket,
+              style: "width:180px;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <%= f.label :body, "メモ・引継ぎ",
+            style: "display:block;font-size:13px;color:#6b7280;margin-bottom:4px;" %>
+      <%= f.text_area :body, rows: 8,
+            style: "width:100%;padding:12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;line-height:1.8;font-family:inherit;" %>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;">
+      <%= f.submit "保存",
+            style: "padding:12px 24px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:16px;cursor:pointer;" %>
+      <%= link_to "キャンセル", karte_user_path(@patient, anchor: "notes"),
+            style: "color:#6b7280;text-decoration:none;" %>
+      <%= button_to "削除", karte_user_treatment_note_path(@patient, @note),
+            method: :delete,
+            form: { data: { turbo_confirm: "この施術メモを削除します。よろしいですか？" },
+                    style: "margin-left:auto;" },
+            style: "padding:10px 20px;border-radius:6px;border:1px solid #fecaca;background:#fff;color:#dc2626;font-size:15px;cursor:pointer;" %>
+    </div>
+  <% end %>
+</div>

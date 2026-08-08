@@ -14,15 +14,18 @@ module UserKarte
   FEMALE_VALUES = %w[f female woman 女 女性].freeze
   MALE_VALUES   = %w[m male man 男 男性].freeze
 
+  # カルテ対象外の user_type（1=管理者 / 10=施術スタッフ）
+  # 患者一覧の除外条件と、施術メモの担当者候補の両方で使う。
+  STAFF_USER_TYPES = %w[1 10].freeze
+
   included do
     has_one  :patient_profile, dependent: :destroy
     has_many :medical_questionnaires, dependent: :destroy
     has_many :consents, dependent: :destroy
     has_many :intake_sessions, dependent: :destroy
     has_many :treatment_notes, dependent: :destroy
-    # 担当した施術メモ。スタッフが消えても記録は残す（author_name に控えがある）
-    has_many :authored_treatment_notes, class_name: "TreatmentNote",
-             foreign_key: :author_id, inverse_of: :author, dependent: :nullify
+
+    scope :karte_staff, -> { where(user_type: STAFF_USER_TYPES).order(:id) }
   end
 
   # 会員番号（紙運用との突合のためゼロ埋め表示）

@@ -19,6 +19,8 @@ Rails.application.routes.draw do
   # ── スタッフ用カルテ（既存ドメイン）──────────────
   namespace :karte do
     resources :users, only: %i[index show] do
+      resources :treatment_notes, only: %i[create edit update destroy]
+
       resources :intake_sessions, only: %i[create]
     end
     resources :intake_sessions, only: %i[show destroy]
