@@ -40,10 +40,9 @@
   <% end %>
 
   <%# 患者に見えるのと同じ形で確認する。改行はそのまま反映される。 %>
+  <%# pre-wrap。タグと本文の間に改行・空白を入れない（先頭に空行が入る） %>
   <div style="border:1px solid #e5e7eb;border-radius:8px;padding:20px;background:#fff;
-              white-space:pre-wrap;line-height:1.9;font-size:15px;color:#111827;">
-<%= @document.body %>
-  </div>
+              white-space:pre-wrap;line-height:1.9;font-size:15px;color:#111827;"><%= @document.body %></div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;">
     <%= link_to "この内容を引き継いで新バージョンを作る",
