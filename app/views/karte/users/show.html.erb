@@ -3,10 +3,17 @@
     <%= link_to "← カルテ一覧", karte_users_path, style: "color:#6b7280;text-decoration:none;font-size:14px;" %>
   </p>
 
-  <h2 style="font-size:22px;margin-bottom:4px;">
-    <%= @user.name %>
-    <span style="font-size:15px;color:#6b7280;">（会員No. <%= @user.karte_member_no %>）</span>
-  </h2>
+  <%# 施術メモは来店のたびに書くもので、同意書・問診票とは頻度が違う。
+      同じページに置くとスクロールで通り過ぎることになるため、別画面に分けている。 %>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+    <h2 style="font-size:22px;margin-bottom:4px;">
+      <%= @user.name %>
+      <span style="font-size:15px;color:#6b7280;">（会員No. <%= @user.karte_member_no %>）</span>
+    </h2>
+    <%= link_to "施術記録へ", karte_user_treatment_notes_path(@user),
+          style: "padding:10px 20px;border-radius:6px;border:1px solid #1d4ed8;" \
+                 "background:#1d4ed8;color:#fff;text-decoration:none;font-size:15px;white-space:nowrap;" %>
+  </div>
 
   <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">
     <%= @user.name_kana %>
@@ -90,11 +97,6 @@
     <p style="color:#9ca3af;font-size:13px;margin-top:8px;">
       ※ 再度押すと新しい QR を発行します（古いリンクは自動的に無効になります）
     </p>
-  </section>
-
-  <%# ── 施術メモ ────────────────────────────── %>
-  <section>
-    <%= render "karte/users/treatment_notes" %>
   </section>
 
   <%# ── 問診票 ──────────────────────────────── %>

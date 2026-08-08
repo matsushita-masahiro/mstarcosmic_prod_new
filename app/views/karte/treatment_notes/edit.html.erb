@@ -5,7 +5,7 @@
 %>
 <div class="container" style="max-width:760px;margin:0 auto;padding:24px 16px;">
   <p style="margin-bottom:8px;">
-    <%= link_to "← カルテに戻る", karte_user_path(@patient, anchor: "notes"),
+    <%= link_to "← 施術記録へ戻る", karte_user_treatment_notes_path(@patient),
           style: "color:#6b7280;text-decoration:none;font-size:14px;" %>
   </p>
   <h2 style="font-size:22px;margin-bottom:4px;">施術メモの編集</h2>
@@ -48,7 +48,7 @@
     <div style="display:flex;gap:12px;align-items:center;">
       <%= f.submit "保存",
             style: "padding:12px 24px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:16px;cursor:pointer;" %>
-      <%= link_to "キャンセル", karte_user_path(@patient, anchor: "notes"),
+      <%= link_to "キャンセル", karte_user_treatment_notes_path(@patient),
             style: "color:#6b7280;text-decoration:none;" %>
       <%= button_to "削除", karte_user_treatment_note_path(@patient, @note),
             method: :delete,

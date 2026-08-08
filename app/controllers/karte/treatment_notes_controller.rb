@@ -1,9 +1,25 @@
 module Karte
-  # 施術メモ。カルテ詳細から作成・編集・削除する。
-  # 一覧は患者ごとにカルテ詳細で表示するため index は持たない。
+  # 施術記録。来店ごとのメモを専用画面で管理する。
+  #
+  # 同意書・問診票と同じページに置いていたが、書く頻度が違うため分離した。
+  # 同意書と問診票は初回または改訂時、施術メモは来店のたび。
+  # 同じページだとメモを書くだけのときに他をスクロールで通り過ぎることになる。
   class TreatmentNotesController < BaseController
     before_action :set_patient
     before_action :set_note, only: %i[edit update destroy]
+
+    def index
+      @note_q = params[:q].to_s.strip
+
+      notes = @patient.treatment_notes.latest_first
+      notes = notes.search(@note_q) if @note_q.present?
+      @notes = notes.to_a
+
+      @new_note = @patient.treatment_notes.new(visited_on: Date.current)
+      @staff_choices = User.karte_staff.pluck(:name).compact_blank
+
+      log_access!(patient: @patient, action: "notes_index")
+    end
 
     def create
       @note = @patient.treatment_notes.new(note_params)
@@ -12,9 +28,9 @@ module Karte
 
       if @note.save
         log_access!(patient: @patient, action: "note_create")
-        redirect_to karte_user_path(@patient, anchor: "notes"), notice: "施術メモを記録しました。"
+        redirect_to karte_user_treatment_notes_path(@patient), notice: "施術メモを記録しました。"
       else
-        redirect_to karte_user_path(@patient, anchor: "notes"),
+        redirect_to karte_user_treatment_notes_path(@patient),
                     alert: @note.errors.full_messages.join(" / ")
       end
     end
@@ -28,7 +44,7 @@ module Karte
       # 誰が施術したかの記録として成立しなくなるため、本文と券欄のみ更新する。
       if @note.update(note_params)
         log_access!(patient: @patient, action: "note_update")
-        redirect_to karte_user_path(@patient, anchor: "notes"), notice: "施術メモを更新しました。"
+        redirect_to karte_user_treatment_notes_path(@patient), notice: "施術メモを更新しました。"
       else
         render :edit, status: :unprocessable_entity
       end
@@ -37,7 +53,7 @@ module Karte
     def destroy
       @note.destroy
       log_access!(patient: @patient, action: "note_destroy")
-      redirect_to karte_user_path(@patient, anchor: "notes"), notice: "施術メモを削除しました。"
+      redirect_to karte_user_treatment_notes_path(@patient), notice: "施術メモを削除しました。"
     end
 
     private

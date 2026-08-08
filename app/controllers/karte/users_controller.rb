@@ -43,13 +43,6 @@ module Karte
       @questionnaire = selected_questionnaire
       @consents = @user.consents.includes(:consent_document).latest_first
 
-      # 施術メモ。本文と券欄から絞り込める。
-      @note_q = params[:note_q].to_s.strip
-      notes = @user.treatment_notes.latest_first
-      notes = notes.search(@note_q) if @note_q.present?
-      @notes = notes.to_a
-      @new_note = @user.treatment_notes.new(visited_on: Date.current)
-      @staff_choices = User.karte_staff.pluck(:name).compact_blank
       @first_visit_at = @user.first_visit_at
       @active_intake = @user.intake_sessions.active.first
 
