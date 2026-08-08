@@ -21,24 +21,37 @@
   <!--</div>-->
   <div class="page_up_link"><a href="#" class="page_top"><img src="/new-images/page_top_circle.png"></a></div>
 </footer>
+
+<%# スマホ用。792px 以下で #footer と入れ替わる（main.scss）。
+    従来はロゴとページトップだけでリンクが1つも無く、
+    スマホからプライバシーポリシーに到達できなかったため
+    #sp-footer-links を追加している。 %>
 <div id="sp-footer">
-    <div><a href=""><img src="/new-images/logo.png" class="metatron-logo"></a></div>
+    <div><a href="/"><img src="/new-images/logo.png" class="metatron-logo"></a></div>
     <div><img src="/new-images/metatron_tooter_logo.png" class="metatron-logo"></div>
     <div class="page_up_link"><a class="page_top"><img src="/new-images/page_top_circle.png"></a></div>
 </div>
+
+<nav id="sp-footer-links">
+  <ul>
+    <li><%= link_to "HOME", "/" %></li>
+    <li><%= link_to "メタトロンとは", "/about_metatron" %></li>
+    <li><%= link_to "料金表", "/price_plan" %></li>
+    <li><%= link_to "サロンHPについて", "/lppage" %></li>
+    <li><%= link_to "プライバシーポリシー", "/privacy" %></li>
+  </ul>
+</nav>
 
 <style>
   #footer {
     font-size: 14px;
   }
-  
+
   #footer a {
     text-decoration: none;
   }
-  
+
   #footer a:hover {
     text-decoration: underline;
-  }  
+  }
 </style>
-
-

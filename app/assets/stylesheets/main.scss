@@ -584,6 +584,12 @@ $top-height: 662.66px;
  display: none;
 }
 
+// #sp-footer と同じく、PC では非表示にする。
+// これが無いと PC でリンクが二重に出る。
+#sp-footer-links {
+ display: none;
+}
+
 
 #copyright {
     display: block;
@@ -631,9 +637,45 @@ $top-height: 662.66px;
 
    }
 
-   
+
  }
- 
+
+ // #sp-footer にはロゴとページトップしか無く、リンクが1つもなかったため、
+ // スマホからプライバシーポリシーに到達できなかった。
+ // PC 側（#footer .footer-middle）と同じ5項目を、スマホでは縦2列で出す。
+ #sp-footer-links {
+   // PC 側で display: none にしているため、ここで戻さないと
+   // スマホでも出ない（ul の display: grid は親が none だと効かない）。
+   display: block;
+   background: #fff;
+   // 下端は .new_customer_banner / .price_banner が position: fixed で
+   // 画面下 60px（bottom:10px + height:50px）を占める。#sp-copyright が 50px
+   // あるため 6vw では最下行との間が 320px 幅で 9px しか空かない。
+   // 障害物が px 固定なので、ここも vw ではなく px で余白を確保する。
+   padding: 0 5vw 40px;
+
+   ul {
+     list-style: none;
+     margin: 0;
+     padding: 0;
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 3vw 2vw;
+   }
+
+   li {
+     text-align: center;
+   }
+
+   a {
+     display: block;
+     padding: 2vw 0;
+     color: #000;
+     font-size: 3.4vw;
+     text-decoration: none;
+   }
+ }
+
    #copyright {
       display: none;
    }
