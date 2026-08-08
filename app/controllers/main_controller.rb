@@ -49,7 +49,10 @@ class MainController < ApplicationController
   
   def special_treatment_price
   end
-  
+
+  def privacy
+  end
+
   def registration_thanks
     current_user.update(registration_status: true)
   end

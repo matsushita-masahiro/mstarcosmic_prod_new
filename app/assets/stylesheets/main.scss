@@ -542,7 +542,9 @@ $top-height: 662.66px;
         height: 30px;
         padding-left: 16.6%;
         display: grid;
-        grid-template-columns: 16% 30% 15% 30%;
+        // プライバシーポリシー追加により 5 列。4 列のままだと 5 個目が
+        // 2 行目に折り返し、height: 30px に収まらず見切れる。
+        grid-template-columns: 13% 25% 12% 25% 20%;
         text-align: center;
         a {
             color: #000;

@@ -62,6 +62,7 @@ Rails.application.routes.draw do
    get 'price_plan_admin' => 'main#price_plan_admin'
 
    get "special_treatment_price" => "main#special_treatment_price"
+   get "privacy" => "main#privacy"
 
     get 'home/readme' => 'home#readme'
     get 'home/readmust/:id' => 'home#readmust'

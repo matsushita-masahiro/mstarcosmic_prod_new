@@ -1,0 +1,119 @@
+// プライバシーポリシー
+//
+// 長文を読ませるページなので、行間と余白を広めに取る。
+// reserves.scss の `tbody tr { table-layout: fixed }` が全アプリに効いているため、
+// 表は tbody を使わず tr を直書きしている（ビュー側も同様）。
+
+.privacy-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+  line-height: 1.9;
+  color: #1f2937;
+
+  h1 {
+    font-size: 26px;
+    margin: 0 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  h2 {
+    font-size: 19px;
+    margin: 36px 0 12px;
+    padding-left: 12px;
+    border-left: 4px solid #9ca3af;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin: 20px 0 8px;
+    color: #374151;
+  }
+
+  p {
+    margin: 0 0 14px;
+    font-size: 15px;
+  }
+
+  ul {
+    margin: 0 0 16px;
+    padding-left: 24px;
+
+    li {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+  }
+
+  .privacy-lead {
+    margin-bottom: 8px;
+  }
+
+  .privacy-date {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 14px;
+  }
+}
+
+.privacy-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 20px;
+  font-size: 15px;
+
+  // reserves.scss の `thead, tbody tr { display: table; width: 100%; table-layout: fixed }`
+  // はセレクタが素で、全アプリの表に効く。ビューで tbody を書いていなくても
+  // HTML パーサが tbody を自動挿入するため、CSS はこの表にも当たる
+  // （CSS が見るのはソースではなく DOM）。
+  // 行が個別の table になると列幅が均等割りに固定され、border-collapse も
+  // 行をまたいで効かなくなるため、このページ内に限って打ち消す。
+  tbody tr {
+    display: table-row;
+    width: auto;
+  }
+
+  th,
+  td {
+    border: 1px solid #d1d5db;
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f3f4f6;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+// スマホ幅では表が横に収まらないため、縦に積む
+@media screen and (max-width: 640px) {
+  .privacy-page {
+    padding: 24px 16px 60px;
+
+    h1 { font-size: 22px; }
+    h2 { font-size: 17px; }
+  }
+
+  .privacy-table {
+    th,
+    td {
+      display: block;
+      width: 100%;
+      white-space: normal;
+    }
+
+    th {
+      border-bottom: none;
+    }
+
+    td {
+      border-top: none;
+    }
+  }
+}
