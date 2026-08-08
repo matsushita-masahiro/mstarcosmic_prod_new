@@ -137,6 +137,9 @@ class KarteTreatmentNotesTest < ActionDispatch::IntegrationTest
     assert_equal "本日の施術内容", note.reload.body
   end
 
+  # ↓の削除テストは DELETE を直接投げるので、画面のマークアップが壊れていても通る。
+  # 実際に button_to を form_with の内側に置いてしまい、削除が動かない不具合があった。
+  # 画面側の担保はこの下の「<form> が入れ子になっていない」テストが持つ。
   test "削除すると専用画面に戻る" do
     note = create_note(body: "本日の施術内容")
 
@@ -145,6 +148,40 @@ class KarteTreatmentNotesTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to karte_user_treatment_notes_path(@patient)
+  end
+
+  # button_to は <form> を生成する。それを編集フォームの中に置くと <form> が
+  # 入れ子になり、ブラウザは内側の開始タグを捨てる。結果、削除ボタンが外側
+  # （更新）のフォームの送信ボタンになって削除が動かなくなる。
+  test "編集画面の form が入れ子になっていない" do
+    note = create_note(body: "本日の施術内容")
+
+    get edit_karte_user_treatment_note_path(@patient, note)
+
+    assert_response :success
+
+    depth = 0
+    response.body.scan(%r{<form\b[^>]*>|</form>}) do |tag|
+      if tag.start_with?("</")
+        depth -= 1
+      else
+        depth += 1
+        assert_equal 1, depth, "<form> が入れ子になっています: #{tag}"
+      end
+    end
+    assert_equal 0, depth, "<form> の開閉が対応していません"
+  end
+
+  # 削除は破壊的な操作なので、確認ダイアログ無しでは出さない。
+  test "編集画面の削除ボタンは DELETE と確認ダイアログを伴う" do
+    note = create_note(body: "本日の施術内容")
+
+    get edit_karte_user_treatment_note_path(@patient, note)
+
+    assert_response :success
+    assert_match(/この施術メモを削除/, response.body)
+    assert_match(/data-turbo-confirm/, response.body)
+    assert_match(/name="_method" value="delete"/, response.body)
   end
 
   # ── 4. 監査ログ ────────────────────────────────

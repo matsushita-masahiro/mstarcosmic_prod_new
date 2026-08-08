@@ -50,11 +50,19 @@
             style: "padding:12px 24px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:16px;cursor:pointer;" %>
       <%= link_to "キャンセル", karte_user_treatment_notes_path(@patient),
             style: "color:#6b7280;text-decoration:none;" %>
-      <%= button_to "削除", karte_user_treatment_note_path(@patient, @note),
-            method: :delete,
-            form: { data: { turbo_confirm: "この施術メモを削除します。よろしいですか？" },
-                    style: "margin-left:auto;" },
-            style: "padding:10px 20px;border-radius:6px;border:1px solid #fecaca;background:#fff;color:#dc2626;font-size:15px;cursor:pointer;" %>
     </div>
   <% end %>
+
+  <%#
+    button_to は <form> を生成するため、編集フォームの中には置けない。
+    入れ子の <form> はブラウザが開始タグを捨てるので、削除ボタンが
+    外側（更新）のフォームの送信ボタンになり、削除が動かなくなる。
+    削除は破壊的な操作なので、保存の隣に並ばない方が誤操作も減る。
+  %>
+  <div style="margin-top:24px;padding-top:20px;border-top:1px solid #e5e7eb;">
+    <%= button_to "この施術メモを削除", karte_user_treatment_note_path(@patient, @note),
+          method: :delete,
+          form: { data: { turbo_confirm: "この施術メモを削除します。よろしいですか？" } },
+          style: "padding:10px 20px;border-radius:6px;border:1px solid #fecaca;background:#fff;color:#dc2626;font-size:15px;cursor:pointer;" %>
+  </div>
 </div>
