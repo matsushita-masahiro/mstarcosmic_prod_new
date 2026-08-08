@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_02_052015) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_08_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -386,6 +386,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_02_052015) do
     t.string "assignment_type", limit: 20, default: "nominatable", null: false
   end
 
+  create_table "treatment_notes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "author_id"
+    t.string "author_name", null: false
+    t.date "visited_on", null: false
+    t.text "body"
+    t.string "ticket"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_treatment_notes_on_author_id"
+    t.index ["user_id", "visited_on"], name: "index_treatment_notes_on_user_id_and_visited_on"
+    t.index ["user_id"], name: "index_treatment_notes_on_user_id"
+  end
+
   create_table "user_backups", force: :cascade do |t|
     t.string "email"
     t.string "encrypted_password"
@@ -467,4 +481,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_02_052015) do
   add_foreign_key "staff_machine_relations", "staffs"
   add_foreign_key "staff_schedules", "staffs"
   add_foreign_key "staff_services", "staffs"
+  add_foreign_key "treatment_notes", "users"
+  add_foreign_key "treatment_notes", "users", column: "author_id", on_delete: :nullify
 end

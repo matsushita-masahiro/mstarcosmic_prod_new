@@ -19,6 +19,10 @@ module UserKarte
     has_many :medical_questionnaires, dependent: :destroy
     has_many :consents, dependent: :destroy
     has_many :intake_sessions, dependent: :destroy
+    has_many :treatment_notes, dependent: :destroy
+    # 担当した施術メモ。スタッフが消えても記録は残す（author_name に控えがある）
+    has_many :authored_treatment_notes, class_name: "TreatmentNote",
+             foreign_key: :author_id, inverse_of: :author, dependent: :nullify
   end
 
   # 会員番号（紙運用との突合のためゼロ埋め表示）
