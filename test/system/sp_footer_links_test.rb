@@ -19,6 +19,14 @@ class SpFooterLinksTest < ApplicationSystemTestCase
     "プライバシーポリシー" => "/privacy"
   }.freeze
 
+  # CDP の上書きはブラウザ側の状態で、Capybara のセッションリセットでは消えない。
+  # 同じプロセスで後続のテストが走ると 390px のまま開始し、PC 用の #footer が
+  # display:none のまま見えない、という無関係な失敗になる（実際 seed 1 で
+  # PrivacyPageTest が落ちる）。テストごとに必ず戻す。
+  teardown do
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
   # headless chrome の window.resize_to はウィンドウ枠の分だけ大きくなり、
   # 幅 500px 未満に絞れない。実幅で検証するため CDP で viewport を上書きする。
   def set_viewport(width, height)
