@@ -6,10 +6,13 @@
     <%= text_field_tag :q, @q,
           placeholder: "お名前・カナ・電話番号・会員No.（電話はハイフン有無どちらでも可）",
           style: "flex:1;padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;" %>
+    <%# 検索し直しても並び順は保つ（GET なのでフォームに無い条件は消えるため） %>
+    <%= hidden_field_tag :sort, @sort %>
+    <%= hidden_field_tag :direction, @direction %>
     <%= submit_tag "検索",
           style: "padding:10px 20px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;cursor:pointer;" %>
     <% if @q.present? %>
-      <%= link_to "クリア", karte_users_path,
+      <%= link_to "クリア", karte_users_path(karte_list_params(q: nil)),
             style: "padding:10px 16px;border-radius:6px;border:1px solid #d1d5db;color:#374151;text-decoration:none;line-height:2;" %>
     <% end %>
   <% end %>
@@ -24,13 +27,15 @@
   <table style="width:100%;border-collapse:collapse;font-size:15px;">
     <thead>
       <tr style="background:#f3f4f6;text-align:left;">
-        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">会員No.</th>
-        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">お名前</th>
+        <%# 「お名前」はカナ（name_kana）で並べる。漢字の ORDER BY は
+            照合順序の都合で五十音順にならず、人が読める並びにならないため。 %>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;"><%= karte_sort_link "会員No.", "member_no" %></th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;"><%= karte_sort_link "お名前", "name" %></th>
         <th style="padding:10px;border-bottom:1px solid #e5e7eb;">カナ</th>
-        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">生年月日</th>
-        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">性別</th>
-        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">同意書</th>
-        <th style="padding:10px;border-bottom:1px solid #e5e7eb;">問診票</th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;"><%= karte_sort_link "生年月日", "birthday" %></th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;"><%= karte_sort_link "性別", "gender" %></th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;"><%= karte_sort_link "同意書", "consent" %></th>
+        <th style="padding:10px;border-bottom:1px solid #e5e7eb;"><%= karte_sort_link "問診票", "questionnaire" %></th>
         <th style="padding:10px;border-bottom:1px solid #e5e7eb;"></th>
       </tr>
     </thead>
@@ -96,7 +101,7 @@
   <% if @total_pages > 1 %>
     <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:24px;">
       <% if @page > 1 %>
-        <%= link_to "← 前へ", karte_users_path(q: @q, page: @page - 1),
+        <%= link_to "← 前へ", karte_users_path(karte_list_params(page: @page - 1)),
               style: "padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;color:#374151;text-decoration:none;" %>
       <% end %>
 
@@ -105,7 +110,7 @@
       </span>
 
       <% if @page < @total_pages %>
-        <%= link_to "次へ →", karte_users_path(q: @q, page: @page + 1),
+        <%= link_to "次へ →", karte_users_path(karte_list_params(page: @page + 1)),
               style: "padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;color:#374151;text-decoration:none;" %>
       <% end %>
     </div>
