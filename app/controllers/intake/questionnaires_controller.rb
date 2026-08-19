@@ -22,8 +22,10 @@ module Intake
     # 手書き・人体図が自動保存のたびに消える。
     # 逆に空を握りつぶすと、「消す」ボタンで全部消しても下書きに残り続ける。
     #
-    # present? ではなく key? で見るのは、"{}" や "[]" が届いたときに
-    # 「届いた」と正しく判定するため。
+    # 「届かない」と「届いて空」の区別は parse_json_param が返す nil と
+    # 空コレクションで表され、保存側が自分で判断する。
+    # 呼び出し側に条件分岐を置かないのは、destroy_all を含む処理の門番を
+    # 呼ぶ側の注意力に預けないため。
     def update
       questionnaire = find_or_build_draft
 
@@ -31,8 +33,8 @@ module Intake
         questionnaire.answers = parsed_answers
         questionnaire.save!
 
-        save_handwriting_entries(questionnaire) if params.key?(:handwriting)
-        save_body_marks(questionnaire) if params.key?(:body_marks)
+        save_handwriting_entries(questionnaire, parse_json_param(:handwriting))
+        save_body_marks(questionnaire, parse_json_param(:body_marks))
       end
 
       render json: { saved_at: Time.current.iso8601 }
@@ -46,8 +48,8 @@ module Intake
 
       ActiveRecord::Base.transaction do
         questionnaire.save!
-        save_handwriting_entries(questionnaire)
-        save_body_marks(questionnaire)
+        save_handwriting_entries(questionnaire, parse_json_param(:handwriting))
+        save_body_marks(questionnaire, parse_json_param(:body_marks))
         questionnaire.submit!(intake_session: intake_session)
         sync_gender_if_needed(questionnaire)
       end
@@ -98,8 +100,8 @@ module Intake
     # entries が nil のとき（キーが届かない／壊れた JSON）は何もしない。
     # {} が届いたときは全欄が消されたということなので、全件を消す。
     # この nil と {} の区別が「触らない」と「消す」を分けている。
-    def save_handwriting_entries(questionnaire)
-      entries = parse_json_param(:handwriting)
+    # 削除を含むため、その判断はメソッド側に閉じる（save_body_marks と揃える）。
+    def save_handwriting_entries(questionnaire, entries)
       return if entries.nil?
 
       entries.each do |key, data|
@@ -140,10 +142,10 @@ module Intake
     # nil（キーが届かない／壊れた JSON）なら何もしない。
     # [] が届いたときは全マーカーが消されたということなので、全消しが正しい。
     #
-    # 呼び出し側で params.key?(:body_marks) を必ず確かめること。
-    # 届いてもいないのに呼ぶと destroy_all だけが走り、既存のマーカーが消える。
-    def save_body_marks(questionnaire)
-      marks = parse_json_param(:body_marks)
+    # marks を引数で受けるのは、destroy_all の門番を呼び出し側の確認漏れに
+    # 依存させないため。以前は params から自分で読んでおり、
+    # 呼ぶ側が有無を確かめ忘れると即座に全消しになる形だった。
+    def save_body_marks(questionnaire, marks)
       return if marks.nil?
 
       questionnaire.body_marks.destroy_all
