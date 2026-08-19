@@ -60,9 +60,13 @@ module UserKarte
 
   # 一覧用。scope を使うと includes 済みでも行ごとにクエリが出るため、
   # 読み込み済みの関連から Ruby 側で絞る。
+  #
+  # 比較を配列にして id を第2キーにしている。提出が同時刻の2件では
+  # submitted_at だけでは決まらず、latest_first（SQL 側）が id DESC で選ぶ版と
+  # 食い違って、一覧と詳細で別の問診票が出てしまうため。
   def latest_submitted_questionnaire
     medical_questionnaires.select(&:status_submitted?)
-                          .max_by { |q| q.submitted_at || Time.at(0) }
+                          .max_by { |q| [q.submitted_at || Time.at(0), q.id] }
   end
 
   # 初診日 = 最初の同意署名日。無ければ最初の問診票提出日。

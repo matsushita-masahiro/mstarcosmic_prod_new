@@ -17,7 +17,13 @@ class MedicalQuestionnaire < ApplicationRecord
 
   before_save :promote_flags_from_answers
 
-  scope :latest_first, -> { order(Arel.sql("COALESCE(submitted_at, created_at) DESC")) }
+  # 第2キーに id を必ず付ける。提出が同時刻の2件（訂正の再提出や、
+  # まとめて取り込んだ紙カルテ）では COALESCE の値が並び、
+  # これが無いと Postgres が返す順を保証しない。
+  # User#latest_questionnaire はこの先頭1件を禁忌警告に使うため、
+  # 順序が揺れると古い版の判定が画面に出うる。
+  # Ruby 側で選ぶ UserKarte#latest_submitted_questionnaire も同じ並びにすること。
+  scope :latest_first, -> { order(Arel.sql("COALESCE(submitted_at, created_at) DESC, id DESC")) }
 
   def submit!(intake_session: nil)
     update!(status: :submitted, submitted_at: Time.current, intake_session: intake_session)
