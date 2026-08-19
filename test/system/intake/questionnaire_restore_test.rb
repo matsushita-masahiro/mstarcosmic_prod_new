@@ -87,6 +87,41 @@ class Intake::QuestionnaireRestoreTest < ApplicationSystemTestCase
            "復元に失敗した状態で autosave が走り、サーバから消えています"
   end
 
+  # localStorage への保存は通信を伴わないので、autosave（30秒）に律する理由がない。
+  # 以前は autosave の中でしか呼ばれておらず、次の autosave までに端末が落ちると
+  # 直前30秒ぶんの記入が失われていた。
+  test "自動保存を待たずに、入力直後のリロードで内容が復元される" do
+    visit_questionnaire
+
+    type_into_keyboard_pane("q1_purpose", "30秒待たずに残る内容")
+
+    # autosave は走らせない。localStorage に落ちたことだけを待つ。
+    assert wait_until { local_draft_has?("q1_purpose") },
+           "入力しても localStorage に保存されていません（30秒ごとのままです）"
+    assert_nil draft, "前提: この時点ではサーバにはまだ何も送っていないこと"
+
+    visit "/questionnaire"
+    assert_selector '[data-handwriting-field-key-value="q1_purpose"]'
+
+    assert_equal "30秒待たずに残る内容", textarea_value("q1_purpose"),
+                 "自動保存前の入力がリロードで失われています"
+  end
+
+  test "ペンの筆跡も自動保存を待たずに localStorage へ落ちる" do
+    visit_questionnaire
+    use_pen("q1_purpose")
+    wait_until { canvas_width("q1_purpose") > 0 }
+    draw_on("q1_purpose")
+
+    assert wait_until { local_draft_has?("q1_purpose") },
+           "手書き後に localStorage へ保存されていません"
+
+    visit "/questionnaire"
+    assert_selector '[data-handwriting-field-key-value="q1_purpose"]'
+    assert_operator stroke_count("q1_purpose"), :>, 0,
+                    "自動保存前の筆跡がリロードで失われています"
+  end
+
   private
 
   def visit_questionnaire

@@ -1,8 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
+// 入力が止まってから localStorage に書くまでの待ち。
+// 連続入力のたびに手書き PNG を JSON 化すると重いので少し待つが、
+// 端末が落ちたときに失う量を秒未満に抑えたいのでごく短くする。
+const LOCAL_SAVE_DEBOUNCE_MS = 500
+
 // 問診票フォーム全体の制御。
-//   - 30秒ごとに localStorage へ下書き保存（通信断でも記入内容が消えない）
-//   - 同時にサーバへも下書きを送る（手書き・人体図は変わったときだけ）
+//   - 入力のたびに localStorage へ下書き保存（通信断でも記入内容が消えない）
+//   - 30秒ごとにサーバへも下書きを送る（手書き・人体図は変わったときだけ）
 //   - 性別に応じて女性専用設問を出し分ける
 //   - 送信時に handwriting / body_marks を集約
 export default class extends Controller {
@@ -28,7 +33,11 @@ export default class extends Controller {
 
     this.timer = setInterval(() => this.autosave(), this.autosaveIntervalValue)
 
-    this.onInput = () => { this.dirty = true; this.updateProgress() }
+    this.onInput = () => {
+      this.dirty = true
+      this.updateProgress()
+      this.scheduleLocalSave()
+    }
     this.element.addEventListener("input", this.onInput)
     this.element.addEventListener("change", this.onInput)
     this.element.addEventListener("handwriting-field:changed", this.onInput)
@@ -44,6 +53,7 @@ export default class extends Controller {
 
   disconnect() {
     clearInterval(this.timer)
+    clearTimeout(this.localSaveTimer)
     this.element.removeEventListener("input", this.onInput)
     this.element.removeEventListener("change", this.onInput)
     this.element.removeEventListener("handwriting-field:changed", this.onInput)
@@ -161,6 +171,18 @@ export default class extends Controller {
   }
 
   // ── localStorage ───────────────────────────
+  //
+  // サーバ送信（autosave）とは切り離して、入力のたびに書く。
+  // localStorage への書き込みは通信を伴わないので 30 秒に律する理由がなく、
+  // autosave 待ちの間に端末が落ちると直前 30 秒ぶんが失われていた。
+  //
+  // dirty はサーバ送信の要否を表すフラグなので意味を変えない。
+  // ここは「端末に残す」だけで、送信の判断には関与しない。
+  scheduleLocalSave() {
+    clearTimeout(this.localSaveTimer)
+    this.localSaveTimer = setTimeout(() => this.saveLocalDraft(), LOCAL_SAVE_DEBOUNCE_MS)
+  }
+
   saveLocalDraft() {
     try {
       localStorage.setItem(this.storageKeyValue, JSON.stringify({
