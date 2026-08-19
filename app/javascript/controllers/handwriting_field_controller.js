@@ -4,7 +4,11 @@ import SignaturePad from "signature_pad"
 // 自由記述欄。ペン手書きとキーボード入力を切り替えられる。
 export default class extends Controller {
   static targets = ["canvas", "textarea", "penTab", "keyboardTab", "penPane", "keyboardPane"]
-  static values = { key: String, mode: { type: String, default: "pen" } }
+  // 既定はキーボード。実運用ではキーボードで書く患者が多数で、
+  // ペンで開くと毎回タブを切り替えることになる。
+  // ペンで書かれた欄は restore() が保存データの mode を見て復元するため、
+  // この既定の影響を受けない。
+  static values = { key: String, mode: { type: String, default: "keyboard" } }
 
   connect() {
     this.pad = new SignaturePad(this.canvasTarget, {

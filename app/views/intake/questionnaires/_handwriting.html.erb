@@ -2,27 +2,37 @@
   ペン手書き / キーボード入力を切り替えられる自由記述欄。
   ペンの場合は strokes(JSON) と PNG の両方を保存する。
   PNG は表示用、strokes は将来の手書き認識用。PNG しかないと後からテキスト化できない。
+
+  既定はキーボード。実運用ではキーボードで書く患者が多数のため。
+
+  【重要】mode-value はここで明示している。この属性がある限り
+  handwriting_field_controller.js の static values の default は使われない
+  （Stimulus は HTML の値を優先する）。既定を変えるときは両方を揃えること。
+
+  下の is-active / hidden の初期状態も mode-value に合わせておく。
+  JS の applyMode() が connect 時に直すが、それまでの一瞬だけ
+  逆のペインが見えてしまうため。
 %>
 <div data-controller="handwriting-field"
      data-handwriting-field-key-value="<%= key %>"
-     data-handwriting-field-mode-value="pen">
+     data-handwriting-field-mode-value="keyboard">
 
   <div class="hw-tabs">
-    <button type="button" class="hw-tab is-active"
+    <button type="button" class="hw-tab"
             data-handwriting-field-target="penTab"
             data-action="handwriting-field#usePen">✎ 手書き</button>
-    <button type="button" class="hw-tab"
+    <button type="button" class="hw-tab is-active"
             data-handwriting-field-target="keyboardTab"
             data-action="handwriting-field#useKeyboard">⌨ キーボード</button>
     <button type="button" class="q-btn-small" style="margin-left:auto;"
             data-action="handwriting-field#clear">消す</button>
   </div>
 
-  <div data-handwriting-field-target="penPane">
+  <div data-handwriting-field-target="penPane" hidden>
     <canvas class="hw-canvas" data-handwriting-field-target="canvas"></canvas>
   </div>
 
-  <div data-handwriting-field-target="keyboardPane" hidden>
+  <div data-handwriting-field-target="keyboardPane">
     <textarea class="hw-textarea" data-handwriting-field-target="textarea"
               placeholder="こちらにご記入ください"></textarea>
   </div>

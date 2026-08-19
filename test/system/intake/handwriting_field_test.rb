@@ -8,6 +8,11 @@ require "application_system_test_case"
 #
 # 落ちたときは handwriting_field_controller#resize の「幅0ならスキップ」と
 # ResizeObserver の登録を先に疑うこと。
+#
+# 【既定モードについて】
+# 欄はキーボードで開くため、ペンの canvas は最初 hidden で幅0になる。
+# 各テストは手書きタブを押してから測る。押した直後に測り直されることまで
+# 含めて、ここが守っている範囲。
 class Intake::HandwritingFieldTest < ApplicationSystemTestCase
   setup do
     @original_app_host = Capybara.app_host
@@ -33,12 +38,27 @@ class Intake::HandwritingFieldTest < ApplicationSystemTestCase
     Capybara.always_include_port = @original_include_port
   end
 
-  test "最初から見えている手書き欄は開いた直後に描ける" do
+  # 既定はキーボード。実運用ではキーボードで書く患者が多数のため。
+  # ペンで書かれた欄の復元は restore() が保存データの mode を見るので、
+  # この既定には左右されない。
+  test "手書き欄はキーボードペインで開く" do
+    visit_questionnaire
+
+    assert pane_hidden?("q1_purpose", "penPane"), "既定でペンのペインが開いています"
+    assert_not pane_hidden?("q1_purpose", "keyboardPane"),
+               "既定でキーボードのペインが閉じています"
+    assert tab_active?("q1_purpose", "keyboardTab"),
+           "キーボードのタブが選択状態になっていません"
+  end
+
+  test "手書きタブを押した直後の欄に描ける" do
     visit_questionnaire
 
     # 【1】ご来院の目的
+    use_pen("q1_purpose")
+    wait_until { canvas_width("q1_purpose") > 0 }
     assert_operator canvas_width("q1_purpose"), :>, 0,
-                    "【1】の canvas が 0×0 です"
+                    "【1】の canvas が 0×0 です（タブ切替後に測り直されていない）"
 
     draw_on("q1_purpose")
     assert_operator stroke_count("q1_purpose"), :>, 0, "【1】に線が引けること"
@@ -52,6 +72,7 @@ class Intake::HandwritingFieldTest < ApplicationSystemTestCase
                  "「はい」を選ぶ前は非表示のはず"
 
     choose_yes("q17_has_additional")
+    use_pen("q17_removed_organ")
 
     # 表示された時点で ResizeObserver / conditional-field が測り直す
     wait_until { canvas_width("q17_removed_organ") > 0 }
@@ -67,10 +88,12 @@ class Intake::HandwritingFieldTest < ApplicationSystemTestCase
     visit_questionnaire
 
     choose_yes("q17_has_additional")
+    use_pen("q17_removed_organ")
     wait_until { canvas_width("q17_removed_organ") > 0 }
 
     choose_no("q17_has_additional")
     choose_yes("q17_has_additional")
+    use_pen("q17_removed_organ")
 
     wait_until { canvas_width("q17_removed_organ") > 0 }
     draw_on("q17_removed_organ")
@@ -88,6 +111,29 @@ class Intake::HandwritingFieldTest < ApplicationSystemTestCase
 
   def field_script(key)
     %([data-handwriting-field-key-value="#{key}"])
+  end
+
+  # 手書きタブに切り替える。既定がキーボードなので、ペンを測る前に必ず押す。
+  def use_pen(key)
+    find(%(#{field_script(key)} [data-handwriting-field-target="penTab"])).click
+  end
+
+  def pane_hidden?(key, target)
+    page.evaluate_script(<<~JS)
+      (() => {
+        const el = document.querySelector('#{field_script(key)} [data-handwriting-field-target="#{target}"]');
+        return el ? el.hidden : null;
+      })()
+    JS
+  end
+
+  def tab_active?(key, target)
+    page.evaluate_script(<<~JS)
+      (() => {
+        const el = document.querySelector('#{field_script(key)} [data-handwriting-field-target="#{target}"]');
+        return el ? el.classList.contains('is-active') : null;
+      })()
+    JS
   end
 
   def canvas_width(key)
