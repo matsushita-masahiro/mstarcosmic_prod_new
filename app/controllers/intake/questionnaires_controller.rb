@@ -13,12 +13,17 @@ module Intake
 
     # 自動保存（30秒ごと）。送られてきたものだけを更新する。
     #
-    # 【create との違い・重要】
-    # create は送信の一発勝負なので3点セットが必ず揃って届き、全置換でよい。
+    # 【「届かない」と「届いて空」は別物】
+    #   キーが届かない       … 前回から変更なし → 触らない
+    #   キーが届いて中身が空 … 患者が全部消した → 消す
+    #
     # autosave は前回から変わっていないものを送らない（通信量のため）。
-    # ここで「送られてこなかった＝空になった」と解釈すると、患者が触っていない
+    # 届かなかったものを「空になった」と解釈すると、患者が触っていない
     # 手書き・人体図が自動保存のたびに消える。
-    # したがって届いたキーだけを更新し、届かなかったものには一切触らない。
+    # 逆に空を握りつぶすと、「消す」ボタンで全部消しても下書きに残り続ける。
+    #
+    # present? ではなく key? で見るのは、"{}" や "[]" が届いたときに
+    # 「届いた」と正しく判定するため。
     def update
       questionnaire = find_or_build_draft
 
@@ -26,8 +31,8 @@ module Intake
         questionnaire.answers = parsed_answers
         questionnaire.save!
 
-        save_handwriting_entries(questionnaire) if params[:handwriting].present?
-        save_body_marks(questionnaire) if params[:body_marks].present?
+        save_handwriting_entries(questionnaire) if params.key?(:handwriting)
+        save_body_marks(questionnaire) if params.key?(:body_marks)
       end
 
       render json: { saved_at: Time.current.iso8601 }
@@ -86,12 +91,16 @@ module Intake
       current_patient.update_column(:gender, answer == "female" ? "f" : "m")
     end
 
-    # 届いたキーだけを上書きする。question_key で find_or_initialize_by しており、
-    # 触れなかった欄の記録はそのまま残るため、create（送信）と update（自動保存）の
-    # どちらから呼んでも安全。
+    # 届いた handwriting は「今この時点の全欄の状態」を表す。
+    # collectHandwriting() は空欄のキーを落とすため、含まれないキーは
+    # 「患者が消した欄」と読める。したがって上書きに加えて削除も行う。
+    #
+    # entries が nil のとき（キーが届かない／壊れた JSON）は何もしない。
+    # {} が届いたときは全欄が消されたということなので、全件を消す。
+    # この nil と {} の区別が「触らない」と「消す」を分けている。
     def save_handwriting_entries(questionnaire)
       entries = parse_json_param(:handwriting)
-      return if entries.blank?
+      return if entries.nil?
 
       entries.each do |key, data|
         next unless MedicalQuestionnaireForm.handwriting_keys.include?(key)
@@ -117,16 +126,25 @@ module Intake
           user_id: current_patient.id, label: key
         )
       end
+
+      # 届かなかった欄は消えたものとして削除する。
+      # destroy は has_one_attached の既定（dependent: :purge_later）で
+      # PNG の blob も片付ける。
+      questionnaire.handwriting_entries.reload
+                   .reject { |entry| entries.key?(entry.question_key) }
+                   .each(&:destroy)
     end
 
     # 人体図は「1枚の絵」で部分更新の単位が無いため、届いたときは全置換する。
     #
-    # 呼び出し側で params[:body_marks] の有無を必ず確かめること。
-    # 空・未送信で呼ぶと destroy_all だけが走り、既存のマーカーが消える。
-    # update（自動保存）が「届いたときだけ呼ぶ」形にしているのはこのため。
+    # nil（キーが届かない／壊れた JSON）なら何もしない。
+    # [] が届いたときは全マーカーが消されたということなので、全消しが正しい。
+    #
+    # 呼び出し側で params.key?(:body_marks) を必ず確かめること。
+    # 届いてもいないのに呼ぶと destroy_all だけが走り、既存のマーカーが消える。
     def save_body_marks(questionnaire)
       marks = parse_json_param(:body_marks)
-      return if marks.blank?
+      return if marks.nil?
 
       questionnaire.body_marks.destroy_all
       marks.each do |m|

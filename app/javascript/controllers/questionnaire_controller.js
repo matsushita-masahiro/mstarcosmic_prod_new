@@ -125,13 +125,18 @@ export default class extends Controller {
       // 手書きと人体図も送る。送らないと下書きに残らず、記入途中で
       // 端末が落ちた場合や、前版を復元して編集した場合に消える。
       //
-      // ただし毎回は送らない。空（全欄未記入）のとき、および前回送ったものから
-      // 変わっていないときはキーごと省く。省いたぶんはサーバ側で「変更なし」
-      // として扱われ、既存の記録はそのまま残る（update の部分更新と対になる）。
+      // 省くのは「前回送ったものから変わっていない」ときだけ。
+      // 空になった場合も、前回と違うなら送る。キーごと省くとサーバ側は
+      // 「変更なし」として既存の記録を残すため、省いてしまうと
+      // 「全部消した」を伝える手段が無くなる。
+      //
+      // 一度も書いていない欄のために毎回空を送ることにはならない。
+      // lastSent* の初期値は null なので、初回だけ空が届き、
+      // 2回目以降は同値でスキップされる。
       const handwriting = JSON.stringify(this.collectHandwriting())
       const bodyMarks = JSON.stringify(this.collectBodyMarks())
-      const sendHandwriting = handwriting !== "{}" && handwriting !== this.lastSentHandwriting
-      const sendBodyMarks = bodyMarks !== "[]" && bodyMarks !== this.lastSentBodyMarks
+      const sendHandwriting = handwriting !== this.lastSentHandwriting
+      const sendBodyMarks = bodyMarks !== this.lastSentBodyMarks
 
       if (sendHandwriting) body.append("handwriting", handwriting)
       if (sendBodyMarks) body.append("body_marks", bodyMarks)

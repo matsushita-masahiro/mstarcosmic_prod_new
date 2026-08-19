@@ -20,7 +20,11 @@ require "test_helper"
 #    解釈すると、患者が触っていない記録が自動保存のたびに消える。
 #    特に body_marks は destroy_all してから作り直すため、
 #    空で呼ぶと全消しになる。
-# 3. create（送信・確定）の全置換は従来どおり
+# 3. **届いて空なら消える**
+#    「消す」ボタンで全部消したことがサーバに伝わること。
+#    2 と 3 は逆方向の要求で、「キーが届かない」と「キーが届いて中身が空」を
+#    区別できて初めて両立する。片方だけ通る実装にしないこと。
+# 4. create（送信・確定）の全置換は従来どおり
 #
 # 落ちたときはテストを直さないこと。
 # questionnaires_controller#update の「届いたキーだけ更新する」分岐と、
@@ -111,13 +115,19 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
                  "人体図を送らない自動保存で、既存のマーカーが消えています"
   end
 
-  test "別の手書き欄を送っても、先に書いた欄は消えない" do
+  # 2つ目の欄に書いた時点で、collectHandwriting() は両方のキーを含んだ
+  # ハッシュを返す（「今この時点の全欄の状態」）。JS が片方だけ送ることはない。
+  # 片方だけ届いた場合は「もう片方は消された」の意味になる（下の 3 を参照）。
+  test "後から別の欄に書いても、先に書いた欄は残る" do
     autosave(handwriting: { "q1_purpose" => { "mode" => "keyboard", "text" => "1つ目" } })
-    autosave(handwriting: { "q16_concerns" => { "mode" => "keyboard", "text" => "2つ目" } })
+    autosave(handwriting: {
+      "q1_purpose"   => { "mode" => "keyboard", "text" => "1つ目" },
+      "q16_concerns" => { "mode" => "keyboard", "text" => "2つ目" }
+    })
     assert_response :success
 
     assert_equal 2, draft.handwriting_entries.count,
-                 "後から別の欄を送ったときに、先の欄が消えています"
+                 "後から別の欄に書いたときに、先の欄が消えています"
     assert_equal "1つ目", draft.handwriting_entries.find_by(question_key: "q1_purpose").transcribed_text
   end
 
@@ -130,7 +140,66 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
                  draft.handwriting_entries.find_by(question_key: "q1_purpose").transcribed_text
   end
 
-  # ── 3. create（送信）の回帰防止 ─────────────────
+  # ── 3. 届いて空なら消える ───────────────────────
+  #
+  # 2 とは逆方向の要求。「キーが届かない（＝変更なし）」と
+  # 「キーが届いて中身が空（＝全部消した）」を区別できて初めて両立する。
+  # ここと 2 の両方が緑であることに意味がある。
+  test "空の handwriting が届くと既存の手書きが消える" do
+    autosave(handwriting: { "q1_purpose" => { "mode" => "keyboard", "text" => "書いた" } })
+    assert_equal 1, draft.handwriting_entries.count
+
+    autosave(handwriting: {})
+    assert_response :success
+
+    assert_equal 0, draft.handwriting_entries.count,
+                 "「消す」で全部消したことがサーバに伝わっていません"
+  end
+
+  test "空の body_marks が届くとマーカーが消える" do
+    autosave(body_marks: [ { "side" => "front", "x" => 0.2, "y" => 0.3 } ])
+    assert_equal 1, draft.body_marks.count
+
+    autosave(body_marks: [])
+    assert_response :success
+
+    assert_equal 0, draft.body_marks.count,
+                 "全マーカーを消したことがサーバに伝わっていません"
+  end
+
+  # collectHandwriting() は「今この時点の全欄の状態」を返し、空欄はキーごと落とす。
+  # したがって一部だけ消した場合も、残った欄だけが届く。
+  test "一部の欄だけ消すと、その欄だけが消えて他は残る" do
+    autosave(handwriting: {
+      "q1_purpose"   => { "mode" => "keyboard", "text" => "1つ目" },
+      "q16_concerns" => { "mode" => "keyboard", "text" => "2つ目" }
+    })
+    assert_equal 2, draft.handwriting_entries.count
+
+    # q1_purpose を消した状態（残った欄だけが届く）
+    autosave(handwriting: { "q16_concerns" => { "mode" => "keyboard", "text" => "2つ目" } })
+    assert_response :success
+
+    keys = draft.handwriting_entries.pluck(:question_key)
+    assert_equal [ "q16_concerns" ], keys,
+                 "消した欄だけが消え、残した欄はそのままであること"
+  end
+
+  test "ペンの欄を消すと添付の PNG ごと消える" do
+    autosave(handwriting: {
+      "q1_purpose" => { "mode" => "pen", "strokes" => [ [ { "x" => 1, "y" => 2 } ] ],
+                        "image" => PNG_DATA_URL, "width" => 600, "height" => 160 }
+    })
+    entry = draft.handwriting_entries.find_by(question_key: "q1_purpose")
+    assert entry.image.attached?
+
+    autosave(handwriting: {})
+    assert_response :success
+
+    assert_nil HandwritingEntry.find_by(id: entry.id), "ペンの欄が消えていません"
+  end
+
+  # ── 4. create（送信）の回帰防止 ─────────────────
   test "送信では人体図が送られた内容で置き換わる" do
     autosave(body_marks: [ { "side" => "front", "x" => 0.1, "y" => 0.1 },
                            { "side" => "front", "x" => 0.2, "y" => 0.2 } ])

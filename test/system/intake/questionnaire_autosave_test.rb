@@ -17,7 +17,8 @@ require "application_system_test_case"
 # ── 落ちたときに疑うところ ──────────────────────────
 #
 #   questionnaire_controller.js の autosave() が handwriting / body_marks を
-#   append しているか。空・差分無しのときに省く条件が広すぎないか。
+#   append しているか。省く条件（前回送ったものとの差分）が広すぎないか。
+#   特に「空になった」を省くと、消した内容が下書きに残り続ける。
 class Intake::QuestionnaireAutosaveTest < ApplicationSystemTestCase
   setup do
     @original_app_host = Capybara.app_host
@@ -64,6 +65,25 @@ class Intake::QuestionnaireAutosaveTest < ApplicationSystemTestCase
            "自動保存で人体図のマーカーがサーバに届いていません"
   end
 
+  # 「消す」ボタンで空にしたことがサーバまで伝わるか。
+  #
+  # autosave が「空はスキップ」だと、消したはずの手書きが下書きに残り続ける。
+  # 確定版は create の全置換で正しくなるため画面では気づけない。
+  # 前版を復元して編集する導線では、消したものが復活して見える。
+  test "自動保存で消した手書きがサーバからも消える" do
+    visit_questionnaire
+
+    type_into_keyboard_pane("q1_purpose", "やっぱり消す内容")
+    trigger_autosave
+    assert wait_for { draft&.handwriting_entries&.any? }, "前提: 一度はサーバに届くこと"
+
+    clear_field("q1_purpose")
+    trigger_autosave
+
+    assert wait_for { draft&.handwriting_entries&.none? },
+           "消したことがサーバに伝わっていません（autosave が空を送っていない）"
+  end
+
   private
 
   def visit_questionnaire
@@ -82,6 +102,11 @@ class Intake::QuestionnaireAutosaveTest < ApplicationSystemTestCase
     field = %([data-handwriting-field-key-value="#{key}"])
     find(%(#{field} [data-handwriting-field-target="keyboardTab"])).click
     find(%(#{field} [data-handwriting-field-target="textarea"])).fill_in(with: text)
+  end
+
+  # 欄の「消す」ボタン。キーボードモードでは textarea を空にする。
+  def clear_field(key)
+    find(%([data-handwriting-field-key-value="#{key}"] [data-action~="handwriting-field#clear"])).click
   end
 
   def mark_body_figure
