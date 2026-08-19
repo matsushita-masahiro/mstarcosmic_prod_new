@@ -54,8 +54,10 @@ module UserKarte
     birthday&.strftime("%Y/%m/%d")
   end
 
+  # 下書き以外の最新1件。reviewed（スタッフが確認済みにした版）も含む。
+  # status_submitted で絞ると、確認した問診票ほど最新版から漏れる。
   def latest_questionnaire
-    medical_questionnaires.status_submitted.latest_first.first
+    medical_questionnaires.confirmed.latest_first.first
   end
 
   # 一覧用。scope を使うと includes 済みでも行ごとにクエリが出るため、
@@ -64,8 +66,9 @@ module UserKarte
   # 比較を配列にして id を第2キーにしている。提出が同時刻の2件では
   # submitted_at だけでは決まらず、latest_first（SQL 側）が id DESC で選ぶ版と
   # 食い違って、一覧と詳細で別の問診票が出てしまうため。
+  # 名前に submitted とあるが reviewed も含む（下書き以外の最新）。
   def latest_submitted_questionnaire
-    medical_questionnaires.select(&:status_submitted?)
+    medical_questionnaires.reject(&:status_draft?)
                           .max_by { |q| [q.submitted_at || Time.at(0), q.id] }
   end
 
