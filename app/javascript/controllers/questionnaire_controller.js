@@ -35,6 +35,10 @@ export default class extends Controller {
     this.lastSentHandwriting = null
     this.lastSentBodyMarks = null
 
+    // 画面の内容が「全欄の状態」として信用できるか。
+    // 復元するものが無ければ最初から信用できる。
+    this.restoreVerified = true
+
     this.restored = false
     this.restoreWhenReady()
     this.updateProgress()
@@ -155,10 +159,21 @@ export default class extends Controller {
       const handwriting = JSON.stringify(this.collectHandwriting())
       const bodyMarks = JSON.stringify(this.collectBodyMarks())
       const sendHandwriting = handwriting !== this.lastSentHandwriting
-      const sendBodyMarks = bodyMarks !== this.lastSentBodyMarks
+
+      // 復元に失敗した画面は「全欄の状態」を表していない。
+      // そのまま送るとサーバは足りないぶんを「患者が消した」と読み、
+      // 端末の不調がそのまま記録の削除になる。
+      //
+      // partial を付けると、サーバは上書きだけして削除しない。
+      // 新しく書いたものは保存されるので、送信そのものは止めない。
+      //
+      // 人体図は全置換しか手段が無く、送ること自体が削除を含むので送らない。
+      // （端末には残り、送信時の create でまとめて確定する）
+      const sendBodyMarks = this.restoreVerified && bodyMarks !== this.lastSentBodyMarks
 
       if (sendHandwriting) body.append("handwriting", handwriting)
       if (sendBodyMarks) body.append("body_marks", bodyMarks)
+      if (!this.restoreVerified) body.append("partial", "1")
 
       const res = await fetch(this.updateUrlValue, {
         method: "PATCH", body,
@@ -236,7 +251,17 @@ export default class extends Controller {
         bodyMarks: this.collectBodyMarks()
       }))
     } catch (_e) {
-      // 容量超過など。サーバ側の下書きが代替になるため握りつぶす。
+      // 端末に保存できなかった（容量超過など）。
+      //
+      // 以前は「サーバ側の下書きが代替になる」として握りつぶしていたが、
+      // その代替は存在しない。intake のフォームはサーバの下書きを描かず
+      // （app/views/intake/ に @questionnaire の参照が無い）、
+      // リロード時の復元は localStorage だけが頼りになっている。
+      // 黙って失敗すると、患者は保存されているつもりで記入を続けてしまう。
+      this.setStatus(
+        "この端末に一時保存できませんでした。記入の途中でページを閉じないでください。",
+        "#b45309"
+      )
     }
   }
 
@@ -273,9 +298,38 @@ export default class extends Controller {
     })
     this.bodyMapController()?.restore(draft.bodyMarks)
 
-    // 復元後に条件付き表示を再評価する
+    // 復元後に条件付き表示を再評価する（この後でないと hidden の判定がずれる）
     this.element.dispatchEvent(new Event("change", { bubbles: true }))
-    this.setStatus("前回の記入内容を復元しました", "#059669")
+
+    this.verifyRestore(draft)
+  }
+
+  // 端末に保存されていたものが、実際に画面へ戻ったかを確かめる。
+  //
+  // 戻っていない欄があるまま autosave が走ると、サーバはそれを
+  // 「患者が消した」と読んで削除する（6本目の意味論）。
+  // 端末側の不調と患者の消去操作を取り違えないよう、ここで見分ける。
+  verifyRestore(draft) {
+    const savedKeys = Object.keys(draft.handwriting || {})
+    const savedMarks = (draft.bodyMarks || []).length
+
+    const onScreen = Object.keys(this.collectHandwriting())
+    const missing = savedKeys.filter((key) => !onScreen.includes(key))
+    const marksMissing = savedMarks > 0 && this.collectBodyMarks().length === 0
+
+    this.restoreVerified = missing.length === 0 && !marksMissing
+
+    if (this.restoreVerified) {
+      this.setStatus("前回の記入内容を復元しました", "#059669")
+      return
+    }
+
+    // 記録は守られる（削除は送らない）が、画面は欠けたままなので患者に伝える。
+    this.setStatus(
+      "端末に保存されていた記入内容の一部を読み込めませんでした。" +
+      "空欄のところはお手数ですがもう一度ご記入ください。",
+      "#b45309"
+    )
   }
 
   clearLocalDraft() {

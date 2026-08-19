@@ -24,7 +24,12 @@ require "test_helper"
 #    「消す」ボタンで全部消したことがサーバに伝わること。
 #    2 と 3 は逆方向の要求で、「キーが届かない」と「キーが届いて中身が空」を
 #    区別できて初めて両立する。片方だけ通る実装にしないこと。
-# 4. create（送信・確定）の全置換は従来どおり
+# 4. **partial が付いていれば削除しない**
+#    端末が復元に失敗すると、画面は全欄の状態を表していない。
+#    そのまま送るとサーバは足りないぶんを「患者が消した」と読み、
+#    端末の不調がそのまま記録の削除になる。
+#    クライアントが partial を付けて申告した場合は上書きだけする。
+# 5. create（送信・確定）の全置換は従来どおり
 #
 # 落ちたときはテストを直さないこと。
 # questionnaires_controller#update の「届いたキーだけ更新する」分岐と、
@@ -199,7 +204,51 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
     assert_nil HandwritingEntry.find_by(id: entry.id), "ペンの欄が消えていません"
   end
 
-  # ── 4. create（送信）の回帰防止 ─────────────────
+  # ── 4. partial が付いていれば削除しない ───────────
+  #
+  # 3 とは逆で、「画面が空＝患者が消した」と読んではいけない場合。
+  # 端末が復元に失敗したことをクライアントが申告してくる。
+  # 3 と 4 の違いは partial の有無だけで、それ以外は同じリクエストになる。
+  test "partial 付きなら、届かなかった欄を消さない" do
+    autosave(handwriting: {
+      "q1_purpose"   => { "mode" => "keyboard", "text" => "1つ目" },
+      "q16_concerns" => { "mode" => "keyboard", "text" => "2つ目" }
+    })
+    assert_equal 2, draft.handwriting_entries.count
+
+    # 復元に失敗した端末からの送信。q16 しか画面に無い
+    autosave(handwriting: { "q16_concerns" => { "mode" => "keyboard", "text" => "2つ目" } },
+             partial: true)
+    assert_response :success
+
+    assert_equal 2, draft.handwriting_entries.count,
+                 "partial 付きなのに、復元できなかった欄が削除されています"
+  end
+
+  test "partial 付きでも、届いた欄の上書きは行う" do
+    autosave(handwriting: { "q1_purpose" => { "mode" => "keyboard", "text" => "書きかけ" } })
+
+    autosave(handwriting: { "q1_purpose" => { "mode" => "keyboard", "text" => "書き直した" } },
+             partial: true)
+    assert_response :success
+
+    assert_equal "書き直した",
+                 draft.handwriting_entries.find_by(question_key: "q1_purpose").transcribed_text,
+                 "partial でも新しく書いたぶんは保存すること"
+  end
+
+  test "partial 付きで空が届いても消さない" do
+    autosave(handwriting: { "q1_purpose" => { "mode" => "keyboard", "text" => "書いた" } })
+    assert_equal 1, draft.handwriting_entries.count
+
+    autosave(handwriting: {}, partial: true)
+    assert_response :success
+
+    assert_equal 1, draft.handwriting_entries.count,
+                 "復元に失敗した端末の空を「全部消した」と読んではいけない"
+  end
+
+  # ── 5. create（送信）の回帰防止 ─────────────────
   test "送信では人体図が送られた内容で置き換わる" do
     autosave(body_marks: [ { "side" => "front", "x" => 0.1, "y" => 0.1 },
                            { "side" => "front", "x" => 0.2, "y" => 0.2 } ])
@@ -237,8 +286,10 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
 
   # autosave（PATCH）。渡さなかったキーはリクエストに含めない。
   # これが「変わっていないものは送らない」JS 側の挙動に対応する。
-  def autosave(answers: nil, handwriting: nil, body_marks: nil)
-    patch intake_questionnaire_path, params: json_params(answers, handwriting, body_marks)
+  def autosave(answers: nil, handwriting: nil, body_marks: nil, partial: false)
+    params = json_params(answers, handwriting, body_marks)
+    params[:partial] = "1" if partial
+    patch intake_questionnaire_path, params: params
   end
 
   # 送信（POST）。JS 側は3点セットを必ず送る。

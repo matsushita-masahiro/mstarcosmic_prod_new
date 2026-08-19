@@ -33,7 +33,11 @@ module Intake
         questionnaire.answers = parsed_answers
         questionnaire.save!
 
-        save_handwriting_entries(questionnaire, parse_json_param(:handwriting))
+        # partial は「この内容は全欄の状態を表していない」というクライアントの申告。
+        # 端末側で復元に失敗したときに付く。削除方向の解釈だけを止め、
+        # 上書き（新しく書いたぶんの保存）は通常どおり行う。
+        save_handwriting_entries(questionnaire, parse_json_param(:handwriting),
+                                 prune: !partial_payload?)
         save_body_marks(questionnaire, parse_json_param(:body_marks))
       end
 
@@ -101,7 +105,11 @@ module Intake
     # {} が届いたときは全欄が消されたということなので、全件を消す。
     # この nil と {} の区別が「触らない」と「消す」を分けている。
     # 削除を含むため、その判断はメソッド側に閉じる（save_body_marks と揃える）。
-    def save_handwriting_entries(questionnaire, entries)
+    #
+    # prune: false のときは上書きだけして削除しない。
+    # 端末が復元に失敗している（画面が全欄の状態を表していない）ときに使う。
+    # create は画面が確定した状態を送るので既定の true のまま。
+    def save_handwriting_entries(questionnaire, entries, prune: true)
       return if entries.nil?
 
       entries.each do |key, data|
@@ -128,6 +136,8 @@ module Intake
           user_id: current_patient.id, label: key
         )
       end
+
+      return unless prune
 
       # 届かなかった欄は消えたものとして削除する。
       # destroy は has_one_attached の既定（dependent: :purge_later）で
@@ -161,6 +171,12 @@ module Intake
           note: m["note"].presence
         )
       end
+    end
+
+    # クライアントが「この内容は全欄の状態を表していない」と申告したか。
+    # 復元に失敗した端末が付けてくる。値は問わず、有無だけを見る。
+    def partial_payload?
+      params[:partial].present?
     end
 
     def parse_json_param(name)
