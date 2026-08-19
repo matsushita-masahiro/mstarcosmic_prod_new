@@ -11,7 +11,7 @@
 # UserKarte#latest_submitted_questionnaire も同じ並びを Ruby 側で再現しており、
 # 片方だけ直すと一覧と詳細で別の問診票が出る。両者の一致は UserTest が見る。
 #
-# あわせて confirmed（下書き以外）の範囲も守る。status に値が増えたとき、
+# あわせて finalized（下書き以外）の範囲も守る。status に値が増えたとき、
 # 新しい値が最新版の判定から漏れないことを確かめる。
 require "test_helper"
 
@@ -47,7 +47,7 @@ class MedicalQuestionnaireTest < ActiveSupport::TestCase
     assert_equal [ newer, older ], patient.medical_questionnaires.latest_first.to_a
   end
 
-  test "confirmed は下書き以外をすべて含む" do
+  test "finalized は下書き以外をすべて含む" do
     # submitted / reviewed を列挙せず draft を除く形にしている理由がここ。
     # status に値が増えても、この assert は追加した値を自動で拾う。
     patient = create_patient
@@ -56,9 +56,9 @@ class MedicalQuestionnaireTest < ActiveSupport::TestCase
 
     kept = expected.map { |st| create_questionnaire(patient, status: st) }
 
-    confirmed = patient.medical_questionnaires.confirmed
-    kept.each { |q| assert_includes confirmed, q, "status #{q.status} が confirmed から漏れています" }
-    assert_not_includes confirmed, draft
+    finalized = patient.medical_questionnaires.finalized
+    kept.each { |q| assert_includes finalized, q, "status #{q.status} が finalized から漏れています" }
+    assert_not_includes finalized, draft
   end
 
   test "最新版が reviewed でも latest_first の先頭に来る" do
@@ -67,7 +67,7 @@ class MedicalQuestionnaireTest < ActiveSupport::TestCase
     reviewed = create_questionnaire(patient, status: :reviewed, submitted_at: Time.current)
 
     assert_equal [ reviewed, old_submitted ],
-                 patient.medical_questionnaires.confirmed.latest_first.to_a
+                 patient.medical_questionnaires.finalized.latest_first.to_a
   end
 
   private

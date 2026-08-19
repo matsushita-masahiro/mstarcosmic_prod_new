@@ -2,7 +2,7 @@
 #
 # 「最新の問診票」を返す2つの経路が食い違わないことを守るテスト。
 #
-# ・User#latest_questionnaire           … SQL 側（confirmed + latest_first）
+# ・User#latest_questionnaire           … SQL 側（finalized + latest_first）
 # ・User#latest_submitted_questionnaire … Ruby 側（N+1 回避のためカルテ一覧が使う）
 #
 # どちらも「下書き以外の最新1件」を指す。reviewed を含むこと、

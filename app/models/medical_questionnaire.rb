@@ -26,12 +26,17 @@ class MedicalQuestionnaire < ApplicationRecord
   # Ruby 側で選ぶ UserKarte#latest_submitted_questionnaire も同じ並びにすること。
   scope :latest_first, -> { order(Arel.sql("COALESCE(submitted_at, created_at) DESC, id DESC")) }
 
-  # 患者が提出を完了した状態。draft 以外。
+  # 患者が提出を完了し、確定した状態。draft 以外。
   #
   # submitted / reviewed を列挙するのではなく draft を除く形にしているのは、
   # 将来 status に値が増えたときに自動で含まれるようにするため。
   # 列挙にすると、追加した値が最新版の判定から静かに漏れる。
-  scope :confirmed, -> { where.not(status: :draft) }
+  #
+  # confirmed ではなく finalized なのは、同じカルテ機能の中に
+  # needs_confirmation? / confirmation_reasons（禁忌ではないが要確認）という
+  # 無関係な概念があり、並ぶと互いの前提だと誤読されるため。
+  # Reservation.confirmed（予約確定）とも別物。
+  scope :finalized, -> { where.not(status: :draft) }
 
   def submit!(intake_session: nil)
     update!(status: :submitted, submitted_at: Time.current, intake_session: intake_session)

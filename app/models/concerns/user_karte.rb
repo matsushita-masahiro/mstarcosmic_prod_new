@@ -57,7 +57,7 @@ module UserKarte
   # 下書き以外の最新1件。reviewed（スタッフが確認済みにした版）も含む。
   # status_submitted で絞ると、確認した問診票ほど最新版から漏れる。
   def latest_questionnaire
-    medical_questionnaires.confirmed.latest_first.first
+    medical_questionnaires.finalized.latest_first.first
   end
 
   # 一覧用。scope を使うと includes 済みでも行ごとにクエリが出るため、
