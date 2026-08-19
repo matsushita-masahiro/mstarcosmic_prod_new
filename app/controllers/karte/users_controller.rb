@@ -160,7 +160,29 @@ module Karte
     # 他人の問診票 ID を渡されても @questionnaires の中にしか無いため拾えない。
     def selected_questionnaire
       requested = params[:questionnaire_id].presence
-      (requested && @questionnaires.find { |q| q.id == requested.to_i }) || @questionnaires.first
+      (requested && @questionnaires.find { |q| q.id == requested.to_i }) || default_questionnaire
+    end
+
+    # 既定は確定版。警告バナーと同じ版を見せる。
+    # 下書きを既定にすると、バナーが確定版の禁忌を出している真下に
+    # その項目が空の下書きが並び、バナーの方が疑われる。
+    # 下書きは履歴表から明示的に選べば見られる。
+    #
+    # @latest_questionnaire をそのまま返さないのは、あれが別クエリで読んだ
+    # 素の1件で show の includes が効いておらず、パネルに描くと手書き欄・
+    # マーカーぶんのクエリが出るため。同じ ID を preload 済みの
+    # @questionnaires から引き直す。
+    #
+    # 引き直せないのは、確定版より新しい下書きが10件を超えて並んだときだけ。
+    # そのときは preload 無しでもバナーと同じ版を出す方を採る（表示の一致を優先）。
+    #
+    # 確定版が1件も無ければ下書きを見せる。何も表示しないより、
+    # 書きかけでも内容が見える方が有用なため。
+    # このとき警告バナーは出ない（@latest_questionnaire が nil のまま）。
+    def default_questionnaire
+      return @questionnaires.first if @latest_questionnaire.nil?
+
+      @questionnaires.find { |q| q.id == @latest_questionnaire.id } || @latest_questionnaire
     end
 
     def apply_search(scope)

@@ -41,10 +41,12 @@ require "test_helper"
 #    ただし show_when を満たして画面に出ていた項目は、空でも
 #    「未選択 / 未記入」として出す（聞いたが答えなかった、と区別するため）。
 #
-# 8. 警告の根拠（下書きに押しのけられないこと）
+# 8. 警告の根拠と既定の表示版（どちらも確定版に揃っていること）
 #    ページ上部の赤／黄の警告は確定版だけを見る。履歴表は下書きも出すため、
 #    両者の元ネタを取り違えると、書きかけの下書きが確定版を押しのけて
 #    確定版の禁忌が画面から消える。
+#    内容パネルの既定も同じ確定版に揃える。バナーと別の版が並ぶと、
+#    「禁忌の項目が空」に見えてバナーの方が疑われる。
 #
 # 積み残しに「人体図 SVG の差し替え」がある。差し替え時は 1 の限界を踏まえ、
 # 2 と 3 が通ることを確認したうえで、実際の見た目を必ず目視すること。
@@ -528,6 +530,75 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
     assert_match "下書き", response.body
     # 履歴表の各行は各版の状態をそのまま出す（上部の警告とは別物）
     assert_match "⚠ ペースメーカー装着", response.body
+  end
+
+  # 既定の表示版。バナーと内容パネルは同じ版を指す。
+  #
+  # 施術直前に画面を見る人はバナーで警戒してから内容を確認する。
+  # そこで該当項目が空だと、疑われるのは下書きではなくバナーの方になる。
+  # 警告の信頼性が落ちるのが最も避けたい結果なので、既定は確定版に揃える。
+  test "最新が下書きでも、内容パネルは確定版を表示する" do
+    user = patient("default-finalized")
+    submitted = make_questionnaire(user,
+      answers: { "q10_pacemaker" => "yes" },
+      keyboard: { "q16_concerns" => "確定版の記載" },
+      submitted_at: 3.days.ago)
+    draft = MedicalQuestionnaire.create!(user: user,
+      answers: {}, form_version: MedicalQuestionnaireForm::VERSION)
+    draft.handwriting_entries.create!(question_key: "q16_concerns",
+                                      input_mode: :keyboard,
+                                      transcribed_text: "書きかけの記載")
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match "施術できません", response.body
+    assert_match "確定版の記載", response.body,
+                 "バナーが確定版の禁忌を出しているのに、内容パネルが下書きを出しています"
+    assert_no_match(/書きかけの記載/, response.body)
+
+    # 履歴表では確定版の行が選択中になっている
+    assert_match(/questionnaire_id=#{draft.id}/, response.body, "下書き行は履歴に残ること")
+    assert_match(/questionnaire_id=#{submitted.id}/, response.body)
+  end
+
+  # 既定を変えただけで、明示指定の経路は従来どおり
+  test "履歴から下書きを選べば下書きが表示される" do
+    user = patient("explicit-draft")
+    make_questionnaire(user, keyboard: { "q16_concerns" => "確定版の記載" },
+                       submitted_at: 3.days.ago)
+    draft = MedicalQuestionnaire.create!(user: user,
+      answers: {}, form_version: MedicalQuestionnaireForm::VERSION)
+    draft.handwriting_entries.create!(question_key: "q16_concerns",
+                                      input_mode: :keyboard,
+                                      transcribed_text: "書きかけの記載")
+
+    get karte_user_path(user, questionnaire_id: draft.id)
+    assert_response :success
+
+    assert_match "書きかけの記載", response.body, "明示指定なら下書きも見られること"
+    assert_no_match(/確定版の記載/, response.body)
+  end
+
+  # 確定版が1件も無いときのフォールバック。
+  # 内容は出すが警告は出さない（下書きの禁忌では警告を出さないと決めたため）。
+  test "確定版が無ければ下書きを表示し、警告は出さない" do
+    user = patient("draft-fallback")
+    draft = MedicalQuestionnaire.create!(user: user,
+      answers: { "q10_pacemaker" => "yes" },
+      form_version: MedicalQuestionnaireForm::VERSION)
+    draft.handwriting_entries.create!(question_key: "q16_concerns",
+                                      input_mode: :keyboard,
+                                      transcribed_text: "書きかけの記載")
+    assert draft.contraindicated?, "前提: 下書き自体は禁忌の状態であること"
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match "書きかけの記載", response.body,
+                 "確定版が無いなら、何も出さずに下書きを見せること"
+    assert_no_match(/施術できません/, response.body)
+    assert_no_match(/確認してください/, response.body)
   end
 
   private
