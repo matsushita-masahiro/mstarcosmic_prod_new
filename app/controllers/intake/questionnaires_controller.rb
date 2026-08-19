@@ -11,10 +11,24 @@ module Intake
       @is_female = current_patient.female?
     end
 
+    # 自動保存（30秒ごと）。送られてきたものだけを更新する。
+    #
+    # 【create との違い・重要】
+    # create は送信の一発勝負なので3点セットが必ず揃って届き、全置換でよい。
+    # autosave は前回から変わっていないものを送らない（通信量のため）。
+    # ここで「送られてこなかった＝空になった」と解釈すると、患者が触っていない
+    # 手書き・人体図が自動保存のたびに消える。
+    # したがって届いたキーだけを更新し、届かなかったものには一切触らない。
     def update
       questionnaire = find_or_build_draft
-      questionnaire.answers = parsed_answers
-      questionnaire.save!
+
+      ActiveRecord::Base.transaction do
+        questionnaire.answers = parsed_answers
+        questionnaire.save!
+
+        save_handwriting_entries(questionnaire) if params[:handwriting].present?
+        save_body_marks(questionnaire) if params[:body_marks].present?
+      end
 
       render json: { saved_at: Time.current.iso8601 }
     rescue ActiveRecord::RecordInvalid => e
@@ -72,6 +86,9 @@ module Intake
       current_patient.update_column(:gender, answer == "female" ? "f" : "m")
     end
 
+    # 届いたキーだけを上書きする。question_key で find_or_initialize_by しており、
+    # 触れなかった欄の記録はそのまま残るため、create（送信）と update（自動保存）の
+    # どちらから呼んでも安全。
     def save_handwriting_entries(questionnaire)
       entries = parse_json_param(:handwriting)
       return if entries.blank?
@@ -102,6 +119,11 @@ module Intake
       end
     end
 
+    # 人体図は「1枚の絵」で部分更新の単位が無いため、届いたときは全置換する。
+    #
+    # 呼び出し側で params[:body_marks] の有無を必ず確かめること。
+    # 空・未送信で呼ぶと destroy_all だけが走り、既存のマーカーが消える。
+    # update（自動保存）が「届いたときだけ呼ぶ」形にしているのはこのため。
     def save_body_marks(questionnaire)
       marks = parse_json_param(:body_marks)
       return if marks.blank?

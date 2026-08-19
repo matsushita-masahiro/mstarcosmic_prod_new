@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // 問診票フォーム全体の制御。
 //   - 30秒ごとに localStorage へ下書き保存（通信断でも記入内容が消えない）
-//   - 同時にサーバへも下書きを送る
+//   - 同時にサーバへも下書きを送る（手書き・人体図は変わったときだけ）
 //   - 性別に応じて女性専用設問を出し分ける
 //   - 送信時に handwriting / body_marks を集約
 export default class extends Controller {
@@ -17,6 +17,11 @@ export default class extends Controller {
   connect() {
     this.submitting = false
     this.dirty = false
+
+    // 前回 autosave で送った内容。次回はこれと同じなら送らない。
+    // 手書きは PNG を含むので、変わっていないものを毎回送ると通信が重くなる。
+    this.lastSentHandwriting = null
+    this.lastSentBodyMarks = null
 
     this.restoreLocalDraft()
     this.updateProgress()
@@ -117,12 +122,29 @@ export default class extends Controller {
       const body = new FormData()
       body.append("answers", JSON.stringify(this.collectAnswers()))
 
+      // 手書きと人体図も送る。送らないと下書きに残らず、記入途中で
+      // 端末が落ちた場合や、前版を復元して編集した場合に消える。
+      //
+      // ただし毎回は送らない。空（全欄未記入）のとき、および前回送ったものから
+      // 変わっていないときはキーごと省く。省いたぶんはサーバ側で「変更なし」
+      // として扱われ、既存の記録はそのまま残る（update の部分更新と対になる）。
+      const handwriting = JSON.stringify(this.collectHandwriting())
+      const bodyMarks = JSON.stringify(this.collectBodyMarks())
+      const sendHandwriting = handwriting !== "{}" && handwriting !== this.lastSentHandwriting
+      const sendBodyMarks = bodyMarks !== "[]" && bodyMarks !== this.lastSentBodyMarks
+
+      if (sendHandwriting) body.append("handwriting", handwriting)
+      if (sendBodyMarks) body.append("body_marks", bodyMarks)
+
       const res = await fetch(this.updateUrlValue, {
         method: "PATCH", body,
         headers: { "X-CSRF-Token": this.csrfToken(), "Accept": "application/json" }
       })
 
       if (res.ok) {
+        // 送れたものだけ記録する。失敗した回は覚えないので次の autosave で送り直す。
+        if (sendHandwriting) this.lastSentHandwriting = handwriting
+        if (sendBodyMarks) this.lastSentBodyMarks = bodyMarks
         this.dirty = false
         this.setStatus("自動保存しました", "#6b7280")
       } else {
