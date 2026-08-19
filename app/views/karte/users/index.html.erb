@@ -67,9 +67,9 @@
             <% count = user.medical_questionnaires.size %>
             <%= count.positive? ? "#{count} 件" : "—" %>
             <%# 禁忌はカルテを開かなくても分かるようにする。
-                latest_submitted_questionnaire は読み込み済みの関連から絞るため
+                latest_finalized_questionnaire は読み込み済みの関連から絞るため
                 行ごとの追加クエリは出ない。 %>
-            <% q = user.latest_submitted_questionnaire %>
+            <% q = user.latest_finalized_questionnaire %>
             <% if q&.contraindicated? %>
               <span title="<%= q.contraindication_reasons.join(" / ") %>"
                     style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;

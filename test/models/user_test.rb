@@ -3,7 +3,7 @@
 # 「最新の問診票」を返す2つの経路が食い違わないことを守るテスト。
 #
 # ・User#latest_questionnaire           … SQL 側（finalized + latest_first）
-# ・User#latest_submitted_questionnaire … Ruby 側（N+1 回避のためカルテ一覧が使う）
+# ・User#latest_finalized_questionnaire … Ruby 側（N+1 回避のためカルテ一覧が使う）
 #
 # どちらも「下書き以外の最新1件」を指す。reviewed を含むこと、
 # そして2つが同じレコードを指すことの両方をここで守る。
@@ -24,8 +24,8 @@ class UserTest < ActiveSupport::TestCase
 
     patient.reload
     assert_equal newer, patient.latest_questionnaire
-    assert_equal newer, patient.latest_submitted_questionnaire
-    assert_equal patient.latest_questionnaire, patient.latest_submitted_questionnaire
+    assert_equal newer, patient.latest_finalized_questionnaire
+    assert_equal patient.latest_questionnaire, patient.latest_finalized_questionnaire
   end
 
   test "提出時刻が違うときも一覧と詳細が同じ問診票を指す" do
@@ -35,7 +35,7 @@ class UserTest < ActiveSupport::TestCase
 
     patient.reload
     assert_equal recent, patient.latest_questionnaire
-    assert_equal recent, patient.latest_submitted_questionnaire
+    assert_equal recent, patient.latest_finalized_questionnaire
   end
 
   test "下書きはどちらの経路でも最新として拾わない" do
@@ -45,7 +45,7 @@ class UserTest < ActiveSupport::TestCase
 
     patient.reload
     assert_equal submitted, patient.latest_questionnaire
-    assert_equal submitted, patient.latest_submitted_questionnaire
+    assert_equal submitted, patient.latest_finalized_questionnaire
   end
 
   test "最新版が reviewed でも両方の経路がそれを返す" do
@@ -58,8 +58,8 @@ class UserTest < ActiveSupport::TestCase
     patient.reload
     assert_equal reviewed, patient.latest_questionnaire,
                  "reviewed が最新版から漏れ、古い submitted 版が返っています"
-    assert_equal reviewed, patient.latest_submitted_questionnaire
-    assert_equal patient.latest_questionnaire, patient.latest_submitted_questionnaire
+    assert_equal reviewed, patient.latest_finalized_questionnaire
+    assert_equal patient.latest_questionnaire, patient.latest_finalized_questionnaire
 
     assert_not_equal old_submitted, patient.latest_questionnaire
   end
@@ -71,7 +71,7 @@ class UserTest < ActiveSupport::TestCase
 
     patient.reload
     assert_equal reviewed, patient.latest_questionnaire
-    assert_equal reviewed, patient.latest_submitted_questionnaire
+    assert_equal reviewed, patient.latest_finalized_questionnaire
   end
 
   test "下書きしか無ければどちらの経路も nil" do
@@ -80,7 +80,7 @@ class UserTest < ActiveSupport::TestCase
 
     patient.reload
     assert_nil patient.latest_questionnaire
-    assert_nil patient.latest_submitted_questionnaire
+    assert_nil patient.latest_finalized_questionnaire
   end
 
   private

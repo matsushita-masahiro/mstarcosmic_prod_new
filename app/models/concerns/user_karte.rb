@@ -66,8 +66,7 @@ module UserKarte
   # 比較を配列にして id を第2キーにしている。提出が同時刻の2件では
   # submitted_at だけでは決まらず、latest_first（SQL 側）が id DESC で選ぶ版と
   # 食い違って、一覧と詳細で別の問診票が出てしまうため。
-  # 名前に submitted とあるが reviewed も含む（下書き以外の最新）。
-  def latest_submitted_questionnaire
+  def latest_finalized_questionnaire
     medical_questionnaires.reject(&:status_draft?)
                           .max_by { |q| [q.submitted_at || Time.at(0), q.id] }
   end

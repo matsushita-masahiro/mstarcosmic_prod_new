@@ -8,7 +8,7 @@
 # 出ないことがある。同時刻は訂正の再提出や紙カルテの一括取り込みで実際に起きる。
 #
 # 落ちたときは scope の第2キー（id DESC）が外れていないか見ること。
-# UserKarte#latest_submitted_questionnaire も同じ並びを Ruby 側で再現しており、
+# UserKarte#latest_finalized_questionnaire も同じ並びを Ruby 側で再現しており、
 # 片方だけ直すと一覧と詳細で別の問診票が出る。両者の一致は UserTest が見る。
 #
 # あわせて finalized（下書き以外）の範囲も守る。status に値が増えたとき、

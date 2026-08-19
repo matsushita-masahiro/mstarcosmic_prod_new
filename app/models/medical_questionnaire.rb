@@ -20,10 +20,10 @@ class MedicalQuestionnaire < ApplicationRecord
   # 第2キーに id を必ず付ける。提出が同時刻の2件（訂正の再提出や、
   # まとめて取り込んだ紙カルテ）では COALESCE の値が並び、
   # これが無いと Postgres が返す順を保証しない。
-  # カルテ一覧の「施術不可 / 要確認」バッジ（index.html.erb）と
-  # カルテ詳細の警告（users_controller#show の @questionnaires.first）は
-  # どちらもこの並びの先頭1件を見るため、順序が揺れると古い版の判定が画面に出る。
-  # Ruby 側で選ぶ UserKarte#latest_submitted_questionnaire も同じ並びにすること。
+  # カルテ一覧の「施術不可 / 要確認」バッジと、カルテ詳細の警告バナー・
+  # 内容パネルの既定は、どれも finalized の先頭1件を見る。
+  # 順序が揺れると古い版の判定が画面に出る。
+  # Ruby 側で選ぶ UserKarte#latest_finalized_questionnaire も同じ並びにすること。
   scope :latest_first, -> { order(Arel.sql("COALESCE(submitted_at, created_at) DESC, id DESC")) }
 
   # 患者が提出を完了し、確定した状態。draft 以外。
