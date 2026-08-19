@@ -62,7 +62,10 @@ module Karte
                              .includes(:body_marks,
                                        handwriting_entries: { image_attachment: :blob })
                              .latest_first.limit(10)
-      @latest_questionnaire = @questionnaires.first
+      # 警告の根拠は確定版のみから取る。@questionnaires は履歴表用で下書きも含むため、
+      # ここから先頭を取ると書きかけの下書きが確定版を押しのけ、
+      # 確定版の禁忌が画面から消える。
+      @latest_questionnaire = @user.latest_questionnaire
       @questionnaire = selected_questionnaire
       @consents = @user.consents.includes(:consent_document).latest_first
 

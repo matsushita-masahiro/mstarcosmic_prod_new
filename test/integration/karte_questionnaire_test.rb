@@ -41,6 +41,11 @@ require "test_helper"
 #    ただし show_when を満たして画面に出ていた項目は、空でも
 #    「未選択 / 未記入」として出す（聞いたが答えなかった、と区別するため）。
 #
+# 8. 警告の根拠（下書きに押しのけられないこと）
+#    ページ上部の赤／黄の警告は確定版だけを見る。履歴表は下書きも出すため、
+#    両者の元ネタを取り違えると、書きかけの下書きが確定版を押しのけて
+#    確定版の禁忌が画面から消える。
+#
 # 積み残しに「人体図 SVG の差し替え」がある。差し替え時は 1 の限界を踏まえ、
 # 2 と 3 が通ることを確認したうえで、実際の見た目を必ず目視すること。
 class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
@@ -460,6 +465,69 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
     get karte_user_path(draft)
     assert_response :success
     assert_match "下書き", response.body
+  end
+
+  # ── 8. 警告の根拠 ─────────────────────────────
+  #
+  # ページ上部の警告（show.html.erb の「施術できません」／「確認してください」）は
+  # 確定版だけを根拠にする。履歴表と同じ @questionnaires.first を使うと、
+  # 患者が書きかけて離脱した下書きが最新版になり、次の2つが起きる。
+  #
+  #   ・下書きで何もチェックしていない → 確定版の禁忌が押しのけられて消える（危険）
+  #   ・下書きでチェックした直後に離脱   → 確定版に無い禁忌が出る（過剰）
+  #
+  # 前者があるため「下書きを含めるのは安全側」ではない。
+  # なお履歴表の各行は各版の状態をそのまま出す（そちらは下書きも禁忌も出してよい）。
+  test "確定版の禁忌は、あとから空の下書きが作られても消えない" do
+    user = patient("draft-hides-warning")
+    make_questionnaire(user, answers: { "q10_pacemaker" => "yes" },
+                       submitted_at: 3.days.ago)
+
+    get karte_user_path(user)
+    assert_match "施術できません", response.body, "前提: 確定版だけなら警告が出ること"
+
+    # 患者が書きかけて離脱した状態。空なので禁忌のフラグは何も立たない。
+    draft = MedicalQuestionnaire.create!(user: user, answers: {},
+                                         form_version: MedicalQuestionnaireForm::VERSION)
+    assert draft.status_draft?
+
+    get karte_user_path(user)
+    assert_response :success
+    assert_match "施術できません", response.body,
+                 "空の下書きが確定版を押しのけ、確定版の禁忌が消えています"
+    assert_match "ペースメーカー装着", response.body
+  end
+
+  test "下書きしか無ければ、その下書きの禁忌では警告を出さない" do
+    user = patient("draft-only-warning")
+    draft = MedicalQuestionnaire.create!(user: user,
+                                         answers: { "q10_pacemaker" => "yes" },
+                                         form_version: MedicalQuestionnaireForm::VERSION)
+    assert draft.status_draft?
+    assert draft.contraindicated?, "前提: 下書き自体は禁忌の状態であること"
+
+    get karte_user_path(user)
+    assert_response :success
+    assert_no_match(/施術できません/, response.body,
+                    "未提出の下書きを根拠に施術不可を出さないこと")
+    assert_no_match(/確認してください/, response.body)
+  end
+
+  test "警告の根拠が変わっても履歴表には下書き行が出る" do
+    user = patient("draft-row-kept")
+    submitted = make_questionnaire(user, answers: { "q10_pacemaker" => "yes" },
+                                   submitted_at: 3.days.ago)
+    draft = MedicalQuestionnaire.create!(user: user, answers: {},
+                                         form_version: MedicalQuestionnaireForm::VERSION)
+
+    get karte_user_path(user)
+    assert_response :success
+
+    assert_match(/questionnaire_id=#{draft.id}/, response.body, "履歴に下書き行が出ること")
+    assert_match(/questionnaire_id=#{submitted.id}/, response.body)
+    assert_match "下書き", response.body
+    # 履歴表の各行は各版の状態をそのまま出す（上部の警告とは別物）
+    assert_match "⚠ ペースメーカー装着", response.body
   end
 
   private
