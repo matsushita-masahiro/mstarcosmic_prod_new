@@ -9,6 +9,17 @@ require "application_system_test_case"
 # 「その欄は空になった」と判断してサーバからも消してしまう。
 # 復元失敗が記録の消失に直結する。
 #
+# 【このテストで捕まえられないこと・重要】
+# Stimulus が親（questionnaire）の connect() を子（handwriting-field / body-map）
+# より先に走らせる競合は、ヘッドレス Chrome では再現しない。
+# パースと接続が速く、親が動く時点で子が既に揃っているため。
+# iPhone 実機では発生し、手書き・人体図だけが復元されない
+# （answers は DOM への直接代入なので成功し、「復元しました」も出る）。
+#
+# つまり以下が緑でも「子の接続が間に合っている限り正しい」ことしか言えない。
+# restoreWhenReady() の待ち合わせが効いているかは実機でしか確かめられない。
+# この経路を触ったら、必ず実機で確認すること。
+#
 # 【この経路の弱さ】
 # intake のフォームはサーバの下書きを一切描かない（show の @questionnaire は
 # ビューから参照されていない）。リロード時の復元は localStorage だけが頼りで、
@@ -122,6 +133,24 @@ class Intake::QuestionnaireRestoreTest < ApplicationSystemTestCase
                     "自動保存前の筆跡がリロードで失われています"
   end
 
+  # Stimulus の接続順そのものは再現できないが、待ち合わせの仕組みは検証できる。
+  # handwritingControllers() を「最初の数回は空を返す」に差し替え、
+  # 子が遅れて接続する状況を作る。待たない実装ではここで復元が空振りする。
+  test "子コントローラの接続が遅れても復元される" do
+    visit_questionnaire
+    type_into_keyboard_pane("q1_purpose", "遅れて接続しても戻る内容")
+    assert wait_until { local_draft_has?("q1_purpose") }
+
+    visit "/questionnaire"
+    assert_selector '[data-handwriting-field-key-value="q1_purpose"]'
+
+    # 画面を空にしてから、子が遅れて接続する状況で復元をやり直させる
+    delayed_restore(empty_calls: 4)
+
+    assert wait_until { textarea_value("q1_purpose") == "遅れて接続しても戻る内容" },
+           "子の接続を待たずに復元し、内容が戻っていません"
+  end
+
   private
 
   def visit_questionnaire
@@ -187,6 +216,25 @@ class Intake::QuestionnaireRestoreTest < ApplicationSystemTestCase
         .move_to(canvas.native, 10, 10)
         .click_and_hold.move_by(40, 15).move_by(30, -10).release.perform
     wait_until { stroke_count(key) > 0 }
+  end
+
+  # 子コントローラが empty_calls 回ぶん「まだ接続していない」状況を作り、
+  # 画面を空にしたうえで復元をやり直させる。
+  def delayed_restore(empty_calls:)
+    page.execute_script(<<~JS)
+      const el = document.querySelector('[data-controller~="questionnaire"]');
+      const c = window.Stimulus.getControllerForElementAndIdentifier(el, 'questionnaire');
+
+      document.querySelectorAll('[data-handwriting-field-target="textarea"]')
+              .forEach((t) => { t.value = ""; });
+
+      const real = c.handwritingControllers.bind(c);
+      let calls = 0;
+      c.handwritingControllers = () => (++calls <= #{empty_calls} ? [] : real());
+
+      c.restored = false;
+      c.restoreWhenReady();
+    JS
   end
 
   def trigger_autosave

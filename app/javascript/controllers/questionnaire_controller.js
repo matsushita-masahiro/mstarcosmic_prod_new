@@ -5,6 +5,13 @@ import { Controller } from "@hotwired/stimulus"
 // 端末が落ちたときに失う量を秒未満に抑えたいのでごく短くする。
 const LOCAL_SAVE_DEBOUNCE_MS = 500
 
+// 子コントローラの接続を待つ上限（requestAnimationFrame の回数）。
+// 60fps で約2秒。ここまで待って揃わないのは JS エラーなど別の異常なので、
+// 待ち続けずに揃ったぶんだけ復元する（何も戻らないよりはよい）。
+// 復元しきれなかった場合は restoreVerified が false になり、
+// autosave が削除方向の送信を控える。
+const RESTORE_MAX_FRAMES = 120
+
 // 問診票フォーム全体の制御。
 //   - 入力のたびに localStorage へ下書き保存（通信断でも記入内容が消えない）
 //   - 30秒ごとにサーバへも下書きを送る（手書き・人体図は変わったときだけ）
@@ -28,7 +35,8 @@ export default class extends Controller {
     this.lastSentHandwriting = null
     this.lastSentBodyMarks = null
 
-    this.restoreLocalDraft()
+    this.restored = false
+    this.restoreWhenReady()
     this.updateProgress()
 
     this.timer = setInterval(() => this.autosave(), this.autosaveIntervalValue)
@@ -52,6 +60,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this.disconnected = true
     clearInterval(this.timer)
     clearTimeout(this.localSaveTimer)
     this.element.removeEventListener("input", this.onInput)
@@ -168,6 +177,41 @@ export default class extends Controller {
     } catch (_e) {
       this.setStatus("通信できません（記入内容は端末に残っています）", "#b45309")
     }
+  }
+
+  // ── 復元の待ち合わせ ────────────────────────
+  //
+  // Stimulus は親コントローラの connect() が子より先に走ることがある。
+  // その時点で handwritingControllers() は空配列を返すので、
+  // restore() が誰にも届かず手書き・人体図だけが復元されない。
+  // answers は DOM への直接代入なので成功し、「復元しました」も出るため、
+  // 一見うまくいったように見える。
+  //
+  // 実機（iPhone）で発生し、ヘッドレス Chrome では接続が速く再現しない。
+  // 6本目以降は「画面に無い＝患者が消した」と解釈するため、
+  // 復元漏れがそのままサーバの削除になる。
+  //
+  // 待ち方は「DOM にある数だけコントローラが揃ったか」で判定する。
+  // DOM の数は最初から確定しているので「いくつ揃えば完了か」が分かる。
+  // 固定の setTimeout に頼らないのは、遅い端末で再び失敗するため。
+  restoreWhenReady(frame = 0) {
+    if (this.restored || this.disconnected) return
+
+    if (this.childControllersReady() || frame >= RESTORE_MAX_FRAMES) {
+      this.restored = true       // 復元は1回だけ。二重描画・上書きを避ける
+      this.restoreLocalDraft()
+      return
+    }
+
+    requestAnimationFrame(() => this.restoreWhenReady(frame + 1))
+  }
+
+  childControllersReady() {
+    const expected = this.element.querySelectorAll('[data-controller~="handwriting-field"]').length
+    if (this.handwritingControllers().length < expected) return false
+
+    const hasBodyMap = !!this.element.querySelector('[data-controller~="body-map"]')
+    return !hasBodyMap || !!this.bodyMapController()
   }
 
   // ── localStorage ───────────────────────────
