@@ -1,14 +1,31 @@
-<h1>問診票のご記入</h1>
+<h1><%= @revision_target ? "問診票の修正" : "問診票のご記入" %></h1>
 
 <p class="intake-meta">
   <%= current_patient.name_kana.presence || current_patient.name %> 様
   ／ 会員No. <%= current_patient.karte_member_no %>
 </p>
 
+<%# 何をしている画面かを患者に伝える。前の内容が入った状態で開くので、
+    説明が無いと「前に書いたものが勝手に出ている」と受け取られる。 %>
+<% if @revision_target %>
+  <p style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:12px 16px;
+            margin:0 0 20px;font-size:15px;color:#1e3a8a;line-height:1.7;">
+    <strong>
+      <%= @revision_target.submitted_at ?
+            l(@revision_target.submitted_at.to_date, format: :long) : "前回" %>
+      にご記入いただいた内容
+    </strong>を表示しています。<br>
+    変更するところだけ直して、最後に送信してください。<br>
+    <span style="font-size:13px;">
+      ※ 前の記録はそのまま残ります。書き直した内容は新しい記録として保存されます。
+    </span>
+  </p>
+<% end %>
+
 <div data-controller="questionnaire conditional-field"
      data-questionnaire-update-url-value="<%= intake_questionnaire_path %>"
      data-questionnaire-create-url-value="<%= intake_questionnaires_path %>"
-     data-questionnaire-storage-key-value="intake_draft_<%= current_patient.id %>"
+     data-questionnaire-storage-key-value="<%= @storage_key %>"
      <%# サーバに残っている下書き。端末に残っていないときだけ使われる。
          戻せるものが無ければ @server_draft は nil で、属性ごと出さない。 %>
      <% if @server_draft %>

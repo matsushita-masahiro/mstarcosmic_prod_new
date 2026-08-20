@@ -1,7 +1,7 @@
 module Intake
   class QuestionnairesController < BaseController
     def show
-      return redirect_to new_intake_consent_path unless Consent.current_for?(current_patient)
+      return redirect_to new_intake_consent_path unless consent_satisfied?
 
       @questionnaire = find_or_build_draft
       @questions = MedicalQuestionnaireForm::QUESTIONS
@@ -13,7 +13,9 @@ module Intake
       # 端末に下書きが残っていればそちらが優先される（最後の autosave が
       # 届いていない最大30秒ぶんは端末にしかない）。ここで渡すのは
       # localStorage が使えなかったときの受け皿。
-      @server_draft = @questionnaire.draft_snapshot
+      @server_draft = initial_snapshot
+      @storage_key = storage_key
+      @revision_target = revision_target
 
       # users.gender があればそれを使い、無ければ問診票の冒頭で聞く
       @gender_known = current_patient.gender_known?
@@ -77,14 +79,69 @@ module Intake
 
     private
 
+    # 訂正のときは、この回の下書きに前版への参照を持たせる。
+    # revision（版番号）は前版から自動で継がれる（MedicalQuestionnaire 側）。
+    # 初回記入では revision_target が nil なので従来と同じ。
     def find_or_build_draft
       current_patient.medical_questionnaires
                      .status_draft
                      .where(intake_session: intake_session)
                      .first_or_initialize(
                        form_version: MedicalQuestionnaireForm::VERSION,
-                       intake_session: intake_session
+                       intake_session: intake_session,
+                       previous_version: revision_target
                      )
+    end
+
+    # 訂正の対象。初回記入では nil。
+    def revision_target
+      return nil unless intake_session.purpose_revision?
+
+      intake_session.target_questionnaire
+    end
+
+    # 画面を開いたときに描く内容。
+    #
+    # 訂正では前版を初期値にする。ただし、この回の下書きが既にあるなら
+    # そちらが新しい（訂正を書きかけて開き直した場合）。
+    # persisted? で「初めて開いた」と「続きから」を分ける。
+    def initial_snapshot
+      return @questionnaire.draft_snapshot unless revision_target
+      return @questionnaire.draft_snapshot if @questionnaire.persisted?
+
+      # 前版の draft_snapshot は strokes だけを返し image を含まない（A-1）。
+      # そのため前版の PNG（blob）には一切触れない。ここで image まで渡すと、
+      # 訂正版の送信時に同じ blob を掴んで前版の画像ごと差し替えかねない。
+      revision_target.draft_snapshot
+    end
+
+    # 端末に下書きを残すときのキー。
+    #
+    # 訂正では初回記入と別のキーにする。既定のキーは患者ごと
+    # （intake_draft_<患者ID>）で来店ごとではないため、初回記入時の
+    # 書きかけが端末に残っている。同じキーを使うと、localStorage 優先の
+    # 復元がそれを拾い、前版ではなく初回の書きかけが画面に出る。
+    #
+    # キーを分けることで、優先順位（端末 → サーバ）の仕組みを変えずに
+    # 「訂正では前版が出る」を満たせる。初回の下書きも壊さない。
+    def storage_key
+      return "intake_draft_#{current_patient.id}" unless revision_target
+
+      "intake_revision_#{revision_target.id}"
+    end
+
+    # 同意書を通す必要があるか。
+    #
+    # 訂正では通さない。「前版があるなら署名済み」は成り立たない
+    # （同意書を改訂して publish すると current が切り替わり、
+    # 過去に署名した患者も全員が未署名扱いになる）。
+    # そこで訂正でも Consent.current_for? を見ると、過去の誤記を直すために
+    # 新しい同意書へ署名させることになり、署名するまで記録が誤ったまま残る。
+    #
+    # 訂正は過去の記録を正すもので、新しい施術の同意とは別の話。
+    # 新しい同意書への署名は、次の来店（purpose: initial）で求められる。
+    def consent_satisfied?
+      intake_session.purpose_revision? || Consent.current_for?(current_patient)
     end
 
     def parsed_answers

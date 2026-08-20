@@ -50,9 +50,14 @@ module Intake
     #   purpose: initial かつ署名済み → 問診票
     #   purpose: revision            → 訂正画面
     def entry_path_for(record)
-      # TODO(第2段階): 訂正画面ができたらそこへ送る。
-      # 今は問診票へ送っており、前版の内容は復元されない。
-      # 訂正用のQRを本番のスタッフに案内するのは第2段階が入ってから。
+      # 訂正も問診票のパスで受ける。フォーム・autosave・送信は初回記入と
+      # 同じものを使い、前版を初期値にするかどうかだけが変わる。
+      # 何の記入かは intake_session.purpose が持っているので、
+      # URL を分ける必要が無い。
+      #
+      # 同意書は経由しない。訂正は過去の記録を正すもので、新しい施術の
+      # 同意とは別の話。判断の理由は QuestionnairesController#consent_satisfied?
+      # に書いてある。
       return intake_questionnaire_path if record.purpose_revision?
 
       Consent.current_for?(record.user) ? intake_questionnaire_path : new_intake_consent_path
