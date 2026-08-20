@@ -54,6 +54,34 @@
       .intake-actions button:disabled { opacity: .4; }
       .intake-status { margin-top: 12px; min-height: 24px; color: #b45309; font-size: 15px; }
       .intake-version { font-size: 13px; color: #9ca3af; margin-top: 24px; }
+
+      /* 確認画面。読む部分と署名する部分を箱で分ける */
+      .intake-card {
+        margin-top: 20px; padding: 16px 20px; background: #fff;
+        border: 1px solid #e5e7eb; border-radius: 8px;
+      }
+      .intake-card-title {
+        font-size: 16px; font-weight: 600; margin: 0 0 12px;
+        padding-bottom: 8px; border-bottom: 2px solid #e5e7eb;
+      }
+      .intake-changes { margin: 0; padding-left: 20px; font-size: 15px; }
+      .intake-changes li { margin-bottom: 6px; }
+      .intake-field { display: block; margin-top: 16px; border: 0; padding: 0; }
+      .intake-field > span, .intake-field > legend {
+        display: block; font-size: 15px; color: #4b5563; margin-bottom: 6px; padding: 0;
+      }
+      .intake-field input[type="text"] {
+        width: 100%; min-height: 52px; padding: 12px; font-size: 16px;
+        border: 1px solid #d1d5db; border-radius: 8px;
+      }
+      .intake-choice {
+        display: inline-flex; align-items: center; gap: 8px;
+        min-height: 52px; padding: 0 20px; margin-right: 10px;
+        border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
+        font-size: 16px; cursor: pointer; touch-action: manipulation;
+      }
+      .intake-choice input { width: 20px; height: 20px; }
+      .intake-choice:has(input:checked) { border-color: #1d4ed8; background: #eff6ff; }
     </style>
   </head>
   <body>

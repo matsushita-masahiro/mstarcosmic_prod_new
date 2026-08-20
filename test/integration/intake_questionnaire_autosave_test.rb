@@ -256,6 +256,9 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
 
     submit(body_marks: [ { "side" => "back", "x" => 0.9, "y" => 0.9 } ])
     assert_response :created
+    assert draft, "送信しただけでは確定しない（署名まで下書きのまま）"
+
+    confirm
 
     questionnaire = @patient.medical_questionnaires.reload.last
     assert questionnaire.status_submitted?
@@ -270,6 +273,7 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
       body_marks: [ { "side" => "front", "x" => 0.3, "y" => 0.4 } ]
     )
     assert_response :created
+    confirm
 
     questionnaire = @patient.medical_questionnaires.reload.last
     assert questionnaire.status_submitted?
@@ -293,8 +297,16 @@ class IntakeQuestionnaireAutosaveTest < ActionDispatch::IntegrationTest
   end
 
   # 送信（POST）。JS 側は3点セットを必ず送る。
+  # ここでは確定しない。確認画面で署名するまで下書きのまま残る。
   def submit(answers: {}, handwriting: nil, body_marks: nil)
     post intake_questionnaires_path, params: json_params(answers, handwriting, body_marks)
+  end
+
+  # 確認画面での署名（POST）。submit! が走るのはここ。
+  def confirm(signer_name: "患者")
+    post intake_questionnaire_confirmation_path,
+         params: { signer_name: signer_name, signer_relation: "self_signed",
+                   signature_strokes: SIGNATURE_STROKES.to_json }
   end
 
   def json_params(answers, handwriting, body_marks)

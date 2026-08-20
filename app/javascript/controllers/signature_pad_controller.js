@@ -36,6 +36,9 @@ export default class extends Controller {
     this.submitting = false
     this.lastWidth = 0
 
+    // updateState が出した案内。消していいのはこれと一致するものだけ
+    this.shownHint = null
+
     this.pad.addEventListener("endStroke", () => this.updateState())
 
     // パームリジェクション：一度でも Pencil が使われたら以降の指入力を無視
@@ -108,21 +111,50 @@ export default class extends Controller {
   // disabled なボタンは押しても無反応で理由が分からないため、
   // 何をすれば送れるのかを文言で出す。
   //
-  // 消していいのは自分が出した EMPTY_HINT だけ。無条件に空文字で上書きすると、
+  // 消していいのは自分が出した案内だけ。無条件に空文字で上書きすると、
   // 送信失敗のエラーを直後の updateState（submit の finally）で消してしまう。
   updateState() {
     if (!this.hasSubmitTarget) return
 
-    const empty = this.pad.isEmpty()
-    this.submitTarget.disabled = empty || this.submitting
+    const hint = this.blockedHint()
+    this.submitTarget.disabled = hint !== null || this.submitting
 
     if (this.submitting) return
 
-    if (empty) {
-      this.setStatus(EMPTY_HINT)
-    } else if (this.currentStatus() === EMPTY_HINT) {
+    if (hint !== null) {
+      this.shownHint = hint
+      this.setStatus(hint)
+    } else if (this.currentStatus() === this.shownHint) {
+      this.shownHint = null
       this.setStatus("")
     }
+  }
+
+  // 送信できない理由。送れる状態なら null。
+  //
+  // 署名だけでなく、署名と一緒に送る入力欄（問診票の署名者名など）も見る。
+  // 同意書には data-signature-pad-required を持つ要素が無いので、
+  // 従来どおり「署名が空かどうか」だけで決まる。
+  blockedHint() {
+    if (this.pad.isEmpty()) return EMPTY_HINT
+
+    const missing = Array.from(this.element.querySelectorAll("[data-signature-pad-required]"))
+                         .find((el) => el.value.trim() === "")
+
+    // 属性の値が、空のときに出す案内文になる
+    return missing ? missing.dataset.signaturePadRequired : null
+  }
+
+  // 署名と一緒に送る値。
+  // data-signature-pad-field="signer_name" を付けた入力を、その名前で載せる。
+  // ラジオ・チェックボックスは選ばれているものだけを見る。
+  extraFields() {
+    const fields = {}
+    this.element.querySelectorAll("[data-signature-pad-field]").forEach((el) => {
+      if ((el.type === "radio" || el.type === "checkbox") && !el.checked) return
+      fields[el.dataset.signaturePadField] = el.value
+    })
+    return fields
   }
 
   currentStatus() {
@@ -130,14 +162,18 @@ export default class extends Controller {
   }
 
   async submit() {
-    if (this.pad.isEmpty() || this.submitting) return
+    if (this.blockedHint() !== null || this.submitting) return
     this.submitting = true
     this.submitTarget.disabled = true
     this.setStatus("送信中…")
 
     const body = new FormData()
     body.append("signature_image", this.pad.toDataURL("image/png"))
+    // toData() をそのまま送る。座標だけに間引かないこと。
+    // 各点の time から筆速・筆順が復元でき、模倣筆跡の検出はここに依存している。
     body.append("signature_strokes", JSON.stringify(this.pad.toData()))
+
+    Object.entries(this.extraFields()).forEach(([name, value]) => body.append(name, value))
 
     try {
       const res = await fetch(this.submitUrlValue, {

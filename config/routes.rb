@@ -10,6 +10,12 @@ Rails.application.routes.draw do
       resource :consent, only: %i[new create]
       resource :questionnaire, only: %i[show update], controller: "questionnaires"
       resources :questionnaires, only: %i[create]
+
+      # 記入 → [送信] で下書きが保存され、ここへ来る。
+      # 内容を一覧で読んでもらい、署名して初めて確定する（submit! が走る）。
+      # 記入画面へ戻れるので、確定前なら何度でも直せる。
+      resource :questionnaire_confirmation, only: %i[show create],
+               path: "questionnaire/confirm", controller: "questionnaire_confirmations"
       get "expired", to: "sessions#expired", as: :expired
       get "thanks",  to: "sessions#thanks",  as: :thanks
       root to: "sessions#expired", as: :root

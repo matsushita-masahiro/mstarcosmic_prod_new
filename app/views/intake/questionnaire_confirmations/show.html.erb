@@ -1,0 +1,175 @@
+<%#
+  記入内容の確認と署名。
+
+  【回答一覧は karte/users/_answer をそのまま使う】
+  設問定義から表示を組み立てる処理を2つ持つと、様式が改訂されたときに
+  片方だけが古いまま残る。患者が署名した内容とスタッフが読む内容が
+  食い違うのは、この機能で最も避けたい壊れ方なので、
+  「同じ設問定義から同じ部分テンプレートで描く」を守る。
+
+  【実機で確認すること】
+  署名欄は Stimulus（signature-pad）で、canvas の幅が確定してから
+  測り直す仕組みに頼っている。ヘッドレス Chrome では
+  レイアウトが即座に確定するため、この待ち合わせの不備は再現しない。
+  iPad 実機で「開いた直後に指でなぞって線が出るか」を必ず見ること。
+%>
+<% revising = @diff.present? %>
+
+<h1><%= revising ? "訂正内容のご確認" : "記入内容のご確認" %></h1>
+
+<p class="intake-meta">
+  <%= current_patient.name_kana.presence || current_patient.name %> 様
+  ／ 会員No. <%= current_patient.karte_member_no %>
+</p>
+
+<p class="intake-hint" style="margin-bottom:16px;">
+  <% if revising %>
+    直したあとの内容です。間違いがなければ、いちばん下でご署名ください。
+  <% else %>
+    ご記入いただいた内容です。間違いがなければ、いちばん下でご署名ください。
+  <% end %>
+</p>
+
+<%# ── 訂正の場合、何を変えたのか ────────────────────
+
+    折りたたまない。患者に確かめてほしいのはまさにここで、
+    開かないと見えない場所に置くと確認したことにならない。 %>
+<% if revising %>
+  <section class="intake-card" style="border-color:#f59e0b;background:#fffbeb;">
+    <h2 class="intake-card-title" style="color:#b45309;">前回から変わったところ</h2>
+
+    <% if @diff.any_change? %>
+      <ul class="intake-changes">
+        <% @diff.flag_changes.each do |change| %>
+          <li>
+            <%= change.label %>:
+            <span style="color:#6b7280;"><%= change.before %></span> →
+            <strong><%= change.after %></strong>
+          </li>
+        <% end %>
+
+        <% @diff.answer_changes.each do |change| %>
+          <li>
+            <%= change.label %>:
+            <span style="color:#6b7280;"><%= change.before %></span> →
+            <strong><%= change.after %></strong>
+          </li>
+        <% end %>
+
+        <% @diff.handwriting_changes.each do |change| %>
+          <li><%= change.label %>: <strong>書き直しました</strong></li>
+        <% end %>
+
+        <% if @diff.body_marks_changed? %>
+          <li>痛み・気になるところの図: <strong>書き直しました</strong></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p style="margin:0;color:#92400e;">
+        前回の内容から変わったところはありません。<br>
+        このまま署名すると、同じ内容で新しい記録として保存されます。
+      </p>
+    <% end %>
+  </section>
+<% end %>
+
+<%# ── 回答の一覧 ───────────────────────────── %>
+<section class="intake-card">
+  <h2 class="intake-card-title">
+    <%= revising ? "直したあとの内容" : "ご記入いただいた内容" %>
+  </h2>
+
+  <% @questions.each do |question| %>
+    <%= render "karte/users/answer", question: question,
+          questionnaire: @questionnaire, entries: @entries, depth: 0 %>
+  <% end %>
+
+  <p class="intake-hint">※ ご記入のなかった項目は表示していません。</p>
+</section>
+
+<%# ── 人体図 ──────────────────────────────── %>
+<% if @body_marks.any? %>
+  <section class="intake-card">
+    <h2 class="intake-card-title">痛み・気になるところ</h2>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
+      <%= render "karte/users/body_marks", side: "front", body_marks: @body_marks %>
+      <%= render "karte/users/body_marks", side: "back",  body_marks: @body_marks %>
+    </div>
+    <% notes = @body_marks.select { |m| m.note.present? } %>
+    <% if notes.any? %>
+      <ul style="margin:8px 0 0;padding-left:20px;font-size:15px;">
+        <% notes.each { |m| %><li><%= m.note %></li><% } %>
+      </ul>
+    <% end %>
+  </section>
+<% end %>
+
+<%# ── 書き直す導線 ──────────────────────────
+
+    署名の前に置く。間違いに気づいてから署名するのでは意味がない。
+    下書きはそのまま残っているので、戻っても書き直しにはならない。 %>
+<p style="margin:20px 0 0;text-align:center;">
+  <%= link_to "内容を書き直す", intake_questionnaire_path,
+        style: "display:inline-block;min-height:52px;line-height:52px;padding:0 28px;" \
+               "border:1px solid #d1d5db;border-radius:8px;background:#fff;" \
+               "color:#374151;text-decoration:none;font-size:16px;" %>
+</p>
+
+<%# ── 署名 ───────────────────────────────── %>
+<section class="intake-card" style="margin-top:24px;">
+  <h2 class="intake-card-title">ご署名</h2>
+
+  <div data-controller="signature-pad"
+       data-signature-pad-submit-url-value="<%= intake_questionnaire_confirmation_path %>">
+
+    <p style="font-size:16px;margin:0 0 16px;">
+      <% if revising %>
+        上記の訂正内容に相違ないことを確認しました。
+      <% else %>
+        上記の記入内容に相違ないことを確認しました。
+      <% end %>
+    </p>
+
+    <label class="intake-field">
+      <span>ご署名される方のお名前</span>
+      <input type="text" value="<%= @signer_name %>"
+             data-signature-pad-field="signer_name"
+             data-signature-pad-required="ご署名される方のお名前をご入力ください。"
+             data-action="input->signature-pad#updateState">
+    </label>
+
+    <%# ご家族が代筆した場合に「別人の署名だ」と誤って判定されるのを防ぐ。
+        同意書と問診票の署名者を突き合わせる場面で効く。 %>
+    <fieldset class="intake-field">
+      <legend>ご本人がご署名されますか</legend>
+      <label class="intake-choice">
+        <input type="radio" name="signer_relation" value="self_signed" checked
+               data-signature-pad-field="signer_relation"> 本人
+      </label>
+      <label class="intake-choice">
+        <input type="radio" name="signer_relation" value="guardian"
+               data-signature-pad-field="signer_relation"> 代理人（ご家族など）
+      </label>
+    </fieldset>
+
+    <p class="intake-hint" style="margin-top:16px;">
+      下の枠内に、Apple Pencil または指でご署名ください。
+    </p>
+
+    <div class="intake-signature">
+      <canvas data-signature-pad-target="canvas"></canvas>
+      <div class="baseline"></div>
+    </div>
+
+    <div class="intake-actions">
+      <button type="button" data-action="signature-pad#clear">書き直す</button>
+      <button type="button" class="primary"
+              data-action="signature-pad#submit"
+              data-signature-pad-target="submit" disabled>
+        上記の内容で確定する
+      </button>
+    </div>
+
+    <p class="intake-status" data-signature-pad-target="status" role="status" aria-live="polite"></p>
+  </div>
+</section>

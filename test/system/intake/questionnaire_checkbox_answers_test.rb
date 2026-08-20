@@ -165,8 +165,23 @@ class Intake::QuestionnaireCheckboxAnswersTest < ApplicationSystemTestCase
     choose_radio("q10_pacemaker", "no")
   end
 
+  # 送信 → 確認画面で署名 → 確定。
+  # [送信] だけでは下書きが保存されるだけで確定しない
+  # （第4段階で確認署名を挟んだ。test/system/intake/questionnaire_signature_test.rb）。
   def submit_questionnaire
     click_on "記入内容を送信する"
-    assert_text "ありがとうございました", wait: 10
+    assert_current_path intake_questionnaire_confirmation_path, wait: 10
+
+    # 確認画面にも複数選択の回答が出ていること。ここで消えていたら
+    # 患者は「答えていない内容」に署名させられることになる。
+    assert_text "糖尿病、癌"
+
+    canvas = find('[data-signature-pad-target="canvas"]')
+    page.driver.browser.action
+        .move_to(canvas.native, 10, 10)
+        .click_and_hold.move_by(40, 20).move_by(40, -10).release.perform
+
+    click_on "上記の内容で確定する"
+    assert_current_path intake_thanks_path, wait: 10
   end
 end

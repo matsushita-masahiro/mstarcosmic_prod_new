@@ -1,5 +1,7 @@
 module Intake
   class QuestionnairesController < BaseController
+    include QuestionnaireDraft
+
     def show
       return redirect_to new_intake_consent_path unless consent_satisfied?
 
@@ -57,6 +59,18 @@ module Intake
       render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
     end
 
+    # 記入内容をひととおり保存して、確認画面へ送る。
+    #
+    # ここでは確定しない。submit! が走るのは確認画面で署名したときだけ
+    # （QuestionnaireConfirmationsController#create）。
+    # 「読んで、確認して、署名した」という順序を画面で分けるため、
+    # 記入の末尾に署名欄を置く形にはしていない。
+    #
+    # 下書きのまま残すので、確認画面から戻って書き直せる。
+    # 途中で離脱してもこの時点の内容は残る（署名直前でやめても書き直しにならない）。
+    #
+    # トークンの失効（intake_session.complete!）と性別の反映も確定側へ移した。
+    # ここで失効させると、確認画面から記入画面へ戻れなくなる。
     def create
       questionnaire = find_or_build_draft
       questionnaire.answers = parsed_answers
@@ -65,14 +79,9 @@ module Intake
         questionnaire.save!
         save_handwriting_entries(questionnaire, parse_json_param(:handwriting))
         save_body_marks(questionnaire, parse_json_param(:body_marks))
-        questionnaire.submit!(intake_session: intake_session)
-        sync_gender_if_needed(questionnaire)
       end
 
-      intake_session.complete!(ip: request.remote_ip, user_agent: request.user_agent)
-      session[:completed_signer_name] = current_patient.name.presence || current_patient.name_kana
-
-      render json: { redirect_to: intake_thanks_path }, status: :created
+      render json: { redirect_to: intake_questionnaire_confirmation_path }, status: :created
     rescue ActiveRecord::RecordInvalid => e
       render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
     end
@@ -83,14 +92,11 @@ module Intake
     # revision（版番号）は前版から自動で継がれる（MedicalQuestionnaire 側）。
     # 初回記入では revision_target が nil なので従来と同じ。
     def find_or_build_draft
-      current_patient.medical_questionnaires
-                     .status_draft
-                     .where(intake_session: intake_session)
-                     .first_or_initialize(
-                       form_version: MedicalQuestionnaireForm::VERSION,
-                       intake_session: intake_session,
-                       previous_version: revision_target
-                     )
+      draft_scope.first_or_initialize(
+        form_version: MedicalQuestionnaireForm::VERSION,
+        intake_session: intake_session,
+        previous_version: revision_target
+      )
     end
 
     # 訂正の対象。初回記入では nil。
@@ -150,17 +156,6 @@ module Intake
       raw.is_a?(String) ? JSON.parse(raw) : raw.to_unsafe_h
     rescue JSON::ParserError
       {}
-    end
-
-    # 問診票で性別を聞いた場合、users 側が未設定なら反映する。
-    # 既に値がある場合は上書きしない（患者の自己申告より既存データを優先）。
-    def sync_gender_if_needed(questionnaire)
-      return if current_patient.gender.present?
-
-      answer = questionnaire.answers["q0_gender"]
-      return if answer.blank?
-
-      current_patient.update_column(:gender, answer == "female" ? "f" : "m")
     end
 
     # 届いた handwriting は「今この時点の全欄の状態」を表す。

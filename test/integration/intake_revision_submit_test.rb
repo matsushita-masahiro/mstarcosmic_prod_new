@@ -184,10 +184,22 @@ class IntakeRevisionSubmitTest < ActionDispatch::IntegrationTest
       "width" => 860, "height" => 140 }
   end
 
+  # 記入内容の送信から確定まで。
+  #
+  # 送信（POST /questionnaires）だけでは下書きが保存されるだけで、
+  # 確定は確認画面での署名（POST /questionnaire/confirm）で起きる。
+  # このファイルが見ているのは「送信でどんなレコードができるか」なので、
+  # 2段階をまとめて1つの操作として扱う。
+  # 署名を出さない経路そのものは
+  # test/integration/intake_questionnaire_signature_test.rb が見ている。
   def submit(answers: {}, handwriting: nil, body_marks: nil)
     params = { answers: answers.to_json }
     params[:handwriting] = handwriting.to_json unless handwriting.nil?
     params[:body_marks] = body_marks.to_json unless body_marks.nil?
     post intake_questionnaires_path, params: params
+
+    post intake_questionnaire_confirmation_path,
+         params: { signer_name: "患者", signer_relation: "self_signed",
+                   signature_strokes: SIGNATURE_STROKES.to_json }
   end
 end
