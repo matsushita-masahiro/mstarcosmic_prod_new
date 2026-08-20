@@ -43,4 +43,68 @@ class MedicalQuestionnaire < ApplicationRecord
   end
 
   def answer(key) = answers[key.to_s]
+
+  # 記入途中の内容を、患者端末の localStorage と同じ形で返す。
+  #
+  # intake のフォームはサーバの下書きを ERB では描かず、この JSON を
+  # questionnaire_controller.js の復元処理にそのまま渡す。
+  # 出所が localStorage でもサーバでも復元は1本のままにするため、
+  # 形（キー名・値の型）を端末側に合わせている。
+  # saveLocalDraft() の形を変えるときは、ここも一緒に変えること。
+  #
+  # PNG（image）は含めない。restore() は strokes からしか描き直さず、
+  # 表示には要らない。HTML に base64 を埋めると本文が肥大するだけになる。
+  #
+  # savedAt は端末側と同じくミリ秒。24時間判定には使われない
+  # （サーバの下書きは intake_session に紐づき、セッションは30分で失効する）。
+  #
+  # 戻せるものが何も無いときは nil を返す。空の下書きを渡すと
+  # 画面は何も変わらないのに「読み込みました」とだけ出て患者を混乱させる。
+  def draft_snapshot
+    return nil unless persisted?
+
+    handwriting = handwriting_snapshot
+    marks = body_marks_snapshot
+    return nil if answers.blank? && handwriting.empty? && marks.empty?
+
+    {
+      savedAt: (updated_at.to_f * 1000).round,
+      answers: answers,
+      handwriting: handwriting,
+      bodyMarks: marks
+    }
+  end
+
+  private
+
+  # 端末側の collectHandwriting() と同じものだけを返す。
+  #
+  # collectHandwriting() は空欄のキーを落とすため、こちらが空欄を含めると
+  # verifyRestore() が「保存されていたのに画面に戻っていない欄」と数え、
+  # restoreVerified が false のまま partial 付きの送信が続いてしまう。
+  # 「画面に戻せるか」で揃えるので、中身が空のものはここで落とす。
+  def handwriting_snapshot
+    handwriting_entries.each_with_object({}) do |entry, result|
+      if entry.input_mode_keyboard?
+        next if entry.transcribed_text.blank?
+        result[entry.question_key] = { mode: "keyboard", text: entry.transcribed_text }
+      else
+        next if entry.strokes.blank?
+        result[entry.question_key] = {
+          mode: "pen", strokes: entry.strokes,
+          width: entry.canvas_width, height: entry.canvas_height
+        }
+      end
+    end
+  end
+
+  # 端末側の body-map は x / y を数値で持つ。
+  # decimal のまま to_json すると文字列になり、送り返された値が
+  # 端末側と一致しなくなるので float に揃える。
+  def body_marks_snapshot
+    body_marks.map do |mark|
+      { side: mark.side, x: mark.x.to_f, y: mark.y.to_f,
+        mark_type: mark.mark_type, note: mark.note }.compact
+    end
+  end
 end

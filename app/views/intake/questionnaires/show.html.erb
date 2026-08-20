@@ -8,7 +8,12 @@
 <div data-controller="questionnaire conditional-field"
      data-questionnaire-update-url-value="<%= intake_questionnaire_path %>"
      data-questionnaire-create-url-value="<%= intake_questionnaires_path %>"
-     data-questionnaire-storage-key-value="intake_draft_<%= current_patient.id %>">
+     data-questionnaire-storage-key-value="intake_draft_<%= current_patient.id %>"
+     <%# サーバに残っている下書き。端末に残っていないときだけ使われる。
+         戻せるものが無ければ @server_draft は nil で、属性ごと出さない。 %>
+     <% if @server_draft %>
+       data-questionnaire-server-draft-value="<%= @server_draft.to_json %>"
+     <% end %>>
 
   <p class="intake-status" data-questionnaire-target="status" role="status" aria-live="polite"></p>
 

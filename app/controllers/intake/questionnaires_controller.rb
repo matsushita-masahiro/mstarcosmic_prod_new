@@ -6,6 +6,15 @@ module Intake
       @questionnaire = find_or_build_draft
       @questions = MedicalQuestionnaireForm::QUESTIONS
 
+      # 記入途中の内容を端末の localStorage と同じ形で渡し、JS 側で描き直す。
+      # ERB の各 input に値を埋めないのは、手書き（canvas）が結局 JS でしか
+      # 描けず、二重管理になるため。復元処理を1本に保つ。
+      #
+      # 端末に下書きが残っていればそちらが優先される（最後の autosave が
+      # 届いていない最大30秒ぶんは端末にしかない）。ここで渡すのは
+      # localStorage が使えなかったときの受け皿。
+      @server_draft = @questionnaire.draft_snapshot
+
       # users.gender があればそれを使い、無ければ問診票の冒頭で聞く
       @gender_known = current_patient.gender_known?
       @is_female = current_patient.female?
