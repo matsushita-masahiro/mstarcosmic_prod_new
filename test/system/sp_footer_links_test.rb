@@ -19,12 +19,23 @@ class SpFooterLinksTest < ApplicationSystemTestCase
     "プライバシーポリシー" => "/privacy"
   }.freeze
 
+  # 上書きを戻し忘れると、後続のテストを巻き添えにする。
+  #
   # CDP の上書きはブラウザ側の状態で、Capybara のセッションリセットでは消えない。
-  # 同じプロセスで後続のテストが走ると 390px のまま開始し、PC 用の #footer が
-  # display:none のまま見えない、という無関係な失敗になる（実際 seed 1 で
-  # PrivacyPageTest が落ちる）。テストごとに必ず戻す。
-  teardown do
-    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  # 同じプロセスで後続のテストが 390px のまま開始すると、PC 用の #footer が
+  # display:none で見えず、無関係な失敗になる
+  # （PrivacyPageTest の「フッターのリンクからプライバシーポリシーへ遷移できる」）。
+  #
+  # 以前は teardown だけで戻していたが、それだと落ち方によっては届かない。
+  # 本体が例外で終わると、失敗時のスクリーンショット取得も teardown も
+  # ブラウザを触る。ブラウザ自体が死んでいるとそこで連鎖的に落ち、
+  # 上書きが残ったまま次のテストへ渡る（実際に PrivacyPageTest が
+  # 巻き添えで落ちた）。本体を抜けた時点で ensure で戻す。
+  def with_viewport(width, height)
+    set_viewport(width, height)
+    yield
+  ensure
+    clear_viewport
   end
 
   # headless chrome の window.resize_to はウィンドウ枠の分だけ大きくなり、
@@ -36,6 +47,18 @@ class SpFooterLinksTest < ApplicationSystemTestCase
     )
   end
 
+  # 戻せなかったこと自体では落とさない。
+  # ブラウザが落ちている場合は上書きも道連れになっているので戻す必要が無く、
+  # ここで例外を上げると本来の失敗理由がこれに置き換わって読めなくなる。
+  def clear_viewport
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  rescue StandardError
+    nil
+  end
+
+  # with_viewport を通さず set_viewport を呼んだ場合の保険。
+  teardown { clear_viewport }
+
   # 条件が満たされるまで待つ。満たされなければ Timeout::Error で落とす。
   def wait_until(message)
     Timeout.timeout(Capybara.default_max_wait_time) do
@@ -46,42 +69,50 @@ class SpFooterLinksTest < ApplicationSystemTestCase
   end
 
   test "792px以下でフッターに5つのリンクが表示される" do
-    set_viewport(390, 844)
-    visit "/"
+    with_viewport(390, 844) do
+      visit "/"
 
-    # visible: true が既定。display:none なら 0 件になりここで落ちる。
-    assert_selector "#sp-footer-links a", count: EXPECTED_LINKS.size
+      # visible: true が既定。display:none なら 0 件になりここで落ちる。
+      assert_selector "#sp-footer-links a", count: EXPECTED_LINKS.size
 
-    within "#sp-footer-links" do
-      EXPECTED_LINKS.each do |label, path|
-        assert_link label, href: path
+      within "#sp-footer-links" do
+        EXPECTED_LINKS.each do |label, path|
+          assert_link label, href: path
+        end
       end
-    end
 
-    # 縦2列であること
-    columns = page.evaluate_script(<<~JS)
-      getComputedStyle(document.querySelector('#sp-footer-links ul')).gridTemplateColumns
-    JS
-    assert_equal 2, columns.split.size,
-      "リンクは縦2列で表示される想定 (grid-template-columns: #{columns})"
+      # 縦2列であること
+      columns = page.evaluate_script(<<~JS)
+        getComputedStyle(document.querySelector('#sp-footer-links ul')).gridTemplateColumns
+      JS
+      assert_equal 2, columns.split.size,
+        "リンクは縦2列で表示される想定 (grid-template-columns: #{columns})"
+    end
   end
 
+  # ここで見るのは「押したら正しい先へ飛ぶか」だけ。
+  # 「スクロールせずに押せる位置にあるか」＝固定ボタンに覆われていないかは、
+  # 下の「792px以下でリンクが下部の固定ボタンに覆われていない」が担当する。
   test "792px以下で各リンクが正しい遷移先へ飛ぶ" do
-    EXPECTED_LINKS.each do |label, path|
-      set_viewport(390, 844)
-      visit "/"
-      within("#sp-footer-links") { click_link label }
-      assert_current_path path
+    with_viewport(390, 844) do
+      EXPECTED_LINKS.each do |label, path|
+        visit "/"
+
+        within("#sp-footer-links") { click_link label }
+
+        assert_current_path path
+      end
     end
   end
 
   test "793px以上ではsp-footer-linksが表示されずPCのフッターが出る" do
-    set_viewport(793, 900)
-    visit "/"
+    with_viewport(793, 900) do
+      visit "/"
 
-    # PC で出るとリンクが二重になる
-    assert_no_selector "#sp-footer-links a"
-    assert_selector "#footer .footer-middle a", minimum: 1
+      # PC で出るとリンクが二重になる
+      assert_no_selector "#sp-footer-links a"
+      assert_selector "#footer .footer-middle a", minimum: 1
+    end
   end
 
   # 下部の固定ボタン（.new_customer_banner / .price_banner）は position:fixed で
@@ -92,62 +123,64 @@ class SpFooterLinksTest < ApplicationSystemTestCase
   # #sp-footer-links の余白を vw で書くと狭い幅ほど詰まるため、
   # 最悪ケースになるこの幅で判定する。
   test "792px以下でリンクが下部の固定ボタンに覆われていない" do
-    set_viewport(320, 568)
-    visit "/"
+    # 判定内容は変えていない。viewport の戻しを ensure に載せるために包んだだけ。
+    with_viewport(320, 568) do
+      visit "/"
 
-    # 固定ボタンの表示は price_banner.js が scroll イベントで行う。ハンドラは
-    # DOMContentLoaded で登録されるため、登録前に一度スクロールしただけだと
-    # 二度と scroll が来ず、ボタンが出ないまま判定してしまう。
-    # 上→下を繰り返して本物の scroll イベントを起こし、出るまで待つ。
-    wait_until("固定ボタン(.floating)が表示されなかった") do
-      page.execute_script(<<~JS)
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
-      JS
-      page.has_selector?(".floating", visible: true, minimum: 1, wait: 0)
-    end
+      # 固定ボタンの表示は price_banner.js が scroll イベントで行う。ハンドラは
+      # DOMContentLoaded で登録されるため、登録前に一度スクロールしただけだと
+      # 二度と scroll が来ず、ボタンが出ないまま判定してしまう。
+      # 上→下を繰り返して本物の scroll イベントを起こし、出るまで待つ。
+      wait_until("固定ボタン(.floating)が表示されなかった") do
+        page.execute_script(<<~JS)
+          window.scrollTo({ top: 0, behavior: 'instant' });
+          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+        JS
+        page.has_selector?(".floating", visible: true, minimum: 1, wait: 0)
+      end
 
-    # スクロールが落ち着き、リンクが画面内に入るまで待つ。
-    # 画面外だと elementFromPoint が null を返し、覆われていると誤判定する。
-    wait_until("#sp-footer-links が画面内に収まらなかった") do
-      page.evaluate_script(<<~JS)
+      # スクロールが落ち着き、リンクが画面内に入るまで待つ。
+      # 画面外だと elementFromPoint が null を返し、覆われていると誤判定する。
+      wait_until("#sp-footer-links が画面内に収まらなかった") do
+        page.evaluate_script(<<~JS)
+          (() => {
+            const r = document.querySelector('#sp-footer-links').getBoundingClientRect();
+            return r.top >= 0 && r.bottom <= window.innerHeight;
+          })()
+        JS
+      end
+
+      # 判定は固定ボタンが実際に見えている前提で行う
+      assert_selector ".floating", visible: true, minimum: 1
+
+      # 判定は2つ。
+      # 1. リンクの中心にある要素がリンク自身か（elementFromPoint）
+      #    → 全面を覆われている場合を捕まえる。
+      # 2. リンクの矩形が固定ボタンの矩形と1pxでも重なっていないか
+      #    → 中心は生きているが下端だけ潜り込んでいる、を捕まえる。
+      #      中心だけ見ると padding-bottom を 0 にしても通ってしまうため必要。
+      covered = page.evaluate_script(<<~JS)
         (() => {
-          const r = document.querySelector('#sp-footer-links').getBoundingClientRect();
-          return r.top >= 0 && r.bottom <= window.innerHeight;
+          const bars = [...document.querySelectorAll('.floating')]
+            .filter(e => getComputedStyle(e).visibility === 'visible')
+            .map(e => e.getBoundingClientRect());
+
+          return [...document.querySelectorAll('#sp-footer-links a')].filter(a => {
+            const r = a.getBoundingClientRect();
+
+            const el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+            if (!(el && el.closest('#sp-footer-links'))) return true;
+
+            return bars.some(b =>
+              r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top
+            );
+          }).map(a => a.textContent.trim());
         })()
       JS
+
+      assert_empty covered,
+        "固定ボタンに覆われているリンクがある: #{covered.join(', ')}。" \
+        "#sp-footer-links の padding-bottom を増やすこと"
     end
-
-    # 判定は固定ボタンが実際に見えている前提で行う
-    assert_selector ".floating", visible: true, minimum: 1
-
-    # 判定は2つ。
-    # 1. リンクの中心にある要素がリンク自身か（elementFromPoint）
-    #    → 全面を覆われている場合を捕まえる。
-    # 2. リンクの矩形が固定ボタンの矩形と1pxでも重なっていないか
-    #    → 中心は生きているが下端だけ潜り込んでいる、を捕まえる。
-    #      中心だけ見ると padding-bottom を 0 にしても通ってしまうため必要。
-    covered = page.evaluate_script(<<~JS)
-      (() => {
-        const bars = [...document.querySelectorAll('.floating')]
-          .filter(e => getComputedStyle(e).visibility === 'visible')
-          .map(e => e.getBoundingClientRect());
-
-        return [...document.querySelectorAll('#sp-footer-links a')].filter(a => {
-          const r = a.getBoundingClientRect();
-
-          const el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-          if (!(el && el.closest('#sp-footer-links'))) return true;
-
-          return bars.some(b =>
-            r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top
-          );
-        }).map(a => a.textContent.trim());
-      })()
-    JS
-
-    assert_empty covered,
-      "固定ボタンに覆われているリンクがある: #{covered.join(', ')}。" \
-      "#sp-footer-links の padding-bottom を増やすこと"
   end
 end
