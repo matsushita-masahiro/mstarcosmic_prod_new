@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_08_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_21_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -139,8 +139,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_08_100000) do
     t.string "client_user_agent"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "purpose", default: 0, null: false
+    t.bigint "target_questionnaire_id"
     t.index ["expires_at"], name: "index_intake_sessions_on_expires_at"
     t.index ["issuer_id"], name: "index_intake_sessions_on_issuer_id"
+    t.index ["target_questionnaire_id"], name: "index_intake_sessions_on_target_questionnaire_id"
     t.index ["token_digest"], name: "index_intake_sessions_on_token_digest", unique: true
     t.index ["user_id"], name: "index_intake_sessions_on_user_id"
   end
@@ -196,10 +199,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_08_100000) do
     t.bigint "reviewed_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "previous_id"
+    t.integer "revision", default: 1, null: false
+    t.text "revision_note"
     t.index ["answers"], name: "index_medical_questionnaires_on_answers", using: :gin
     t.index ["has_pacemaker"], name: "index_medical_questionnaires_on_has_pacemaker"
     t.index ["intake_session_id"], name: "index_medical_questionnaires_on_intake_session_id"
     t.index ["is_pregnant"], name: "index_medical_questionnaires_on_is_pregnant"
+    t.index ["previous_id"], name: "index_medical_questionnaires_on_previous_id"
     t.index ["reviewed_by_id"], name: "index_medical_questionnaires_on_reviewed_by_id"
     t.index ["user_id", "submitted_at"], name: "index_medical_questionnaires_on_user_id_and_submitted_at"
     t.index ["user_id"], name: "index_medical_questionnaires_on_user_id"
@@ -464,11 +471,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_08_100000) do
   add_foreign_key "consents", "intake_sessions"
   add_foreign_key "consents", "users"
   add_foreign_key "handwriting_entries", "medical_questionnaires"
+  add_foreign_key "intake_sessions", "medical_questionnaires", column: "target_questionnaire_id"
   add_foreign_key "intake_sessions", "users"
   add_foreign_key "intake_sessions", "users", column: "issuer_id"
   add_foreign_key "karte_access_logs", "users", column: "actor_id"
   add_foreign_key "karte_access_logs", "users", column: "patient_id"
   add_foreign_key "medical_questionnaires", "intake_sessions"
+  add_foreign_key "medical_questionnaires", "medical_questionnaires", column: "previous_id"
   add_foreign_key "medical_questionnaires", "users"
   add_foreign_key "medical_questionnaires", "users", column: "reviewed_by_id"
   add_foreign_key "ms_inquiry_answers", "metatron_sale_inquiries"
