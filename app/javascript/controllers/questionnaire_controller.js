@@ -13,6 +13,7 @@ const LOCAL_SAVE_DEBOUNCE_MS = 500
 const RESTORE_MAX_FRAMES = 120
 
 // 問診票フォーム全体の制御。
+//   - 開いたとき、端末（優先）またはサーバの下書きを画面に戻す
 //   - 入力のたびに localStorage へ下書き保存（通信断でも記入内容が消えない）
 //   - 30秒ごとにサーバへも下書きを送る（手書き・人体図は変わったときだけ）
 //   - 性別に応じて女性専用設問を出し分ける
@@ -23,7 +24,12 @@ export default class extends Controller {
     updateUrl: String,
     createUrl: String,
     storageKey: String,
-    autosaveInterval: { type: Number, default: 30000 }
+    autosaveInterval: { type: Number, default: 30000 },
+
+    // サーバに残っている下書き。localStorage と同じ形で ERB が埋める
+    // （MedicalQuestionnaire#draft_snapshot）。端末に無いときだけ使う。
+    // 戻せるものが無ければ属性ごと出ないので、hasServerDraftValue で判る。
+    serverDraft: Object
   }
 
   connect() {
@@ -214,7 +220,7 @@ export default class extends Controller {
 
     if (this.childControllersReady() || frame >= RESTORE_MAX_FRAMES) {
       this.restored = true       // 復元は1回だけ。二重描画・上書きを避ける
-      this.restoreLocalDraft()
+      this.restoreDraft()
       return
     }
 
@@ -253,11 +259,10 @@ export default class extends Controller {
     } catch (_e) {
       // 端末に保存できなかった（容量超過など）。
       //
-      // 以前は「サーバ側の下書きが代替になる」として握りつぶしていたが、
-      // その代替は存在しない。intake のフォームはサーバの下書きを描かず
-      // （app/views/intake/ に @questionnaire の参照が無い）、
-      // リロード時の復元は localStorage だけが頼りになっている。
-      // 黙って失敗すると、患者は保存されているつもりで記入を続けてしまう。
+      // サーバの下書きが受け皿になる（リロード時に読み込む）が、それは
+      // autosave が届いたところまでで、直近の最大30秒ぶんはどこにも残らない。
+      // 黙って失敗すると、患者は全部保存されているつもりで記入を続けるので、
+      // 受け皿ができた今も伝え続ける。
       this.setStatus(
         "この端末に一時保存できませんでした。記入の途中でページを閉じないでください。",
         "#b45309"
@@ -288,21 +293,22 @@ export default class extends Controller {
     return copied
   }
 
-  restoreLocalDraft() {
-    let draft
-    try {
-      const raw = localStorage.getItem(this.storageKeyValue)
-      if (!raw) return
-      draft = JSON.parse(raw)
-    } catch (_e) {
-      return
-    }
-
-    // 24時間以上前の下書きは無視（別の来店時のものが残っている可能性）
-    if (!draft.savedAt || Date.now() - draft.savedAt > 86400000) {
-      localStorage.removeItem(this.storageKeyValue)
-      return
-    }
+  // 端末に残っていればそれを、無ければサーバの下書きを画面に戻す。
+  //
+  // localStorage を優先する。同じ端末で書き続けるのが主な使われ方で、
+  // その場合は端末のほうが常に新しい（最後の autosave が届いていない
+  // 最大30秒ぶんを持っている）。サーバの下書きは、端末に残っていなかった
+  // ときの受け皿（別端末・容量超過・プライベートブラウズなど）。
+  //
+  // savedAt と updated_at の時刻比較はしない。端末の時計がずれていると
+  // 誤判定するだけで、得るものが無い。
+  //
+  // 復元処理そのものは1本のまま。出所が変わるだけで、待ち合わせ
+  // （restoreWhenReady）も自己検証（verifyRestore）も両方に効く。
+  restoreDraft() {
+    const local = this.localDraft()
+    const draft = local || this.serverDraft()
+    if (!draft) return
 
     Object.entries(draft.answers || {}).forEach(([key, value]) => {
       const fields = this.formTarget.querySelectorAll(`[name^="answers[${key}]"]`)
@@ -324,15 +330,51 @@ export default class extends Controller {
     // 復元後に条件付き表示を再評価する（この後でないと hidden の判定がずれる）
     this.element.dispatchEvent(new Event("change", { bubbles: true }))
 
-    this.verifyRestore(draft)
+    this.verifyRestore(draft, local ? "local" : "server")
   }
 
-  // 端末に保存されていたものが、実際に画面へ戻ったかを確かめる。
+  // 端末に残っている下書き。読めないもの・古いものは無かったことにする。
+  localDraft() {
+    let draft
+    try {
+      const raw = localStorage.getItem(this.storageKeyValue)
+      if (!raw) return null
+      draft = JSON.parse(raw)
+    } catch (_e) {
+      return null
+    }
+
+    // 24時間以上前の下書きは無視（別の来店時のものが残っている可能性）。
+    // storageKey は患者ごとで来店ごとではないため、前回のものが端末に残る。
+    if (!draft.savedAt || Date.now() - draft.savedAt > 86400000) {
+      localStorage.removeItem(this.storageKeyValue)
+      return null
+    }
+
+    return draft
+  }
+
+  // サーバに残っている下書き。HTML に埋まっていなければ何も返さない。
+  //
+  // こちらには24時間判定を入れない。サーバの下書きは intake_session に
+  // 紐づいており、セッションは30分で失効するので古いものが降ってくる経路が無い。
+  // 端末の時計に依存する判定を増やすと、時計がずれた端末で
+  // 正しい下書きを捨てることになる。
+  serverDraft() {
+    if (!this.hasServerDraftValue) return null
+    const draft = this.serverDraftValue
+    return Object.keys(draft).length ? draft : null
+  }
+
+  // 保存されていたものが、実際に画面へ戻ったかを確かめる。
   //
   // 戻っていない欄があるまま autosave が走ると、サーバはそれを
   // 「患者が消した」と読んで削除する（6本目の意味論）。
   // 端末側の不調と患者の消去操作を取り違えないよう、ここで見分ける。
-  verifyRestore(draft) {
+  //
+  // source は文言を選ぶためだけに使う。判定は出所によらず同じで、
+  // サーバから復元した場合も欠けていれば partial を付けて削除を控える。
+  verifyRestore(draft, source) {
     const savedKeys = Object.keys(draft.handwriting || {})
     const savedMarks = (draft.bodyMarks || []).length
 
@@ -342,14 +384,23 @@ export default class extends Controller {
 
     this.restoreVerified = missing.length === 0 && !marksMissing
 
+    // 端末から戻したときは「前回の続き」だが、サーバから戻したときは
+    // 患者にとって状況が違う（この端末には残っていなかった）。
+    // 端末を前提にした言い方にすると、別端末で書き始めた患者に嘘になる。
+    const fromServer = source === "server"
+
     if (this.restoreVerified) {
-      this.setStatus("前回の記入内容を復元しました", "#059669")
+      this.setStatus(
+        fromServer ? "保存されていた記入内容を読み込みました" : "前回の記入内容を復元しました",
+        "#059669"
+      )
       return
     }
 
     // 記録は守られる（削除は送らない）が、画面は欠けたままなので患者に伝える。
     this.setStatus(
-      "端末に保存されていた記入内容の一部を読み込めませんでした。" +
+      (fromServer ? "保存されていた記入内容" : "端末に保存されていた記入内容") +
+      "の一部を読み込めませんでした。" +
       "空欄のところはお手数ですがもう一度ご記入ください。",
       "#b45309"
     )
