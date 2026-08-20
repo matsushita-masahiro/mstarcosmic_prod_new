@@ -12,6 +12,22 @@ const LOCAL_SAVE_DEBOUNCE_MS = 500
 // autosave が削除方向の送信を控える。
 const RESTORE_MAX_FRAMES = 120
 
+// input の name 属性から answers のキーを取り出す。
+//
+//   "answers[q10_pacemaker]"       → "q10_pacemaker"
+//   "answers[q6_family_history][]" → "q6_family_history"
+//
+// 【1つの正規表現でまとめないこと】
+// 旧実装は /^answers\[|\]$/g で先頭と末尾を同時に剥がしていた。
+// 複数選択の name は "…][]" で終わるため、"]" が末尾の1つだけ落ちて
+// "q6_family_history][" という壊れたキーが残り、jsonb にそのまま保存された。
+// （カルテ側の answer_for("q6_family_history") が nil になり、
+//   家族歴が「答えていない」ように見えていた）
+// 先頭と末尾は必ず別々に、末尾は "][]" を1かたまりとして剥がす。
+function answerKey(name) {
+  return name.replace(/^answers\[/, "").replace(/\](?:\[\])?$/, "")
+}
+
 // 問診票フォーム全体の制御。
 //   - 開いたとき、端末（優先）またはサーバの下書きを画面に戻す
 //   - 入力のたびに localStorage へ下書き保存（通信断でも記入内容が消えない）
@@ -103,7 +119,7 @@ export default class extends Controller {
     const answers = {}
     const fd = new FormData(this.formTarget)
     for (const [name, value] of fd.entries()) {
-      const key = name.replace(/^answers\[|\]$/g, "").replace(/\[\]$/, "")
+      const key = answerKey(name)
       if (name.endsWith("[]")) {
         answers[key] ||= []
         answers[key].push(value)
@@ -465,9 +481,11 @@ export default class extends Controller {
 
       const input = block.querySelector('[name^="answers["]')
       if (!input) return
-      const key = input.name.replace(/^answers\[|\]$/g, "")
 
-      if (!block.querySelector(`[name="answers[${key}]"]:checked`)) {
+      // 選択済みの判定は input.name をそのまま使う。キーから組み立て直すと
+      // 複数選択（name が "…][]"）に当たらず、選んでいても未回答になる。
+      if (!block.querySelector(`[name="${input.name}"]:checked`)) {
+        const key = answerKey(input.name)
         const label = block.querySelector(".q-label")?.textContent.trim().slice(0, 20)
         missing.push({ key, label })
       }
