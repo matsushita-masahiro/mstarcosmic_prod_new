@@ -23,7 +23,19 @@ class MedicalQuestionnaire < ApplicationRecord
 
   accepts_nested_attributes_for :handwriting_entries, :body_marks, allow_destroy: true
 
+  # 確認署名。同意書（Consent）と同じ持ち方にしている。
+  has_one_attached :signature_image
+
   enum :status, { draft: 0, submitted: 1, reviewed: 2 }, prefix: true
+
+  # 値は Consent と同じにする。同じ来店の同意書署名と問診票署名を突き合わせて
+  # 「別人だ」と誤判定しないために記録しているので、対応表を挟まずに
+  # 比べられる形でないと意味がない。
+  #
+  # 画面で選ばせるのは本人（self_signed）と代理人（guardian）の2つだけ。
+  # other は Consent に合わせて残してあるが、患者に3択を出しても
+  # 「代理人」と「その他」の区別がつかないため出していない。
+  enum :signer_relation, { self_signed: 0, guardian: 1, other: 2 }, prefix: :signer
 
   validates :form_version, presence: true
   validates :pregnancy_weeks, numericality: { in: 1..45 }, allow_nil: true
@@ -35,6 +47,22 @@ class MedicalQuestionnaire < ApplicationRecord
   # 発行側（IntakeSession.issue_revision!）が系列の末端を対象にするので
   # 通常は並列にならないが、判断を呼ぶ側の注意力に預けない。
   validate :revision_does_not_branch
+
+  # 署名の検証は「下書きから確定へ移るとき」だけに効かせる。
+  #
+  # 無条件にすると3か所で落ちる。
+  #   1. 記入中の autosave（Intake::QuestionnairesController#update）。
+  #      署名前なので当然 nil で、30秒ごとに保存が失敗する
+  #   2. 署名の運用開始前に提出された既存レコード（本番11件・staging 12件）。
+  #      reviewed への更新も、KarteAttachment.attach! が走らせる record.save も
+  #      すべて落ちるようになる
+  #   3. KarteAttachment.attach!（署名画像の添付）。永続化済みレコードに
+  #      record.save を走らせるため、Consent で一度踏んでいる罠
+  #
+  # on: :create にはできない。案A（下書きを保存してから署名で確定）では
+  # 署名は update で入るので、create の時点では必ず空になる。
+  validate :signature_present, if: :finalizing?
+  validate :signer_name_present, if: :finalizing?
 
   before_validation :inherit_revision_number
 
@@ -116,6 +144,56 @@ class MedicalQuestionnaire < ApplicationRecord
     update!(status: :submitted, submitted_at: Time.current, intake_session: intake_session)
   end
 
+  # 患者が確認画面で署名して確定する。
+  #
+  # 署名の付与と確定を1回の update! にまとめている。分けると
+  # 「署名だけ入って確定していない」「確定したが署名が無い」が作れてしまい、
+  # signature_present の検証をすり抜ける経路になる。
+  #
+  # 確定は必ず submit! を通す。latest_questionnaire（SQL 側）と
+  # latest_finalized_questionnaire（Ruby 側）は nil の畳み方が違うため、
+  # submit! を経由しない確定の経路ができると両者が食い違う。
+  # test/models/user_test.rb が一致を固定している。
+  #
+  # 下書きでなければ false を返して何もしない。二重送信や、別タブから
+  # 確定済みのものをもう一度確定しようとした場合にあたる。
+  # 患者にエラーを見せる意味は無いので、呼び出し側は完了画面へ送ればよい。
+  # 上書きを許すと、署名を後から差し替える経路になってしまう。
+  def sign_and_submit!(intake_session:, signer_name:, signer_relation:,
+                       strokes:, ip_address: nil, user_agent: nil)
+    return false unless status_draft?
+
+    assign_attributes(
+      signed_at: Time.current,
+      signer_name: signer_name,
+      signer_relation: signer_relation,
+      signature_strokes: strokes,
+      ip_address: ip_address,
+      user_agent: user_agent
+    )
+    submit!(intake_session: intake_session)
+    true
+  end
+
+  # 署名がある問診票か。
+  # 署名の運用開始前に提出された既存レコードは false になる。
+  def signed? = signed_at.present?
+
+  # 問診票で性別を聞いた場合、users 側が未設定なら反映する。
+  # 既に値がある場合は上書きしない（患者の自己申告より既存データを優先）。
+  #
+  # 確定の直前に呼ぶ。以前は Intake::QuestionnairesController#create に
+  # 置いていたが、確定が確認画面側へ移ったので、確定と一緒に動くよう
+  # answers を持っているこちらへ移した。
+  def sync_patient_gender!
+    return if user.gender.present?
+
+    value = answer("q0_gender")
+    return if value.blank?
+
+    user.update_column(:gender, value == "female" ? "f" : "m")
+  end
+
   def answer(key) = answers[key.to_s]
 
   # 訂正版か（独立した提出ではないか）
@@ -153,6 +231,28 @@ class MedicalQuestionnaire < ApplicationRecord
   end
 
   private
+
+  # いま下書きから確定へ移ろうとしているか。
+  #
+  # persisted? を条件に入れているのは、新規作成でいきなり submitted を
+  # 作る経路（テストのデータ用意や、コンソールからの取り込み）を
+  # 巻き込まないため。アプリの導線は必ず下書きを経由するので、
+  # 患者の送信がここをすり抜けることはない。
+  def finalizing?
+    persisted? && !status_draft? && status_changed?(from: "draft")
+  end
+
+  def signature_present
+    return if signature_strokes.present? || signature_image.attached?
+
+    errors.add(:base, "署名が入力されていません")
+  end
+
+  def signer_name_present
+    return if signer_name.present?
+
+    errors.add(:base, "署名者のお名前が入力されていません")
+  end
 
   # 同じ前版を指す訂正版が既にいないか。
   # 自分自身は除く（更新のたびに落ちてしまうため）。

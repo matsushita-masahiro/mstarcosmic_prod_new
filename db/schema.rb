@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_21_100100) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_21_100101) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -202,12 +202,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_21_100100) do
     t.bigint "previous_id"
     t.integer "revision", default: 1, null: false
     t.text "revision_note"
+    t.datetime "signed_at"
+    t.string "signer_name"
+    t.integer "signer_relation", default: 0
+    t.jsonb "signature_strokes"
+    t.string "ip_address"
+    t.string "user_agent"
     t.index ["answers"], name: "index_medical_questionnaires_on_answers", using: :gin
     t.index ["has_pacemaker"], name: "index_medical_questionnaires_on_has_pacemaker"
     t.index ["intake_session_id"], name: "index_medical_questionnaires_on_intake_session_id"
     t.index ["is_pregnant"], name: "index_medical_questionnaires_on_is_pregnant"
     t.index ["previous_id"], name: "index_medical_questionnaires_on_previous_id"
     t.index ["reviewed_by_id"], name: "index_medical_questionnaires_on_reviewed_by_id"
+    t.index ["signed_at"], name: "index_medical_questionnaires_on_signed_at"
     t.index ["user_id", "submitted_at"], name: "index_medical_questionnaires_on_user_id_and_submitted_at"
     t.index ["user_id"], name: "index_medical_questionnaires_on_user_id"
   end
