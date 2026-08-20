@@ -8,8 +8,10 @@
   ローカル変数:
     questionnaire MedicalQuestionnaire
     expanded      true なら全設問を開いた状態で出す（履歴から選んだとき）
+    revision_diff QuestionnaireRevisionDiff（省略可。訂正版のときだけ中身が出る）
 %>
 <% expanded = local_assigns.fetch(:expanded, false) %>
+<% revision_diff = local_assigns[:revision_diff] %>
 <% entries = questionnaire.handwriting_entries.index_by(&:question_key) %>
 
 <%# ── 要点 ────────────────────────────────── %>
@@ -46,6 +48,95 @@
       </ul>
     <% end %>
   </div>
+<% end %>
+
+<%# ── 訂正前との差分 ────────────────────────────
+
+    折りたたみにしているのは、既存の「すべての回答を見る」と同じ扱いに
+    するため。訂正版でも普段見たいのは要点と人体図で、差分は
+    「何が変わったのか確かめたい」ときに開くもの。
+    常時展開にすると要点が下へ押し出される。
+
+    値は必ず設問ラベルと選択肢ラベルで出す。q10_pacemaker や "yes" が
+    そのまま出ると、スタッフには読めない。 %>
+<% if revision_diff&.present? %>
+  <details style="margin-top:20px;border:1px solid #fcd34d;border-radius:8px;
+                  background:#fffbeb;padding:8px 12px;">
+    <summary style="cursor:pointer;font-size:15px;color:#b45309;padding:6px 0;">
+      訂正前（<%= revision_diff.previous.submitted_at ?
+                  l(revision_diff.previous.submitted_at.to_date, format: :long) : "下書き" %>）
+      との違いを見る
+    </summary>
+
+    <div style="margin-top:8px;font-size:14px;color:#374151;">
+      <% unless revision_diff.any_change? %>
+        <p style="margin:0 0 8px;color:#6b7280;">記録上の違いはありません。</p>
+      <% end %>
+
+      <%# 様式が違うと、片方の版にしか無い設問がありうる。
+          差分に出ている「未回答」が、患者が答えなかったのか
+          そもそも設問が無かったのかを区別できないため断っておく。 %>
+      <% if revision_diff.form_version_changed? %>
+        <p style="margin:0 0 8px;color:#92400e;">
+          ※ 前版とは問診票の様式が違います
+          （<%= revision_diff.previous.form_version %> →
+           <%= questionnaire.form_version %>）。
+          片方の様式にしかない設問は「<%= QuestionnaireRevisionDiff::BLANK_LABEL %>」と出ます。
+        </p>
+      <% end %>
+
+      <% if revision_diff.flag_changes.any? %>
+        <p style="margin:0 0 4px;font-weight:600;color:#b45309;">施術可否に関わる項目</p>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+          <% revision_diff.flag_changes.each do |change| %>
+            <tr>
+              <td style="padding:4px 8px 4px 0;vertical-align:top;"><%= change.label %></td>
+              <td style="padding:4px 0;white-space:nowrap;">
+                <span style="color:#6b7280;"><%= change.before %></span>
+                →
+                <strong style="color:#b45309;"><%= change.after %></strong>
+              </td>
+            </tr>
+          <% end %>
+        </table>
+      <% end %>
+
+      <% if revision_diff.answer_changes.any? %>
+        <p style="margin:0 0 4px;font-weight:600;">変更された回答</p>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+          <% revision_diff.answer_changes.each do |change| %>
+            <tr>
+              <td style="padding:4px 8px 4px 0;vertical-align:top;border-bottom:1px solid #fde68a;">
+                <%= change.label %>
+                <% if change.unknown_question? %>
+                  <span style="color:#9ca3af;font-size:12px;">（現在の様式にない設問）</span>
+                <% end %>
+              </td>
+              <td style="padding:4px 0;border-bottom:1px solid #fde68a;">
+                <span style="color:#6b7280;"><%= change.before %></span>
+                →
+                <strong><%= change.after %></strong>
+              </td>
+            </tr>
+          <% end %>
+        </table>
+      <% end %>
+
+      <%# 手書きは内容の比較が難しいので、変わった欄の名前だけ出す。 %>
+      <% if revision_diff.handwriting_changes.any? %>
+        <p style="margin:0 0 4px;font-weight:600;">書き直された記入欄</p>
+        <ul style="margin:0 0 12px;padding-left:20px;">
+          <% revision_diff.handwriting_changes.each do |change| %>
+            <li><%= change.label %></li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <% if revision_diff.body_marks_changed? %>
+        <p style="margin:0 0 12px;">人体図に変更があります。</p>
+      <% end %>
+    </div>
+  </details>
 <% end %>
 
 <%# ── 全設問 ──────────────────────────────── %>

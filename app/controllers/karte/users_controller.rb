@@ -58,8 +58,10 @@ module Karte
       @profile = @user.patient_profile
       # 手書き画像と人体図マーカーを先に読む。
       # 設問18問ぶんを1件ずつ引くと表示のたびに数十クエリになる。
+      # previous_version は履歴表の各行が「◯◯の訂正」を出すのに使う。
+      # 10行ぶん1件ずつ引くとそのまま N+1 になる。
       @questionnaires = @user.medical_questionnaires
-                             .includes(:body_marks,
+                             .includes(:body_marks, :previous_version,
                                        handwriting_entries: { image_attachment: :blob })
                              .latest_first.limit(10)
       # 警告の根拠は確定版のみから取る。@questionnaires は履歴表用で下書きも含むため、
@@ -67,6 +69,15 @@ module Karte
       # 確定版の禁忌が画面から消える。
       @latest_questionnaire = @user.latest_questionnaire
       @questionnaire = selected_questionnaire
+
+      # 表示中の版が訂正版なら、前版との差分を出す。
+      # 訂正版でなければ present? が false になり、画面には何も出ない。
+      @revision_diff = QuestionnaireRevisionDiff.new(@questionnaire)
+
+      # 警告バナーは「いまの患者の状態」を表すので、表示中の版ではなく
+      # 施術判断の根拠になる版（@latest_questionnaire）で見る。
+      @latest_revision_diff = QuestionnaireRevisionDiff.new(@latest_questionnaire)
+
       @consents = @user.consents.includes(:consent_document).latest_first
 
       @first_visit_at = @user.first_visit_at

@@ -43,6 +43,39 @@
     </div>
   <% end %>
 
+  <%# ── 訂正で施術判断に関わる項目が変わった ────────────────
+
+      出すのは「訂正された」という事実だけで、前版の警告そのものは出さない。
+      「ペースメーカー装着」を再掲すると、施術者は現在も装着していると
+      誤読する。ここで伝えたいのは逆で、前版の警告はもう当てはまらない
+      （かもしれない）から前版を見て判断してほしい、ということ。
+
+      禁忌に関わるフラグが変わったときだけ出す。誤字や痛みの箇所の訂正で
+      毎回出ると常態化して誰も読まなくなる。訂正されたこと自体は
+      下の履歴に出している。
+
+      赤（施術できません）が出ているときは出さない。あちらは
+      「いま禁忌がある」と言っており、施術は止まる。その下に別の箱を
+      重ねると赤の強さが薄まる。前版を見る導線は履歴と差分に残っている。
+      色は赤と並べたときに区別がつくよう、青系にしている。 %>
+  <% if @latest_revision_diff&.warning_flags_changed? && !@latest_questionnaire.contraindicated? %>
+    <div style="border:2px solid #2563eb;background:#eff6ff;border-radius:8px;padding:16px;margin-bottom:24px;">
+      <strong style="color:#1d4ed8;font-size:17px;">訂正された問診票です</strong>
+      <p style="margin:6px 0 0;color:#1e3a8a;line-height:1.7;">
+        最新の問診票は
+        <%= l @latest_revision_diff.previous.submitted_at.to_date, format: :long %>
+        提出分を訂正したものです。<br>
+        <strong>施術可否に関わる項目が変更されています。</strong>
+        前の版を確認してください。
+      </p>
+      <p style="margin:8px 0 0;">
+        <%= link_to "訂正前の版を見る",
+              karte_user_path(@user, questionnaire_id: @latest_revision_diff.previous.id),
+              style: "color:#1d4ed8;font-size:14px;" %>
+      </p>
+    </div>
+  <% end %>
+
   <%# ── 同意書 ──────────────────────────────── %>
   <section style="margin-bottom:32px;">
     <h3 style="font-size:17px;border-bottom:2px solid #e5e7eb;padding-bottom:6px;">同意書</h3>
@@ -136,6 +169,20 @@
                            "font-weight:#{selected ? '600' : '400'};" do %>
                 <%= q.submitted_at ? l(q.submitted_at.to_date, format: :long) : "下書き" %>
               <% end %>
+
+              <%# 訂正版か、独立した提出かを区別できるようにする。
+                  この区別が無いと「8/3 の訂正」と「2回目の来店で取り直した問診」が
+                  同じに見え、施術判断の読み違いになる。
+
+                  セルは width:14em(210px) の nowrap。日付が実測 165〜169px で、
+                  ここに入れる行は 12px で約 130px に収めてある。
+                  長くすると隣の「様式」列へはみ出す（過去に2回壊れている）。 %>
+              <% if q.previous_version %>
+                <% origin = q.previous_version.submitted_at %>
+                <div style="font-size:12px;color:#b45309;margin-top:2px;"><%=
+                  origin ? l(origin.to_date, format: :short) : "下書き"
+                %> の訂正（<%= q.revision %>版目）</div>
+              <% end %>
             </td>
             <td style="padding:10px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#9ca3af;white-space:nowrap;">
               様式 <%= q.form_version %>
@@ -173,6 +220,7 @@
           最新をそのまま開いたときは要点だけ見る運用が多いため折りたたむ。 %>
       <%= render "karte/users/questionnaire",
             questionnaire: @questionnaire,
+            revision_diff: @revision_diff,
             expanded: params[:questionnaire_id].present? %>
     <% else %>
       <p style="color:#9ca3af;padding:12px 0;">まだ問診票がありません。</p>
