@@ -154,6 +154,16 @@
                 <%= link_to "この回を見る", karte_user_path(@user, questionnaire_id: q.id),
                       style: "color:#1d4ed8;text-decoration:none;font-size:14px;" %>
               <% end %>
+
+              <%# 訂正用のQRを発行する。上書きではなく次の版を作るため、
+                  この版の内容はそのまま残る。
+                  下書きには出さない（提出していない版を訂正しても意味がない）。 %>
+              <% unless q.status_draft? %>
+                <%= button_to "修正", karte_user_intake_sessions_path(@user, questionnaire_id: q.id),
+                      form: { style: "display:inline;margin-left:12px;" },
+                      style: "padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;" \
+                             "background:#fff;color:#374151;font-size:13px;cursor:pointer;" %>
+              <% end %>
             </td>
           </tr>
         <% end %>

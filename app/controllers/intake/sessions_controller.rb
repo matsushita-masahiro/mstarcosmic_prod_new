@@ -13,7 +13,7 @@ module Intake
       reset_session
       session[:intake_token] = params[:token]
 
-      redirect_to entry_path_for(record.user)
+      redirect_to entry_path_for(record)
     end
 
     def expired
@@ -42,13 +42,20 @@ module Intake
     # 問診票側にも同じガードがあるが（questionnaires#show）、入口が
     # 問診票を経由しないため働く機会が無かった。
     #
-    # 【将来の分岐点】訂正機能で intake_sessions.purpose を入れるときは、
-    # 振り分けをここに足すこと。別の場所に分岐を作らないこと。
+    # 【分岐はここだけに置く】
+    # 引数が IntakeSession なのは、purpose による振り分けを別の場所に
+    # 書けなくするため。患者だけを渡すと用途が見えず、呼び出し側で
+    # 分岐したくなる。
     #   purpose: initial かつ未署名   → 同意書
     #   purpose: initial かつ署名済み → 問診票
     #   purpose: revision            → 訂正画面
-    def entry_path_for(patient)
-      Consent.current_for?(patient) ? intake_questionnaire_path : new_intake_consent_path
+    def entry_path_for(record)
+      # TODO(第2段階): 訂正画面ができたらそこへ送る。
+      # 今は問診票へ送っており、前版の内容は復元されない。
+      # 訂正用のQRを本番のスタッフに案内するのは第2段階が入ってから。
+      return intake_questionnaire_path if record.purpose_revision?
+
+      Consent.current_for?(record.user) ? intake_questionnaire_path : new_intake_consent_path
     end
 
     def set_no_store

@@ -3,6 +3,21 @@
   <p style="color:#6b7280;font-size:14px;margin-bottom:8px;">
     <%= @user.try(:name) %> 様 ／ 有効期限 <%= l @intake_session.expires_at, format: :short %>
   </p>
+  <%# 何のためのQRかを出す。新規記入と訂正で見た目が同じだと、
+      スタッフが患者に違うものを渡しても気づけない。 %>
+  <% if @intake_session.purpose_revision? %>
+    <p style="background:#fef3c7;border-left:4px solid #f59e0b;padding:10px 14px;
+              margin:0 0 16px;font-size:14px;color:#92400e;text-align:left;">
+      <strong>修正用</strong>のリンクです。<br>
+      <%= @intake_session.target_questionnaire.submitted_at ?
+            l(@intake_session.target_questionnaire.submitted_at.to_date, format: :long) :
+            "下書き" %> 提出分を修正します。<br>
+      <span style="font-size:13px;">
+        元の記録は残ります（新しい版として保存されます）。
+      </span>
+    </p>
+  <% end %>
+
   <p style="color:#b45309;font-size:13px;margin-bottom:24px;">
     ※ この画面を再読み込みすると QR は表示できなくなります（再発行してください）
   </p>
