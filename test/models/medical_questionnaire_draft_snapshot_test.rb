@@ -19,6 +19,10 @@
 require "test_helper"
 
 class MedicalQuestionnaireDraftSnapshotTest < ActiveSupport::TestCase
+  # 1x1 の PNG
+  PNG_DATA_URL = "data:image/png;base64," \
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+
   # signature_pad の toData() が返す形。端末から届くものと同じ。
   STROKES = [ {
     "penColor" => "#111827", "dotSize" => 0, "minWidth" => 0.6, "maxWidth" => 2.2,
@@ -66,6 +70,27 @@ class MedicalQuestionnaireDraftSnapshotTest < ActiveSupport::TestCase
 
     assert_not entry.key?(:image), "サーバの下書きに PNG が含まれています"
     assert_not_includes q.draft_snapshot.to_json, "data:image/png"
+  end
+
+  # 画像が実際に添付されている版でも同じであること。
+  #
+  # 上のテストは image を添付していないので、「添付があれば返す」実装でも
+  # 通ってしまう。訂正では前版（画像あり）を初期値にするため、そこで
+  # image を返すと、訂正版の送信で同じ画像が再添付され、前版の blob まで
+  # 巻き添えにしうる。添付ありの版で固定しておく。
+  test "画像が添付されている版でも PNG は含まれない" do
+    q = create_draft
+    entry = q.handwriting_entries.create!(question_key: "q1_purpose", input_mode: :pen,
+                                          strokes: STROKES)
+    KarteAttachment.attach!(record: entry, name: :image, data_url: PNG_DATA_URL,
+                            user_id: q.user_id, label: "q1_purpose")
+    assert entry.reload.image.attached?, "前提: 画像が添付されていること"
+
+    snapshot = q.reload.draft_snapshot
+
+    assert_not snapshot[:handwriting]["q1_purpose"].key?(:image),
+               "添付のある版でサーバの下書きに PNG が含まれています"
+    assert_not_includes snapshot.to_json, "data:image/png"
   end
 
   # 空欄を含めると verifyRestore() が「戻らなかった欄」と数えてしまう。
