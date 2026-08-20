@@ -247,7 +247,7 @@ export default class extends Controller {
       localStorage.setItem(this.storageKeyValue, JSON.stringify({
         savedAt: Date.now(),
         answers: this.collectAnswers(),
-        handwriting: this.collectHandwriting(),
+        handwriting: this.handwritingWithoutImages(),
         bodyMarks: this.collectBodyMarks()
       }))
     } catch (_e) {
@@ -263,6 +263,29 @@ export default class extends Controller {
         "#b45309"
       )
     }
+  }
+
+  // 端末に残すぶんからは手書きの PNG を除く。
+  //
+  // restore() は strokes からしか描き直しておらず、image はどこからも
+  // 参照されていない。復元に使われないものが容量だけを食っている。
+  // iPhone は DPR 3 でキャンバスの実ピクセルが CSS サイズの3倍になり、
+  // PNG の base64 は1欄でも重い。手書き欄は最大13個ある。
+  // iOS Safari の localStorage 上限（約5MB）を超えると QuotaExceededError で
+  // その回の保存が丸ごと失敗する（一部だけ残ることはない）ため、
+  // 手書きを多く書いた患者ほど下書きごと失いやすい形になっていた。
+  //
+  // サーバへは従来どおり PNG を送る。カルテ画面での表示に使うため。
+  // したがって collectHandwriting() の戻り値そのものは書き換えず、
+  // コピーを作ってそこから image を落とす。ここで元を壊すと
+  // autosave / submit の送信からも PNG が消え、カルテに手書きが出なくなる。
+  handwritingWithoutImages() {
+    const copied = {}
+    Object.entries(this.collectHandwriting()).forEach(([key, entry]) => {
+      const { image: _image, ...withoutImage } = entry
+      copied[key] = withoutImage
+    })
+    return copied
   }
 
   restoreLocalDraft() {
