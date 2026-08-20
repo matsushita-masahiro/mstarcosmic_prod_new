@@ -62,6 +62,7 @@ module Karte
       # 10行ぶん1件ずつ引くとそのまま N+1 になる。
       @questionnaires = @user.medical_questionnaires
                              .includes(:body_marks, :previous_version,
+                                       signature_image_attachment: :blob,
                                        handwriting_entries: { image_attachment: :blob })
                              .latest_first.limit(10)
       # 警告の根拠は確定版のみから取る。@questionnaires は履歴表用で下書きも含むため、

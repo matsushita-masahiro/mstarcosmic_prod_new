@@ -26,6 +26,49 @@
   <% end %>
 </div>
 
+<%# ── 確認署名 ─────────────────────────────
+
+    同意書の表示に倣う（署名画像・署名者・日時）。患者が内容を読んで
+    署名したことの記録で、訂正版でも初回でも同じように出す。
+
+    署名が無い問診票は、署名の運用を始める前に提出されたもの。
+    遡って署名させることはできないので、事実だけを控えめに出す。
+
+    警告（赤・黄のバナー）にはしない。既存の11件がすべて警告になると
+    常態化して誰も読まなくなり、本当に見てほしい禁忌の警告まで
+    一緒に流される。ここで伝えたいのは「この記録には署名が無い」という
+    性質であって、患者の状態ではない。 %>
+<%# 下書きには出さない。まだ署名する段階に来ていないので、
+    「署名なし」は状態の説明にならない。 %>
+<% unless questionnaire.status_draft? %>
+<div style="display:flex;gap:12px;align-items:center;justify-content:space-between;
+            margin-top:12px;padding:8px 16px;border:1px solid #e5e7eb;border-radius:8px;
+            background:<%= questionnaire.signed? ? "#f9fafb" : "#fff" %>;">
+  <% if questionnaire.signed? %>
+    <div style="font-size:14px;color:#374151;">
+      <strong style="font-size:15px;"><%= questionnaire.signer_name %></strong>
+      <span style="color:#6b7280;">
+        （<%= questionnaire.signer_self_signed? ? "本人" : "代理人" %>）
+      </span>
+      <br>
+      <span style="color:#6b7280;">
+        <%= l questionnaire.signed_at, format: :long %> に内容を確認して署名
+      </span>
+    </div>
+    <% if questionnaire.signature_image.attached? %>
+      <%= image_tag questionnaire.signature_image,
+            style: "max-height:56px;background:#fff;border:1px solid #e5e7eb;border-radius:4px;" %>
+    <% else %>
+      <span style="color:#9ca3af;font-size:13px;">（署名あり・画像なし）</span>
+    <% end %>
+  <% else %>
+    <div style="font-size:14px;color:#9ca3af;">
+      確認署名なし（署名の運用を始める前に提出された問診票です）
+    </div>
+  <% end %>
+</div>
+<% end %>
+
 <%# ── 人体図 ──────────────────────────────── %>
 <% marks = questionnaire.body_marks.to_a %>
 <% if marks.any? %>

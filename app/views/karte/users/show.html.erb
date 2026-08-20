@@ -183,6 +183,15 @@
                   origin ? l(origin.to_date, format: :short) : "下書き"
                 %> の訂正（<%= q.revision %>版目）</div>
               <% end %>
+
+              <%# 署名の有無。出すのは「無い」ときだけにする。
+                  これから提出されるものは必ず署名を伴うので、
+                  「あり」を全行に出しても情報が増えず、
+                  日付セル（width:14em の nowrap）を無駄に埋めるだけになる。
+                  下書きには出さない（まだ署名する段階に来ていない）。 %>
+              <% if !q.status_draft? && !q.signed? %>
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">署名なし</div>
+              <% end %>
             </td>
             <td style="padding:10px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#9ca3af;white-space:nowrap;">
               様式 <%= q.form_version %>
