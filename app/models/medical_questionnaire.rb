@@ -8,12 +8,35 @@ class MedicalQuestionnaire < ApplicationRecord
   has_many :handwriting_entries, dependent: :destroy
   has_many :body_marks, dependent: :destroy
 
+  # 訂正（版管理）。提出済みの問診票を直すときは上書きせず、次の版を作る。
+  #
+  #   v2 ─ previous_version ─→ nil        （独立した提出。revision 1）
+  #   v2' ─ previous_version ─→ v2        （v2 を訂正した版。revision 2）
+  #   v2 ─ revised_version ──→ v2'
+  #
+  # dependent: :nullify は患者削除のため。User の dependent: :destroy が
+  # 問診票を1件ずつ消すとき、前版が先に消えると外部キーで落ちる。
+  belongs_to :previous_version, class_name: "MedicalQuestionnaire",
+             foreign_key: :previous_id, optional: true, inverse_of: :revised_version
+  has_one :revised_version, class_name: "MedicalQuestionnaire",
+          foreign_key: :previous_id, dependent: :nullify, inverse_of: :previous_version
+
   accepts_nested_attributes_for :handwriting_entries, :body_marks, allow_destroy: true
 
   enum :status, { draft: 0, submitted: 1, reviewed: 2 }, prefix: true
 
   validates :form_version, presence: true
   validates :pregnancy_weeks, numericality: { in: 1..45 }, allow_nil: true
+  validates :revision, numericality: { greater_than_or_equal_to: 1 }
+
+  # 1つの版に訂正版は1つだけ。v2 を2回直したら v2 → v2' → v2'' と鎖にする。
+  # v2 に v2' と v2'' が並列にぶら下がると、どちらが有効か決まらなくなる。
+  #
+  # 発行側（IntakeSession.issue_revision!）が系列の末端を対象にするので
+  # 通常は並列にならないが、判断を呼ぶ側の注意力に預けない。
+  validate :revision_does_not_branch
+
+  before_validation :inherit_revision_number
 
   before_save :promote_flags_from_answers
 
@@ -38,11 +61,65 @@ class MedicalQuestionnaire < ApplicationRecord
   # Reservation.confirmed（予約確定）とも別物。
   scope :finalized, -> { where.not(status: :draft) }
 
+  # ── 版の系列 ────────────────────────────────
+  #
+  # 循環参照（データ不整合）でも止まるよう、辿った id を控えながら進む。
+  # 参照が壊れた状態でカルテを開くと無限ループでプロセスが固まるため、
+  # 「正しいデータなら起きない」では済ませない。
+
+  # 系列の起点。独立した提出まで遡る。
+  def revision_origin
+    walk(:previous_version)
+  end
+
+  # 系列の末端。最も新しい訂正版。下書きの訂正版も含む。
+  def revision_tip
+    walk(:revised_version)
+  end
+
+  # 起点から末端までの全版。履歴や差分表示で使う。
+  def revision_chain
+    chain = [ revision_origin ]
+    seen = Set.new([ chain.first.id ])
+
+    while (nxt = chain.last.revised_version)
+      break unless seen.add?(nxt.id)
+      chain << nxt
+    end
+
+    chain
+  end
+
+  # 確定版だけを辿った末端。施術判断はこれを見る。
+  #
+  # 記入中の訂正版（下書き）で止まるのが要点。下書きを末端にすると、
+  # 患者が訂正を書き始めた瞬間に、確定していない内容で施術可否が決まる。
+  #
+  # within に読み込み済みの問診票を渡すと、そこから辿ってクエリを出さない。
+  # カルテ一覧は includes 済みの関連を持っており、行ごとに辿るとN+1になる。
+  def finalized_revision_tip(within: nil)
+    children = within&.group_by(&:previous_id)
+    current = self
+    seen = Set.new([ id ])
+
+    loop do
+      nxt = children ? children[current.id]&.min_by(&:id) : current.revised_version
+      break if nxt.nil? || nxt.status_draft?
+      break unless seen.add?(nxt.id)
+      current = nxt
+    end
+
+    current
+  end
+
   def submit!(intake_session: nil)
     update!(status: :submitted, submitted_at: Time.current, intake_session: intake_session)
   end
 
   def answer(key) = answers[key.to_s]
+
+  # 訂正版か（独立した提出ではないか）
+  def revised? = previous_id.present?
 
   # 記入途中の内容を、患者端末の localStorage と同じ形で返す。
   #
@@ -76,6 +153,36 @@ class MedicalQuestionnaire < ApplicationRecord
   end
 
   private
+
+  # 同じ前版を指す訂正版が既にいないか。
+  # 自分自身は除く（更新のたびに落ちてしまうため）。
+  def revision_does_not_branch
+    return if previous_id.blank?
+
+    siblings = MedicalQuestionnaire.where(previous_id: previous_id)
+    siblings = siblings.where.not(id: id) if persisted?
+    return unless siblings.exists?
+
+    errors.add(:base, "この版は既に訂正されています")
+  end
+
+  # 訂正版の版番号は前版から数える。呼び出し側に数えさせない。
+  def inherit_revision_number
+    self.revision = previous_version.revision + 1 if previous_version
+  end
+
+  # assoc を辿れなくなるまで進む。循環参照があってもそこで止まる。
+  def walk(assoc)
+    current = self
+    seen = Set.new([ id ])
+
+    while (nxt = current.public_send(assoc))
+      break unless seen.add?(nxt.id)
+      current = nxt
+    end
+
+    current
+  end
 
   # 端末側の collectHandwriting() と同じものだけを返す。
   #
