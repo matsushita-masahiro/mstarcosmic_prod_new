@@ -1,6 +1,11 @@
 module Intake
   class ConsentsController < BaseController
     def new
+      # 署名済みなら書かせない。入口（sessions#show）で振り分けているが、
+      # 戻るボタンや URL 直打ちでここへ来られる。そこで署名させると
+      # 同意書レコードが増える。
+      return redirect_to intake_questionnaire_path if Consent.current_for?(current_patient)
+
       @document = ConsentDocument.current
       return redirect_to intake_expired_path if @document.nil?
 
@@ -8,6 +13,16 @@ module Intake
     end
 
     def create
+      # 既に署名済みなら作らない。
+      #
+      # 画面を出さないようにしても、開いたまま放置された同意書画面から
+      # 送信される経路が残る（別端末で先に署名を済ませた場合など）。
+      # 患者にエラーを見せる意味は無いので、成功時と同じ形で問診票へ送る。
+      # 署名し直したぶんは捨てるが、有効な署名は既にサーバにある。
+      if Consent.current_for?(current_patient)
+        return render json: { redirect_to: intake_questionnaire_path }
+      end
+
       @document = ConsentDocument.current
       return head :unprocessable_entity if @document.nil?
 

@@ -166,17 +166,27 @@ class Intake::QuestionnaireServerRestoreTest < ApplicationSystemTestCase
   end
 
   # 端末に何も残っていない状態で問診票を開く。
-  # /s/:token は同意画面へ飛ぶので、そこで localStorage を空にしてから移動する。
   def open_questionnaire_without_local_draft
-    visit "/s/#{@intake_session.raw_token}"
+    start_intake_session
     page.execute_script("localStorage.clear()")
     visit "/questionnaire"
     assert_selector '[data-handwriting-field-key-value="q3_history"]'
   end
 
+  # トークンを渡してセッションを作り、問診票の載っていない画面で止まる。
+  #
+  # /s/:token は署名済みなら問診票へ直行する（同じQRを開き直した患者に
+  # 再署名させないため）。ここで問診票が開くと復元が走り、その直後の
+  # localStorage 操作と競合する（入力扱いで下書きが書き戻される）。
+  # 端末側を仕込んでから問診票を開きたいので、いったん別の画面に降りる。
+  def start_intake_session
+    visit "/s/#{@intake_session.raw_token}"
+    visit "/expired"
+  end
+
   # 端末側の下書きを直接置く。saveLocalDraft() が書くのと同じ形。
   def seed_local_draft(text:)
-    visit "/s/#{@intake_session.raw_token}"
+    start_intake_session
     page.execute_script(<<~JS)
       localStorage.setItem('intake_draft_#{@patient.id}', JSON.stringify({
         savedAt: Date.now(),
