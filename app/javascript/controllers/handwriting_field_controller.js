@@ -1,6 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 import SignaturePad from "signature_pad"
 
+// 復元元より canvas がこの割合以上せまいとき、その欄の PNG を送らない。
+//
+// restore() は strokes を元の端末のピクセル座標のまま描くため、
+// せまい端末で開くと右端がはみ出して切れる。切れた canvas から作った PNG を
+// 送ると、カルテ側の元画像が欠けたものに置き換わる。
+//
+// せまい側だけを見る。広い端末で開いた場合は何も切れず、PNG は正しく作れる。
+//
+// 2% にしているのは、同じ端末でも rect.width の端数と保存時の
+// Math.round で 1px 未満のずれが出るため（353px で約7px の余裕）。
+// 10% だと 353px の端末で 35px ぶん切れた画像がそのまま保存されうる。
+const CANVAS_WIDTH_TOLERANCE = 0.02
+
 // 自由記述欄。ペン手書きとキーボード入力を切り替えられる。
 export default class extends Controller {
   static targets = ["canvas", "textarea", "penTab", "keyboardTab", "penPane", "keyboardPane"]
@@ -20,6 +33,10 @@ export default class extends Controller {
     })
 
     this.penSeen = false
+
+    // 復元した strokes が、どの幅の canvas で描かれたものか。
+    // 自分で書いた欄では null のままで、幅の判定は働かない。
+    this.restoredWidth = null
     this.pad.addEventListener("endStroke", () => this.notifyChange())
 
     // パームリジェクション：Pencil を検知したら以降の指入力を無視
@@ -101,6 +118,8 @@ export default class extends Controller {
   clear() {
     if (this.modeValue === "pen") {
       this.pad.clear()
+      // 消したら復元元とは無関係になる。以降は今の canvas が正しい。
+      this.restoredWidth = null
     } else {
       this.textareaTarget.value = ""
     }
@@ -119,13 +138,28 @@ export default class extends Controller {
     if (this.pad.isEmpty()) return null
 
     const rect = this.canvasTarget.getBoundingClientRect()
-    return {
+    const data = {
       mode: "pen",
       strokes: this.pad.toData(),
-      image: this.pad.toDataURL("image/png"),
       width: Math.round(rect.width),
       height: Math.round(rect.height)
     }
+
+    // 切れているかもしれない canvas からは PNG を作らない。
+    // strokes は全点が残るので情報は失われず、あとから描き直せる。
+    // カルテ側は画像が無い手書き欄を「（手書きあり・画像なし）」と出す。
+    if (!this.narrowerThanRestored(rect.width)) {
+      data.image = this.pad.toDataURL("image/png")
+    }
+
+    return data
+  }
+
+  // 復元元より今の canvas がせまいか。別端末で開いたときに効く。
+  narrowerThanRestored(currentWidth) {
+    if (!this.restoredWidth || currentWidth <= 0) return false
+
+    return currentWidth < this.restoredWidth * (1 - CANVAS_WIDTH_TOLERANCE)
   }
 
   restore(data) {
@@ -135,6 +169,9 @@ export default class extends Controller {
       this.modeValue = "keyboard"
     } else if (data.strokes) {
       this.pad.fromData(data.strokes)
+      // どの幅で描かれたものかを控える。今の canvas がこれより狭ければ
+      // 右端が切れているので、PNG を送らない（serialize 側で見る）。
+      this.restoredWidth = data.width || null
       this.modeValue = "pen"
     }
     this.applyMode()
