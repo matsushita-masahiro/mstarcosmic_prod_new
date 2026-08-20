@@ -83,6 +83,72 @@ class UserTest < ActiveSupport::TestCase
     assert_nil patient.latest_finalized_questionnaire
   end
 
+  # ── 訂正（版管理）が入っても最新版の判定が壊れないこと ──────────
+  #
+  # 訂正版は上書きではなく次の版として保存されるため、提出時刻だけで選ぶと
+  # 古い版の訂正が最新を押しのける。判定は2段階になっている。
+  #   1. 独立した提出（previous_id が nil）のうち提出が最も新しいもの
+  #   2. その版の系列を辿った末端（確定版のみ）
+
+  # 本丸その1。v2 の誤記を直しただけで v3 が施術判断から外れてはいけない。
+  test "古い版を訂正しても最新版は変わらない" do
+    patient = create_patient
+    v1 = create_questionnaire(patient, submitted_at: 10.days.ago)
+    v2 = create_questionnaire(patient, submitted_at: 5.days.ago)
+    v3 = create_questionnaire(patient, submitted_at: 3.days.ago)
+
+    # v2 を訂正。提出時刻はどの版よりも新しい。
+    revised_v2 = create_revision(patient, v2, submitted_at: Time.current)
+
+    patient.reload
+    assert_equal v3, patient.latest_questionnaire,
+                 "古い版の訂正が最新版を押しのけています（v3 の内容が施術判断から外れます）"
+    assert_equal v3, patient.latest_finalized_questionnaire
+    assert_equal patient.latest_questionnaire, patient.latest_finalized_questionnaire
+
+    assert_not_equal revised_v2, patient.latest_questionnaire
+    assert_not_equal v1, patient.latest_questionnaire
+  end
+
+  # 本丸その2。最新版の訂正はちゃんと反映されること。
+  # 上のテストと同時に成立していることが今回の設計の核心。
+  test "最新版を訂正すると最新版がその訂正版になる" do
+    patient = create_patient
+    create_questionnaire(patient, submitted_at: 5.days.ago)
+    v3 = create_questionnaire(patient, submitted_at: 3.days.ago)
+
+    revised_v3 = create_revision(patient, v3, submitted_at: Time.current)
+
+    patient.reload
+    assert_equal revised_v3, patient.latest_questionnaire,
+                 "最新版の訂正が反映されていません"
+    assert_equal revised_v3, patient.latest_finalized_questionnaire
+    assert_equal patient.latest_questionnaire, patient.latest_finalized_questionnaire
+  end
+
+  test "訂正を重ねたら系列の末端が最新版になる" do
+    patient = create_patient
+    v1 = create_questionnaire(patient, submitted_at: 5.days.ago)
+    v1b = create_revision(patient, v1, submitted_at: 2.days.ago)
+    v1c = create_revision(patient, v1b, submitted_at: Time.current)
+
+    patient.reload
+    assert_equal v1c, patient.latest_questionnaire
+    assert_equal v1c, patient.latest_finalized_questionnaire
+  end
+
+  # 記入中の訂正版で施術可否が決まってはいけない。
+  test "訂正版が下書きのうちは前の確定版が最新版のまま" do
+    patient = create_patient
+    v1 = create_questionnaire(patient, submitted_at: 5.days.ago)
+    create_revision(patient, v1, status: :draft, submitted_at: nil)
+
+    patient.reload
+    assert_equal v1, patient.latest_questionnaire,
+                 "記入中の訂正版が最新版になっています"
+    assert_equal v1, patient.latest_finalized_questionnaire
+  end
+
   private
 
   def create_patient
@@ -94,5 +160,9 @@ class UserTest < ActiveSupport::TestCase
   def create_questionnaire(user, **attrs)
     defaults = { status: :submitted, submitted_at: Time.current, answers: {} }
     user.medical_questionnaires.create!(defaults.merge(attrs))
+  end
+
+  def create_revision(user, previous, **attrs)
+    create_questionnaire(user, previous_version: previous, **attrs)
   end
 end
