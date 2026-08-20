@@ -87,6 +87,13 @@ module MedicalQuestionnaireFlags
   # 黄にする条件
   CONFIRMATION_PREDICATES = %i[has_implanted_device? pregnancy_unknown?].freeze
 
+  # 施術判断に関わるフラグ（赤と黄の両方）。
+  #
+  # 訂正版で「前版から何が変わったか」を見るときの対象になる。
+  # 上の2つから導くので、設問が改訂されて条件が増えても自動で追随する。
+  # ここを書き写すと、増えたフラグの変化が静かに見逃される。
+  WARNING_PREDICATES = (CONTRAINDICATION_PREDICATES + CONFIRMATION_PREDICATES).freeze
+
   def contraindicated?
     CONTRAINDICATION_PREDICATES.any? { |m| public_send(m) }
   end
