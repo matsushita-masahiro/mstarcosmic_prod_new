@@ -90,6 +90,24 @@ class Intake::QuestionnaireGenderTest < ApplicationSystemTestCase
     assert_current_path intake_questionnaire_confirmation_path, wait: 10
   end
 
+  # 女性専用設問（【13】妊娠）の出し分けは、選ばれた性別で決まる。
+  # 直書きしていた頃は選択肢ごとに data-action を書いていた。今は設問の
+  # section が持っている（change が section まで上がる）ので、
+  # 定義から描いても発火することを確かめておく。
+  test "性別を選ぶと女性専用の設問が出し分けられる" do
+    @patient.update_column(:gender, nil)
+    open_initial
+
+    # 性別を聞く前は隠れている（hidden で出力はされている）
+    assert_no_selector %(input[name="answers[q13_pregnant]"])
+
+    choose_radio("q0_gender", "female")
+    assert_selector %(input[name="answers[q13_pregnant]"])
+
+    choose_radio("q0_gender", "male")
+    assert_no_selector %(input[name="answers[q13_pregnant]"])
+  end
+
   private
 
   # 前版。性別は答えてあり、users.gender も埋まっている状態
