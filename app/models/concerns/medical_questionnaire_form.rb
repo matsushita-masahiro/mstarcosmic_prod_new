@@ -295,10 +295,15 @@ module MedicalQuestionnaireForm
     end
   end
 
-  # 設問・付随項目・サブ項目をすべてフラットに集める
+  # 設問・付随項目・サブ項目・その他欄をすべてフラットに集める。
+  #
+  # その他欄（other）も含めること。落とすと find("q6_other") が nil を返し、
+  # カルテの差分に「その他の難病指定されたもの」ではなく
+  # 「q6_other（現在の様式にない設問）」と出る。
+  # カルテ本体は _answer.html.erb が明示的に描くので気づきにくい。
   def self.collect_all
     @collect_all ||= QUESTIONS.flat_map do |q|
-      [q, q[:detail], *Array(q[:subs])].compact
+      [q, q[:detail], q[:other], *Array(q[:subs])].compact
     end
   end
 end

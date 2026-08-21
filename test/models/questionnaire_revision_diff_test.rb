@@ -170,6 +170,21 @@ class QuestionnaireRevisionDiffTest < ActiveSupport::TestCase
     assert_equal "女性", change.after
   end
 
+  # その他欄（複数選択の自由記入）も設問定義から引けること。
+  # collect_all が other を集めていなかったため、
+  # 「q6_other（現在の様式にない設問）」と出ていた。
+  test "その他欄の変化は項目ラベルで出る" do
+    previous = create_questionnaire(answers: { "q6_other" => "膠原病" })
+    revision = create_revision(previous, answers: { "q6_other" => "潰瘍性大腸炎" })
+
+    change = QuestionnaireRevisionDiff.new(revision).answer_changes.sole
+
+    assert_equal "その他の難病指定されたもの", change.label
+    assert_not change.unknown_question?, "設問定義から引けていません"
+    assert_equal "膠原病", change.before
+    assert_equal "潰瘍性大腸炎", change.after
+  end
+
   test "様式が違えばそれが分かる" do
     previous = create_questionnaire(form_version: "2026-04-17")
     revision = create_revision(previous, answers: { "q7_marital_status" => "single" })

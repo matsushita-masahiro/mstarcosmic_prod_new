@@ -71,6 +71,28 @@ class MedicalQuestionnaireFormTest < ActiveSupport::TestCase
                  "隠すのか出力しないのかが決まりません"
   end
 
+  # 複数選択の「その他」欄（other）も定義から引けること。
+  # 落とすと find が nil を返し、訂正の差分に
+  # 「q6_other（現在の様式にない設問）」と出る。
+  test "複数選択のその他欄も定義から引ける" do
+    question = MedicalQuestionnaireForm.find("q6_other")
+
+    assert question, "その他欄が定義から引けません"
+    assert_equal "その他の難病指定されたもの", question[:label]
+  end
+
+  # 付随項目・サブ項目と同じ扱いになっていること。
+  # collect_all から漏れるのは other だけだった。
+  test "設問に連なる項目はすべて定義から引ける" do
+    keys = MedicalQuestionnaireForm::QUESTIONS.flat_map do |q|
+      [ q[:key], q.dig(:detail, :key), q.dig(:other, :key),
+        *Array(q[:subs]).map { |sub| sub[:key] } ]
+    end.compact
+
+    missing = keys.reject { |key| MedicalQuestionnaireForm.find(key) }
+    assert_empty missing, "定義から引けない項目があります"
+  end
+
   test "ask_when_unknown を持つのは性別だけ" do
     keys = MedicalQuestionnaireForm::QUESTIONS
              .select { |q| q[:ask_when_unknown] }.map { |q| q[:key] }
