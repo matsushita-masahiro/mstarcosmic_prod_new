@@ -1,6 +1,15 @@
 class UsersController < ApplicationController
   
-  before_action :admin_user_login, only: [:index]
+  # destroy は index と同じ admin_user_login で守る。
+  #
+  # 掛かっていなかったため、未ログインのリクエストがそのままアクションまで
+  # 到達して会員を削除できていた（CSRF トークンはサイトを開けば誰でも取れる）。
+  #
+  # authenticate_staff_user? ではなく管理者判定にするのは、あちらが
+  # 施術スタッフ（user_type "10"）も通すため。カルテの閲覧と会員の削除は別の重み。
+  # index と同じフィルタにしているのは、削除リンクがその一覧にしか無いため。
+  # 「この画面に入れる人＝この画面から消せる人」を1つの判定で揃える。
+  before_action :admin_user_login, only: [:index, :destroy]
   before_action :user_login, only: [:show, :edit, :update]
   
   layout 'main/main'
@@ -57,13 +66,16 @@ class UsersController < ApplicationController
   
   def destroy
     @user = User.find_by(id: params[:id])
-    logger.debug("=============================== destroy = #{@user.name}")
     if @user.present?
       name = @user.name
+      logger.debug("=============================== destroy = #{name}")
       @user.destroy
       flash[:notice] = "#{name}様を削除しました"
     else
-      flash[:alert] = "#{name}様を削除できませんでした"
+      # 見つからない会員の名前は出しようがない。
+      # ここは以前 未定義の name を参照して落ちていた（手前の logger.debug も
+      # nil を触っていたため、この分岐には辿り着けていなかった）。
+      flash[:alert] = "対象の会員が見つからないため削除できませんでした"
     end
     redirect_to users_path
   end
