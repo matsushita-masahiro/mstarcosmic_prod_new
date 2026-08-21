@@ -64,19 +64,33 @@ class UsersController < ApplicationController
     end
   end
   
+  # 会員の削除。
+  #
+  # 想定しているのは「登録を間違えた」「同じ人で2つ作ってしまった」の掃除だけ。
+  # カルテの記録がある会員は User 側（UserKarte）が destroy を止めるので、
+  # ここでは止まった理由をそのまま画面に出す。
+  # 理由を出さないと、スタッフには「押しても何も起きない」ようにしか見えない。
   def destroy
     @user = User.find_by(id: params[:id])
-    if @user.present?
-      name = @user.name
-      logger.debug("=============================== destroy = #{name}")
-      @user.destroy
-      flash[:notice] = "#{name}様を削除しました"
-    else
+    if @user.nil?
       # 見つからない会員の名前は出しようがない。
       # ここは以前 未定義の name を参照して落ちていた（手前の logger.debug も
       # nil を触っていたため、この分岐には辿り着けていなかった）。
       flash[:alert] = "対象の会員が見つからないため削除できませんでした"
+    else
+      name = @user.name
+      logger.debug("=============================== destroy = #{name}")
+      if @user.destroy
+        flash[:notice] = "#{name}様を削除しました"
+      else
+        flash[:alert] = "#{name}様: #{@user.errors.full_messages.join(" / ")}"
+      end
     end
+    redirect_to users_path
+  rescue ActiveRecord::InvalidForeignKey
+    # カルテ記録以外から参照されている場合（スタッフが問診票の発行者に
+    # なっている等）。素の 500 にすると、スタッフには何が起きたのか分からない。
+    flash[:alert] = "#{@user.name}様は他の記録から参照されているため削除できませんでした"
     redirect_to users_path
   end
   

@@ -95,14 +95,19 @@ class TreatmentNoteTest < ActiveSupport::TestCase
     assert_equal [recent, old], patient.treatment_notes.latest_first.to_a
   end
 
-  test "患者を消すと施術メモも消える" do
+  # 会員の削除は「登録を間違えた」「同じ人で2つ作った」の掃除だけを想定している。
+  # 施術メモがある時点でその想定から外れるので、消さずに拒む。
+  # 以前は患者ごと消せていた（記録がある人まで消えるほうが危ない）。
+  # 判定は test/models/user_deletion_test.rb が本体。
+  test "施術メモのある患者は消せず、メモも残る" do
     note = build_note
     note.save!
     patient = note.user
 
-    assert_difference -> { TreatmentNote.count }, -1 do
-      patient.destroy
+    assert_no_difference -> { TreatmentNote.count } do
+      assert_not patient.destroy
     end
+    assert User.exists?(patient.id)
   end
 
   private

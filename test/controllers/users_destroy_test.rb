@@ -79,6 +79,54 @@ class UsersDestroyTest < ActionDispatch::IntegrationTest
     assert_equal "患者 太郎様を削除しました", flash[:notice]
   end
 
+  # ── 削除できる / できないの伝え方 ──────────────────
+  #
+  # 判定そのものは test/models/user_deletion_test.rb が見ている。
+  # ここで見るのは「スタッフの画面に理由が出るか」。
+  # 以前は外部キー違反が素の 500 になり、押しても何が起きたのか分からなかった。
+
+  test "カルテ記録のある会員は削除できず、理由が画面に出る" do
+    sign_in @admin
+    @patient.medical_questionnaires.create!(form_version: MedicalQuestionnaireForm::VERSION)
+
+    assert_no_difference "User.count" do
+      delete user_path(@patient)
+    end
+
+    assert_redirected_to users_path
+    assert_equal "患者 太郎様: この会員には問診票 1件の記録があるため削除できません",
+                 flash[:alert]
+    assert User.exists?(@patient.id)
+  end
+
+  # 誤登録の掃除。カルテを一度開いていても消せること（閲覧ログは一緒に消える）。
+  test "カルテを閲覧しただけの会員は削除できる" do
+    sign_in @admin
+    KarteAccessLog.record!(actor: @admin, patient: @patient, action: "show")
+
+    assert_difference "User.count", -1 do
+      delete user_path(@patient)
+    end
+
+    assert_equal "患者 太郎様を削除しました", flash[:notice]
+    assert_empty KarteAccessLog.where(patient_id: @patient.id)
+  end
+
+  # スタッフは物理削除しない運用なので、外部キーで止まるのが正しい。
+  # ただし 500 で終わらせず、止まったことを伝える。
+  test "他の記録から参照されている会員は 500 にせず理由を出す" do
+    sign_in @admin
+    IntakeSession.issue!(patient: @patient, issuer: @staff)
+
+    assert_no_difference "User.count" do
+      delete user_path(@staff)
+    end
+
+    assert_redirected_to users_path
+    assert_equal "施術スタッフ様は他の記録から参照されているため削除できませんでした",
+                 flash[:alert]
+  end
+
   # @user が nil のとき、未定義の name を参照して落ちていた
   # （その手前の logger.debug も nil を触っていた）。
   # 消せなかったことを画面に伝えて一覧へ戻す。
