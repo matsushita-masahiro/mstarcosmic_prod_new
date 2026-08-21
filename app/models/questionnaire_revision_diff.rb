@@ -64,7 +64,7 @@ class QuestionnaireRevisionDiff
     after  = @questionnaire.answers || {}
 
     (before.keys | after.keys).sort.filter_map do |key|
-      next if before[key] == after[key]
+      next if same_answer?(before[key], after[key])
 
       question = MedicalQuestionnaireForm.find(key)
       Change.new(
@@ -111,6 +111,42 @@ class QuestionnaireRevisionDiff
   end
 
   private
+
+  # 回答が変わっていないか。
+  #
+  # キーが無い（nil）・空欄（""）・何も選ばれていない（[]）は、どれも
+  # 画面では「（未回答）」と出る。値としては別物なので == では違いになり、
+  #   機器名: （未回答） → （未回答）
+  # という、変わっていないのに変更として並ぶ行ができていた。
+  # 様式に項目が増えた直後の訂正で出る（前版にはキーごと無く、
+  # 訂正版は空欄を "" として送るため）。
+  #
+  # 差分はスタッフが訂正を確かめる唯一の窓口なので、意味の無い行を出すと
+  # 「変わっていないものが出ている」と読まれ、他の変更まで疑わしくなる。
+  def same_answer?(before, after)
+    return true if unanswered?(before) && unanswered?(after)
+
+    before == after
+  end
+
+  # 「未回答」か。
+  #
+  # blank? / presence は使わない。false.blank? は true なので、
+  # 「はい / いいえ」を boolean で持つ様式に変わった瞬間、
+  # 「いいえ → 未回答」の変化が差分から静かに消える。
+  # answers（jsonb）は患者端末が送った JSON をそのまま入れているので、
+  # 中身が必ず文字列だという前提はここでは置かない。
+  #
+  # 空白だけの文字列も未回答に含める。画面には「（未回答）」と出るため、
+  # 含めないと結局「（未回答） → （未回答）」の行が残る。
+  def unanswered?(value)
+    case value
+    when nil    then true
+    when String then value.strip.empty?
+    when Array  then value.empty?
+    else false
+    end
+  end
 
   def question_label(question)
     question[:no] ? "【#{question[:no]}】#{question[:label]}" : question[:label]

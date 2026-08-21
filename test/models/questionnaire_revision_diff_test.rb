@@ -144,6 +144,90 @@ class QuestionnaireRevisionDiffTest < ActiveSupport::TestCase
     assert_empty QuestionnaireRevisionDiff.new(revision).answer_changes
   end
 
+  # ── 未回答どうしを変更として出さない ──────────────
+  #
+  # キー無し（nil）・空欄（""）・何も選ばれていない（[]）は、どれも画面では
+  # 「（未回答）」と出る。値としては別物なので、畳まないと
+  #   機器名: （未回答） → （未回答）
+  # という変わっていない行が並ぶ。様式に項目が増えた直後の訂正で出る
+  # （前版にはキーごと無く、訂正版は空欄を "" として送るため）。
+  #
+  # ただし「出さない」だけでは足りない。未回答から回答へ、回答から未回答への
+  # 変化は差分の主眼そのものなので、引き続き出ること。
+
+  test "キーが無い前版と空欄の訂正版は変更として出さない" do
+    previous = create_questionnaire(answers: {})
+    revision = create_revision(previous, answers: { "q10_device_name" => "" })
+
+    assert_empty QuestionnaireRevisionDiff.new(revision).answer_changes
+    assert_not QuestionnaireRevisionDiff.new(revision).any_change?
+  end
+
+  test "空欄の前版とキーが無い訂正版も変更として出さない" do
+    previous = create_questionnaire(answers: { "q10_device_name" => "" })
+    revision = create_revision(previous, answers: {})
+
+    assert_empty QuestionnaireRevisionDiff.new(revision).answer_changes
+  end
+
+  # 空白だけの文字列も画面には「（未回答）」と出る。
+  # 畳まないと結局「（未回答） → （未回答）」の行が残る。
+  test "空白だけの回答も未回答として扱う" do
+    previous = create_questionnaire(answers: {})
+    revision = create_revision(previous, answers: { "q10_device_name" => "  " })
+
+    assert_empty QuestionnaireRevisionDiff.new(revision).answer_changes
+  end
+
+  test "複数選択のキー無しと空の選択も変更として出さない" do
+    previous = create_questionnaire(answers: {})
+    revision = create_revision(previous, answers: { "q6_family_history" => [] })
+
+    assert_empty QuestionnaireRevisionDiff.new(revision).answer_changes
+  end
+
+  # ここから「出るべきものは出る」。畳みすぎていないことの確認。
+  test "未回答から回答になった変化は出る" do
+    previous = create_questionnaire(answers: { "q10_device_name" => "" })
+    revision = create_revision(previous, answers: { "q10_device_name" => "人工内耳" })
+
+    change = QuestionnaireRevisionDiff.new(revision).answer_changes.sole
+
+    assert_equal QuestionnaireRevisionDiff::BLANK_LABEL, change.before
+    assert_equal "人工内耳", change.after
+  end
+
+  test "回答が未回答になった変化は出る" do
+    previous = create_questionnaire(answers: { "q10_device_name" => "人工内耳" })
+    revision = create_revision(previous, answers: { "q10_device_name" => "" })
+
+    change = QuestionnaireRevisionDiff.new(revision).answer_changes.sole
+
+    assert_equal "人工内耳", change.before
+    assert_equal QuestionnaireRevisionDiff::BLANK_LABEL, change.after
+  end
+
+  test "複数選択が空から選択ありになった変化は出る" do
+    previous = create_questionnaire(answers: { "q6_family_history" => [] })
+    revision = create_revision(previous, answers: { "q6_family_history" => [ "糖尿病" ] })
+
+    assert_equal "糖尿病", QuestionnaireRevisionDiff.new(revision).answer_changes.sole.after
+  end
+
+  # false を未回答に畳まないこと。
+  #
+  # 今の様式は「はい / いいえ」を文字列で持つので false は入らないが、
+  # blank? / presence で畳むと false も未回答になり、boolean で持つ様式に
+  # 変わった瞬間に「いいえ → 未回答」が差分から静かに消える。
+  # 見落とすより余分に出るほうが安全なので、値として扱う。
+  test "false は未回答に畳まない" do
+    previous = create_questionnaire(answers: { "q10_other_device" => false })
+    revision = create_revision(previous, answers: {})
+
+    assert_equal [ "q10_other_device" ],
+                 QuestionnaireRevisionDiff.new(revision).answer_changes.map(&:key)
+  end
+
   # 様式が違うと片方にしか無い設問がありうる。落ちずにキーで出す。
   test "現在の様式に無い設問はキーのまま出し、その旨が分かる" do
     previous = create_questionnaire(answers: { "q99_removed" => "yes" })
