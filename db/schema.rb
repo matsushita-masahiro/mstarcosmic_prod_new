@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_21_100101) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_22_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -478,7 +478,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_21_100101) do
   add_foreign_key "consents", "intake_sessions"
   add_foreign_key "consents", "users"
   add_foreign_key "handwriting_entries", "medical_questionnaires"
-  add_foreign_key "intake_sessions", "medical_questionnaires", column: "target_questionnaire_id"
+  add_foreign_key "intake_sessions", "medical_questionnaires", column: "target_questionnaire_id", on_delete: :nullify
   add_foreign_key "intake_sessions", "users"
   add_foreign_key "intake_sessions", "users", column: "issuer_id"
   add_foreign_key "karte_access_logs", "users", column: "actor_id"
@@ -486,7 +486,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_21_100101) do
   add_foreign_key "medical_questionnaires", "intake_sessions"
   add_foreign_key "medical_questionnaires", "medical_questionnaires", column: "previous_id"
   add_foreign_key "medical_questionnaires", "users"
-  add_foreign_key "medical_questionnaires", "users", column: "reviewed_by_id"
+  add_foreign_key "medical_questionnaires", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "ms_inquiry_answers", "metatron_sale_inquiries"
   add_foreign_key "patient_profiles", "users"
   add_foreign_key "reservations", "staffs"
