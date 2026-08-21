@@ -36,31 +36,28 @@
 
   <form data-questionnaire-target="form" onsubmit="return false;">
 
-    <%# ── 性別（users に無い場合のみ聞く）──────────── %>
-    <% unless @gender_known %>
-      <section class="q-block">
-        <h2 class="q-label">性別を教えてください</h2>
-        <div class="q-choices">
-          <label class="q-choice">
-            <input type="radio" name="answers[q0_gender]" value="female"
-                   data-action="questionnaire#genderChanged"> 女性
-          </label>
-          <label class="q-choice">
-            <input type="radio" name="answers[q0_gender]" value="male"
-                   data-action="questionnaire#genderChanged"> 男性
-          </label>
-        </div>
-      </section>
-    <% end %>
-
+    <%# 設問はすべて定義から描く。性別（ask_when_unknown）もここに含まれる。
+        出す・出さないの判断はコントローラ側（rendered_questions）に寄せてあり、
+        @questions には出す設問だけが入っている。
+        ここで条件を書き足すと、訂正での持ち越し（answers_to_save）が
+        参照している条件と食い違う。 %>
     <% @questions.each do |q| %>
       <section class="q-block"
                <% if q[:female_only] %>
                  data-female-only="true"
                  <%= "hidden" unless @is_female %>
+               <% end %>
+               <%# 冒頭で性別を選んだら女性専用設問を出し直す。change は
+                   section まで上がるので、選択肢ごとに action を書かずに済む。 %>
+               <% if q[:ask_when_unknown] == :gender %>
+                 data-action="change->questionnaire#genderChanged"
                <% end %>>
         <h2 class="q-label">
-          <span class="q-no">【<%= q[:no] %>】</span><%= q[:label] %>
+          <%# 番号を持たない設問（性別）がある。【】だけが出ないようにする。 %>
+          <% if q[:no] %><span class="q-no">【<%= q[:no] %>】</span><% end %>
+          <%# 未回答の知らせに出す文言。「必須」の印まで拾わないよう
+              ラベルだけを別の要素にしている（validateRequired が読む）。 %>
+          <span class="q-label-text"><%= q[:label] %></span>
           <% if q[:required] %><span class="q-required">必須</span><% end %>
         </h2>
 

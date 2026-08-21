@@ -6,7 +6,7 @@ module Intake
       return redirect_to new_intake_consent_path unless consent_satisfied?
 
       @questionnaire = find_or_build_draft
-      @questions = MedicalQuestionnaireForm::QUESTIONS
+      @questions = rendered_questions
 
       # 記入途中の内容を端末の localStorage と同じ形で渡し、JS 側で描き直す。
       # ERB の各 input に値を埋めないのは、手書き（canvas）が結局 JS でしか
@@ -19,8 +19,9 @@ module Intake
       @storage_key = storage_key
       @revision_target = revision_target
 
-      # users.gender があればそれを使い、無ければ問診票の冒頭で聞く
-      @gender_known = current_patient.gender_known?
+      # 女性専用設問（【13】妊娠）の出し分け。
+      # こちらは条件を満たさなくても DOM には出力し、hidden で隠すだけ
+      # （画面が全欄の状態を表していないと、autosave が削除方向に働く）。
       @is_female = current_patient.female?
     end
 
@@ -43,7 +44,7 @@ module Intake
       questionnaire = find_or_build_draft
 
       ActiveRecord::Base.transaction do
-        questionnaire.answers = parsed_answers
+        questionnaire.answers = answers_to_save
         questionnaire.save!
 
         # partial は「この内容は全欄の状態を表していない」というクライアントの申告。
@@ -73,7 +74,7 @@ module Intake
     # ここで失効させると、確認画面から記入画面へ戻れなくなる。
     def create
       questionnaire = find_or_build_draft
-      questionnaire.answers = parsed_answers
+      questionnaire.answers = answers_to_save
 
       ActiveRecord::Base.transaction do
         questionnaire.save!
@@ -148,6 +149,56 @@ module Intake
     # 新しい同意書への署名は、次の来店（purpose: initial）で求められる。
     def consent_satisfied?
       intake_session.purpose_revision? || Consent.current_for?(current_patient)
+    end
+
+    # 画面に出す設問。
+    #
+    # ask_when_unknown を持つ設問は、その情報が既に分かっている患者には
+    # 出さない（性別なら users.gender が入っている人）。
+    # female_only と違って hidden ですらなく、DOM に出力そのものをしない。
+    #
+    # 出す・出さないの判断はこの1か所だけに置く。ビューにも同じ条件を
+    # 書くと、訂正の持ち越し（answers_to_save）が見ている条件と
+    # 片方だけ変わって食い違い、回答が静かに消える。
+    def rendered_questions
+      MedicalQuestionnaireForm::QUESTIONS.reject { |q| skipped_question?(q) }
+    end
+
+    # 出力しない設問のキー。訂正で前版から持ち越す対象になる。
+    def skipped_question_keys
+      MedicalQuestionnaireForm::QUESTIONS.select { |q| skipped_question?(q) }
+                                         .map { |q| q[:key] }
+    end
+
+    def skipped_question?(question)
+      case question[:ask_when_unknown]
+      when :gender then current_patient.gender_known?
+      else false
+      end
+    end
+
+    # 保存する回答。
+    #
+    # 訂正では、画面に出さなかった設問の回答を前版から補う。
+    # 出力していない設問は collectAnswers() が拾いようがないため、
+    # 届いた回答をそのまま入れると、答えていたはずの項目が
+    # 「未回答」になって消える（性別がこれにあたる）。
+    #
+    # 条件付き表示（[hidden]）の設問はこの対象ではない。あちらは DOM に
+    # 出力されていて、患者が条件を外したときはクライアントが値を消す。
+    # 「出力しなかった」と「隠しただけ」を分けているのがこの方式の要で、
+    # 前者だけを補うから、患者が消したはずの回答が復活しない。
+    #
+    # 届いた回答が優先。前版の値は、画面に無かったぶんの穴埋めに過ぎない。
+    # 初回記入では revision_target が nil なので何も補わない。
+    def answers_to_save
+      carried_over_answers.merge(parsed_answers)
+    end
+
+    def carried_over_answers
+      return {} unless revision_target
+
+      (revision_target.answers || {}).slice(*skipped_question_keys)
     end
 
     def parsed_answers

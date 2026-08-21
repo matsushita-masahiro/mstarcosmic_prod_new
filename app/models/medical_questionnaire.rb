@@ -182,13 +182,18 @@ class MedicalQuestionnaire < ApplicationRecord
   # 問診票で性別を聞いた場合、users 側が未設定なら反映する。
   # 既に値がある場合は上書きしない（患者の自己申告より既存データを優先）。
   #
+  # 設問そのものは MedicalQuestionnaireForm::QUESTIONS にある
+  # （ask_when_unknown: :gender。users.gender が未設定のときだけ出す）。
+  # キーと値（"female" / "male"）は定義と対応しているので、
+  # 片方だけを変えないこと。
+  #
   # 確定の直前に呼ぶ。以前は Intake::QuestionnairesController#create に
   # 置いていたが、確定が確認画面側へ移ったので、確定と一緒に動くよう
   # answers を持っているこちらへ移した。
   def sync_patient_gender!
     return if user.gender.present?
 
-    value = answer("q0_gender")
+    value = answer(MedicalQuestionnaireForm::GENDER_KEY)
     return if value.blank?
 
     user.update_column(:gender, value == "female" ? "f" : "m")

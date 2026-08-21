@@ -96,7 +96,10 @@ export default class extends Controller {
     window.removeEventListener("beforeunload", this.onBeforeUnload)
   }
 
-  // 冒頭で性別を選んだとき、女性専用設問を出し分ける
+  // 冒頭で性別を選んだとき、女性専用設問を出し分ける。
+  //
+  // action は設問の section が持っている（show.html.erb）。change は
+  // section まで上がるので event.target は選ばれた radio になる。
   genderChanged(event) {
     const isFemale = event.target.value === "female"
     this.femaleOnlySections().forEach((section) => {
@@ -472,6 +475,12 @@ export default class extends Controller {
   }
 
   // 必須項目の検証。非表示の設問（女性専用など）は対象外にする。
+  //
+  // 必須かどうかは画面に出ている「必須」の印（.q-required）で判る。
+  // 印は設問定義の required から ERB が出しているので、判定はここではなく
+  // MedicalQuestionnaireForm::QUESTIONS が持っている。
+  // 性別を冒頭に直書きしていた頃はこのメソッドにもキーを書いていたが、
+  // 定義に取り込んだので他の設問と同じ経路で拾われる。
   validateRequired() {
     const missing = []
     this.formTarget.querySelectorAll(".q-block").forEach((block) => {
@@ -486,18 +495,20 @@ export default class extends Controller {
       // 複数選択（name が "…][]"）に当たらず、選んでいても未回答になる。
       if (!block.querySelector(`[name="${input.name}"]:checked`)) {
         const key = answerKey(input.name)
-        const label = block.querySelector(".q-label")?.textContent.trim().slice(0, 20)
-        missing.push({ key, label })
+        missing.push({ key, label: this.blockLabel(block) })
       }
     })
 
-    // 性別未選択のチェック（冒頭で聞いている場合のみ）
-    const genderField = this.formTarget.querySelector('[name="answers[q0_gender]"]')
-    if (genderField && !this.formTarget.querySelector('[name="answers[q0_gender]"]:checked')) {
-      missing.unshift({ key: "q0_gender", label: "性別" })
-    }
-
     return missing.map((m) => m.label || m.key)
+  }
+
+  // 未回答の知らせに出す設問名。
+  // .q-label には設問番号と「必須」の印も入っているので、ラベルだけの
+  // 要素を読む。番号ごと読むと「【10】身体の中に…」で切れて分かりにくく、
+  // 印まで読むと「性別 必須」のように印が名前の一部として出る。
+  blockLabel(block) {
+    const el = block.querySelector(".q-label-text") || block.querySelector(".q-label")
+    return el?.textContent.replace(/\s+/g, " ").trim().slice(0, 20)
   }
 
   updateProgress() {

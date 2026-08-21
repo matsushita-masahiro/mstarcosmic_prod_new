@@ -23,8 +23,26 @@
 #   :composite    サブ項目を持つ
 #
 # female_only: true を指定した設問は、女性と判定された場合のみ表示する。
+#
+# ask_when_unknown: 既に分かっていることは聞かない設問。値は患者側の判定を表す
+# （:gender なら users.gender が未設定のときだけ聞く）。
+#
+# 【female_only との違い。混同すると回答が消える】
+#   female_only       条件を満たさなくても DOM には出力され、hidden で隠れるだけ。
+#                     画面は全欄の状態を表しているので、訂正しても回答は失われない。
+#   ask_when_unknown  条件を満たすと、そもそも出力しない。画面に無い＝収集されない
+#                     ので、訂正では前版から持ち越さないと回答が消える
+#                     （Intake::QuestionnairesController#answers_to_save）。
+#
+# つまり female_only は「表示するかどうか」、ask_when_unknown は
+# 「出力するかどうか」。性質が違うので同じ属性に寄せないこと。
 module MedicalQuestionnaireForm
   VERSION = "2026-08-03".freeze
+
+  # 性別の設問キー。users.gender への反映
+  # （MedicalQuestionnaire#sync_patient_gender!）が同じキーを見るため、
+  # 両者が直書きで食い違わないよう定数にしている。
+  GENDER_KEY = "q0_gender".freeze
 
   YES_NO = [
     { value: "no",  label: "いいえ" },
@@ -32,6 +50,24 @@ module MedicalQuestionnaireForm
   ].freeze
 
   QUESTIONS = [
+    # 性別。users.gender が未設定の患者にだけ聞く（ask_when_unknown）。
+    #
+    # 設問番号を持たせていない。既存は 1〜19 で、ぶつからない番号は 0 になるが
+    # 「【0】」と画面に出るのは不自然なため。番号の無い設問は記入画面・
+    # 確認画面・カルテ・差分のいずれもラベルだけを出す。
+    #
+    # value は "female" / "male"。sync_patient_gender! が users.gender の
+    # "f" / "m" へ写しており、過去の回答もこの値で保存されている。
+    {
+      key: GENDER_KEY, type: :radio,
+      label: "性別",
+      required: true,
+      ask_when_unknown: :gender,
+      options: [
+        { value: "female", label: "女性" },
+        { value: "male",   label: "男性" }
+      ]
+    },
     {
       no: 1, key: "q1_purpose", type: :handwriting,
       label: "現在のお身体の状況や来店目的を教えてください"

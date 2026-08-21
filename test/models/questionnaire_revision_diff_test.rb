@@ -155,6 +155,21 @@ class QuestionnaireRevisionDiffTest < ActiveSupport::TestCase
     assert change.unknown_question?, "現在の様式に無いことが分かりません"
   end
 
+  # 性別は長らく定義の外にあり、訂正すると差分に
+  # 「q0_gender（現在の様式にない設問）」と出ていた。
+  # 設問番号を持たないので、ラベルは【】なしのまま出る。
+  test "性別の変化は設問ラベルと選択肢ラベルで出る" do
+    previous = create_questionnaire(answers: { "q0_gender" => "male" })
+    revision = create_revision(previous, answers: { "q0_gender" => "female" })
+
+    change = QuestionnaireRevisionDiff.new(revision).answer_changes.sole
+
+    assert_equal "性別", change.label
+    assert_not change.unknown_question?, "設問定義から引けていません"
+    assert_equal "男性", change.before, "生の値が出ています"
+    assert_equal "女性", change.after
+  end
+
   test "様式が違えばそれが分かる" do
     previous = create_questionnaire(form_version: "2026-04-17")
     revision = create_revision(previous, answers: { "q7_marital_status" => "single" })
