@@ -15,6 +15,13 @@
 # ここは「会員（user_type "2"）が弾かれること」と
 # 「窓口業務として施術スタッフ（"10"）が通ること」を対で守る。
 #
+# ただし show だけは所有者も通す。complete_cash_payment / complete_payment が
+# 購入完了後に redirect_to payment_path(@payment) で show へ着地する設計で、
+# スタッフ限定にすると購入した本人が完了画面で弾かれる。
+# 実際にこれで staging の購入フローを壊した。原因は「他人の show が弾かれること」
+# しか見ておらず、購入フローを最後まで通すテストが無かったこと。
+# 「購入フロー全体が完走する」テストを必ず残すこと。
+#
 # access_controll_payment は存在確認として今も有効なので残してある。
 # 権限判定を先に走らせているため、存在しない :id でも
 # 権限の無い相手には権限エラーが返る（存在の有無を漏らさない）。
@@ -49,15 +56,6 @@ class PaymentsAuthorizationTest < ActionDispatch::IntegrationTest
     sign_in @member
 
     get edit_payment_path(@payment)
-
-    assert_response :redirect
-    assert_equal "権限がありません", flash[:alert]
-  end
-
-  test "会員は他人の回数券の詳細を見られない" do
-    sign_in @member
-
-    get payment_path(@payment)
 
     assert_response :redirect
     assert_equal "権限がありません", flash[:alert]
@@ -99,7 +97,69 @@ class PaymentsAuthorizationTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  # ── show は所有者も通る（購入完了画面） ────────
+
+  test "会員は自分の回数券の詳細を見られる" do
+    own = Payment.create!(user: @member, price: 10_000)
+    sign_in @member
+
+    get payment_path(own)
+
+    assert_response :success
+  end
+
+  test "会員は他人の回数券の詳細を見られない（再掲・所有者判定の裏返し）" do
+    sign_in @member
+
+    get payment_path(@payment)
+
+    assert_response :redirect
+    assert_equal "権限がありません", flash[:alert]
+  end
+
+  test "存在しない id の詳細は存在確認で捌かれる" do
+    sign_in @member
+
+    get payment_path(id: 999_999)
+
+    assert_response :redirect
+    assert_equal "指定の支払い情報が存在しません", flash[:alert]
+  end
+
+  # ── 購入フロー全体（ここが抜けていて staging を壊した）──
+
+  test "会員の購入フローが pay_select から完了画面まで完走する" do
+    sign_in @member
+    count = PaymentsController::ALLOWED_COUPON_COUNTS.first
+
+    get payments_pay_select_path
+    assert_response :success
+
+    get "/payments/#{count}/new"
+    assert_response :success
+
+    get payments_complete_cash_payment_path
+    payment = Payment.where(user_id: @member.id).order(:id).last
+    assert_not_nil payment, "支払レコードが作られていません"
+    assert_redirected_to payment_path(payment)
+
+    # 完了画面。ここが弾かれると「購入したのにエラー」に見える。
+    follow_redirect!
+    assert_response :success, "購入した本人が完了画面で弾かれています"
+    assert_match(/支払い完了/, response.body)
+
+    assert_equal count, payment.coupons.where(status: "new").count
+  end
+
   # ── 施術スタッフは窓口業務として通る ──────────
+
+  test "スタッフは他人の回数券の詳細を見られる" do
+    sign_in @staff
+
+    get payment_path(@payment)
+
+    assert_response :success
+  end
 
   test "スタッフは回数券の編集画面に入れる" do
     sign_in @staff

@@ -12,7 +12,7 @@ class PaymentsController < ApplicationController
 
   before_action :authenticate_user!
 
-  # 回数券の閲覧・使用・使用取消は施術スタッフの窓口業務なので "1" と "10" に開く。
+  # 回数券の使用・使用取消は施術スタッフの窓口業務なので "1" と "10" に開く。
   # 支払レコードごとの削除（payment_destroy）は管理者だけ。
   #
   # ここに権限判定が無かったため、access_controll_payment が
@@ -20,10 +20,18 @@ class PaymentsController < ApplicationController
   # user_type も見ていない）、ログインしていれば誰でも :id を差し替えて
   # 他人の回数券を閲覧・消費でき、destroy で使用済みを未使用へ戻して
   # 自分の残回数を無制限に増やせた。
+  #
+  # show だけはスタッフ限定にできない。complete_cash_payment / complete_payment
+  # が購入完了後に redirect_to payment_path(@payment) で show へ着地する設計で、
+  # スタッフ限定にすると購入した本人が完了画面で弾かれる（実際に staging で
+  # 購入フローを壊した）。所有者も通す判定を別に用意する。
   before_action :authenticate_admin_user?, only: [:index, :payment_destroy]
-  before_action :authenticate_staff_user?, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_staff_user?, only: [:edit, :update, :destroy]
 
   before_action :access_controll_payment, only: [:show, :edit, :update, :destroy]
+
+  # 存在確認のあとに置く。無い :id は access_controll_payment が先に捌く。
+  before_action :owner_or_staff_login, only: [:show]
   # before_action :payment_valid, only: [:complete_cash_payment, :complete_payment]
   
   def pay_select
@@ -207,6 +215,23 @@ class PaymentsController < ApplicationController
         end 
       
         return coupon_times
+     end
+     
+     # show を見られるのは、その支払いの本人か、窓口業務のスタッフ・管理者。
+     # 購入完了画面がここなので本人を締め出せない。
+     # UsersController#owner_or_admin_login と同じ形で、判定対象を
+     # Payment の user_id にしたもの。
+     #
+     # レコードが無い場合は何もしない。存在確認は access_controll_payment の
+     # 担当で、そちらが先に走る。ここで落ちないよう nil を通しておく。
+     def owner_or_staff_login
+       payment = Payment.find_by(id: params[:id])
+       return if payment.nil?
+       return if payment.user_id == current_user&.id
+       return if current_user&.user_type == "1" || current_user&.user_type == "10"
+
+       flash[:alert] = "権限がありません"
+       redirect_back(fallback_location: root_path)
      end
      
      # 枚数は URL（new）とセッション（complete_cash_payment）の2箇所から来る。
