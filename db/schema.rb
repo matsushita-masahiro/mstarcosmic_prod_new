@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_22_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_23_082155) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -266,6 +266,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_22_100000) do
     t.datetime "updated_at", null: false
     t.index ["postal_code"], name: "index_patient_profiles_on_postal_code"
     t.index ["user_id"], name: "index_patient_profiles_on_user_id", unique: true
+  end
+
+  create_table "pay_types", force: :cascade do |t|
+    t.integer "user_type_id"
+    t.string "pay_name"
+    t.integer "price"
+    t.text "paypal_form"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "payments", force: :cascade do |t|
