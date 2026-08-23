@@ -66,12 +66,27 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
     { label: "ページ別文章管理", path: "/page_contents",
       sees: %i[admin], guarded: true,
       admin: :ok, staff: :blocked, member: :blocked },
+    # 予約カレンダー / MY予約 は会員としての導線。管理者だけに出していたものを
+    # _header 側と同じ条件（ログインしていれば出す）に揃え、1つに寄せた。
     { label: "予約カレンダー", path: "/reserves/machine_select",
-      sees: %i[admin], guarded: false,
+      sees: %i[admin staff], guarded: false,
       admin: :ok, staff: :ok, member: :ok },
-    { label: "予約一覧", path: "/reserves/my_reserved",
-      sees: %i[admin], guarded: false,
+    { label: "MY予約", path: "/reserves/my_reserved",
+      sees: %i[admin staff], guarded: false,
       admin: :ok, staff: :ok, member: :ok }
+  ].freeze
+
+  # main.html.erb はヘッダーを排他で出すため、管理者・スタッフには _header が
+  # 描画されない。会員としての導線（プロフィール・回数券購入など）が
+  # どこからも辿れなくなるので、_admin_header 側にも同じ項目を持たせている。
+  #
+  # markup が _header と重複している点は HANDOFF.md に記載。
+  # 片方だけ直すと管理側と会員側で導線がずれるので、必ず両方を見ること。
+  MEMBER_ITEMS = [
+    { label: "プロフィール", path: "/users/edit" },
+    { label: "回数券購入",   path: "/payments/pay_select" },
+    { label: "予約カレンダー", path: "/reserves/machine_select" },
+    { label: "MY予約",       path: "/reserves/my_reserved" }
   ].freeze
 
   setup do
@@ -266,6 +281,99 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ── 4.5 会員としての導線 ─────────────────────────
+  #
+  # 管理者・スタッフも施術を受け、自分の登録情報を直す。
+  # _header が描画されない以上、_admin_header に無いとどこからも辿れない。
+
+  test "会員導線がスタッフのPC・SPに出る" do
+    sign_in @staff
+    get root_path
+
+    MEMBER_ITEMS.each do |item|
+      assert_includes pc_header(response.body), %(href="#{item[:path]}"),
+                      "スタッフのPCメニューに #{item[:label]} が出ていません"
+      assert_includes sp_overlay(response.body), %(href="#{item[:path]}"),
+                      "スタッフのSPメニューに #{item[:label]} が出ていません"
+    end
+  end
+
+  test "会員導線が管理者のPC・SPに出る" do
+    sign_in @admin
+    get root_path
+
+    MEMBER_ITEMS.each do |item|
+      assert_includes pc_header(response.body), %(href="#{item[:path]}"),
+                      "管理者のPCメニューに #{item[:label]} が出ていません"
+      assert_includes sp_overlay(response.body), %(href="#{item[:path]}"),
+                      "管理者のSPメニューに #{item[:label]} が出ていません"
+    end
+  end
+
+  test "必ずお読みください がスタッフに出る" do
+    sign_in @staff
+    get root_path
+
+    # user_type ごとにページが違うので、パスは本人の区分で組み立てる。
+    path = "/home/readmust/#{@staff.user_type}"
+    assert_includes pc_header(response.body), %(href="#{path}")
+    assert_includes sp_overlay(response.body), %(href="#{path}")
+  end
+
+  # 一般会員は _header のまま。今回の変更で何も変わっていないこと。
+  test "一般会員の会員導線は従来どおり出る" do
+    sign_in @member
+    get root_path
+
+    assert_response :success
+    MEMBER_ITEMS.each do |item|
+      assert_includes response.body, %(href="#{item[:path]}"),
+                      "一般会員から #{item[:label]} が消えています"
+    end
+  end
+
+  test "スタッフにお問合せボタンは出ない" do
+    sign_in @staff
+    get root_path
+
+    assert_not_includes pc_header(response.body), %(href="/inquiries/new"),
+                        "スタッフにお問合せボタンが出ています"
+  end
+
+  test "一般会員にはお問合せボタンが出る" do
+    sign_in @member
+    get root_path
+
+    assert_includes response.body, %(href="/inquiries/new")
+  end
+
+  # ── 4.6 同じリンクが2つ並んでいないこと ──────────
+  #
+  # 会員導線を _admin_header に足したとき、管理者側に元からあった
+  # 「予約カレンダー」「予約一覧」と重複した。1つに寄せてある。
+
+  test "PCメニューに同じパスのリンクが2つ以上出ていない" do
+    %i[admin staff].each do |role|
+      sign_in user_for(role)
+      get root_path
+
+      assert_empty duplicated_hrefs(pc_header(response.body)),
+                   "#{role} のPCメニューに同じリンクが重複しています"
+      sign_out user_for(role)
+    end
+  end
+
+  test "SPメニューに同じパスのリンクが2つ以上出ていない" do
+    %i[admin staff].each do |role|
+      sign_in user_for(role)
+      get root_path
+
+      assert_empty duplicated_hrefs(sp_overlay(response.body)),
+                   "#{role} のSPメニューに同じリンクが重複しています"
+      sign_out user_for(role)
+    end
+  end
+
   # ── 5. 一覧の中の押せないリンク ──────────────────
   #
   # お客様一覧はスタッフにも開いたが、氏名リンク（編集画面）と削除は
@@ -299,6 +407,15 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
 
   def user_for(role)
     { admin: @admin, staff: @staff, member: @member }.fetch(role)
+  end
+
+  # 同じ href が2回以上出ている箇所を返す。
+  # ロゴとメニュー項目で "/" が重なる程度は許容したいので、
+  # ルートだけは除いて見る。
+  def duplicated_hrefs(section)
+    section.scan(/href="([^"]*)"/).flatten
+           .reject { |h| h.empty? || h == "/" }
+           .tally.select { |_, count| count > 1 }.keys
   end
 
   # PC ヘッダー（<div id="new-header"> 〜 <div id="sp-new-header"> の手前）

@@ -65,6 +65,38 @@ before_action :redirect_edit_user, oniy: [:index]
 直すと今まで走っていたアクションで挙動が変わる可能性があるため、
 影響を確認してから直すこと。
 
+## 6. 会員メニューの markup が _header と _admin_header に重複している
+
+`main.html.erb` はヘッダーを排他で描画するため、管理者・施術スタッフには
+`_header` が出ない。会員としての導線（必ずお読みください / プロフィール /
+予約カレンダー / MY予約 / 回数券購入 / スケジュール入力）が
+どこからも辿れなくなるので、`_admin_header` 側にも同じ項目を持たせている。
+
+将来は共通パーシャルに切り出すのが望ましいが、`_header` への変更は
+一般会員の画面に影響するため今回は見送った。
+**片方だけ修正する事故に注意。**
+
+対応表は `test/integration/staff_menu_test.rb` の `MEMBER_ITEMS` にある。
+
+## 7. 並列テストで pg gem が稀にセグメンテーション違反を起こす
+
+`bin/rails test`（既定で並列 8 プロセス）が、フォーク直後の接続確立中に
+落ちることがある。
+
+    pg-1.5.9/lib/pg/connection.rb:703: [BUG] Segmentation fault
+    c:0059 p:---- s:0339 e:000338 CFUNC  :connect_poll
+
+テストのロジックではなく、macOS における libpq と fork の相性の問題。
+テスト件数が増えるほど踏みやすくなる（426件時点で数回に1回）。
+
+回避策:
+
+    PARALLEL_WORKERS=1 bin/rails test
+
+直列なら全件安定して通る。落ちたときは環境要因なので、まず再実行して
+判断すること。恒久対応は pg gem の更新か `parallelize` の縮小だが、
+どちらも別途判断が要る（Gemfile.lock の変更はデプロイに影響する）。
+
 ---
 
 ## 履歴の追跡について（今回の調査結果）

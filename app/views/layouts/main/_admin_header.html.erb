@@ -12,13 +12,27 @@
             <% if staff_user? %>
                <% if admin_user? %>
                  <li class="not_image"><%= link_to 'ページ別文章管理', page_contents_path%></li>
-                 <li class="not_image reserve_menu"><a href="">予約関連</a>
-                    <ul class="dropdown">
-                        <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
-                        <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
-                    </ul> 
-                 </li>
                <% end %>
+
+               <%# 会員としての導線。管理者・スタッフも施術を受け、自分の登録情報を直す。 %>
+               <%# main.html.erb が排他で _header を出さないため、ここに無いと %>
+               <%# プロフィールと回数券購入にどこからも辿り着けない。 %>
+               <%# 表示条件は _header 側と同じにしてある（絞り込みはしない）。 %>
+               <li class="not_image"><%= link_to '必ずお読みください', "/home/readmust/#{User.find_by(id: current_user.id).user_type}" %></li>
+               <li class="not_image"><%= link_to 'プロフィール', edit_user_registration_path %></li>
+               <li class="not_image reserve_menu"><a href="">予約関連</a>
+                  <ul class="dropdown">
+                      <%# 管理者だけに出していた「予約カレンダー」「予約一覧」は %>
+                      <%# _header の「予約カレンダー」「MY予約」と同じパスなので、 %>
+                      <%# この1つに寄せた。同じリンクが2箇所に並ばないようにするため。 %>
+                      <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
+                      <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
+                      <li><%= link_to '回数券購入', payments_pay_select_path %></li>
+                      <% if staff_info %>
+                        <li><%= link_to 'スケジュール入力', new_staff_schedules_path(staff_id: staff_info.id) %></li>
+                      <% end %>
+                  </ul> 
+               </li>
                <%# 見出しはロールで呼び替える。中身の出し分けは各項目の admin_user? %>
                <li class="not_image reserve_menu"><a href=""><%= admin_user? ? '管理者メニュー' : 'スタッフメニュー' %></a>
                   <ul class="dropdown">
@@ -78,7 +92,16 @@
             <%# PC 側と同じ出し分けにすること。ここだけ user_signed_in? しか %>
             <%# 見ていなかったため、判定を通ったログイン利用者に全項目が出ていた。 %>
             <% if user_signed_in? && staff_user? %>
-               <%# スタッフ（"10"）にも出す項目 %>
+               <%# 会員としての導線。PC 側と同じ項目を同じ条件で出す。 %>
+               <li><%= link_to '必ずお読みください', "/home/readmust/#{User.find_by(id: current_user.id).user_type}" %></li>
+               <li><%= link_to 'プロフィール', edit_user_registration_path %></li>
+               <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
+               <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
+               <li><%= link_to '回数券購入', payments_pay_select_path %></li>
+               <% if staff_info %>
+                 <li><%= link_to 'スケジュール入力', new_staff_schedules_path(staff_id: staff_info.id) %></li>
+               <% end %>
+               <%# スタッフ（"10"）にも出す管理項目 %>
                <li><%= link_to 'お客様一覧', users_path %></li>
                <li><%= link_to 'カルテ・施術記録', karte_users_path %></li>
                <li><%= link_to '回数券管理', payments_path %></li>
@@ -86,8 +109,6 @@
                <%# 管理者（"1"）のみ %>
                <% if admin_user? %>
                  <li><%= link_to 'ページ別文章管理', page_contents_path%></li>
-                 <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
-                 <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
                  <li><%= link_to '同意書の管理', karte_consent_documents_path %></li>
                  <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
                  <li><%= link_to 'メタトロン購入お問合せ一覧', metatron_sale_inquiries_path %></li>
