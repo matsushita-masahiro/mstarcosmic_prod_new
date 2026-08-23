@@ -31,5 +31,5 @@ UserType.seed(:id,
 
 # (3)mstarcosmicで仮会員以外なら
 # 　 そのuserのuser_type: そのままで registration_status: trueにする
-　　
+
 
