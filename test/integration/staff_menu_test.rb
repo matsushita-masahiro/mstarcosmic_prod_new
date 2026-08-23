@@ -94,36 +94,77 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
     @member = create_user(email: "menu-member@example.com", name: "一般会員",   user_type: "2")
   end
 
-  # ── 1. ヘッダーそのものの出し分け ──────────────
+  # ── 1. ヘッダーそのものの出し分けと見出しのラベル ──
+  #
+  # 見出しはロールで呼び替える（管理者→「管理者メニュー」/ スタッフ→
+  # 「スタッフメニュー」）。ヘッダーが描画されたかどうかの判定にも使うので、
+  # 「片方のラベルが出て、もう片方が出ない」を対で見る。
 
-  test "スタッフには管理側ヘッダーが描画される" do
+  ADMIN_LABEL = "管理者メニュー".freeze
+  STAFF_LABEL = "スタッフメニュー".freeze
+
+  test "管理者には見出しが管理者メニューで描画される" do
+    sign_in @admin
+    get root_path
+
+    assert_response :success
+    assert_includes response.body, ADMIN_LABEL,
+                    "管理者に _admin_header が描画されていません"
+    assert_not_includes response.body, STAFF_LABEL,
+                        "管理者にスタッフ向けの見出しが出ています"
+  end
+
+  test "スタッフには見出しがスタッフメニューで描画される" do
     sign_in @staff
     get root_path
 
     assert_response :success
-    assert_match(/管理者メニュー/, response.body,
-                 "スタッフに _admin_header が描画されていません")
+    assert_includes response.body, STAFF_LABEL,
+                    "スタッフに _admin_header が描画されていません"
+    assert_not_includes response.body, ADMIN_LABEL,
+                        "スタッフに「管理者メニュー」の文字列が出ています"
   end
 
-  test "管理者には管理側ヘッダーが描画される" do
+  test "見出しはPCドロップダウンに出る" do
+    sign_in @staff
+    get root_path
+    assert_includes pc_header(response.body), STAFF_LABEL
+    sign_out @staff
+
     sign_in @admin
     get root_path
+    assert_includes pc_header(response.body), ADMIN_LABEL
+  end
 
-    assert_match(/管理者メニュー/, response.body)
+  # SP のスライドメニューは項目を平らに並べるだけで見出しを持たない。
+  # PC だけの要素なので、どちらのラベルも出ないのが正しい。
+  # ここに見出しを足すなら、この期待も一緒に更新すること。
+  test "SPオーバーレイには見出しが無い" do
+    %i[admin staff].each do |role|
+      sign_in user_for(role)
+      get root_path
+      overlay = sp_overlay(response.body)
+
+      assert_not_includes overlay, ADMIN_LABEL, "#{role} のSPに見出しが出ています"
+      assert_not_includes overlay, STAFF_LABEL, "#{role} のSPに見出しが出ています"
+      sign_out user_for(role)
+    end
   end
 
   test "一般会員には管理側ヘッダーが描画されない" do
     sign_in @member
     get root_path
 
-    assert_no_match(/管理者メニュー/, response.body,
-                    "一般会員に管理メニューが描画されています")
+    assert_not_includes response.body, ADMIN_LABEL,
+                        "一般会員に管理メニューが描画されています"
+    assert_not_includes response.body, STAFF_LABEL
   end
 
   test "未ログインには管理側ヘッダーが描画されない" do
     get root_path
 
-    assert_no_match(/管理者メニュー/, response.body)
+    assert_not_includes response.body, ADMIN_LABEL
+    assert_not_includes response.body, STAFF_LABEL
   end
 
   # ── 2. メニューの表示（PC・SP の両方）────────────

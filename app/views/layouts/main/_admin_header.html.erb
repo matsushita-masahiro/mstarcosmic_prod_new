@@ -2,7 +2,6 @@
 <div id="new-header">
     <ul class="new-header">
         <li class="logo"><a href="/"><img src="/new-images/logo.png" class="logo"></a></li>
-        <!--<li class="not_image"><a href="/main">管理者メニューだ</a></li>-->
         <!--<li class="not_image"><a href="/about_metatron">メタトロンとは</a></li>-->
         <!--<li class="not_image"><a href="">料金表</a></li>-->
         
@@ -20,7 +19,8 @@
                     </ul> 
                  </li>
                <% end %>
-               <li class="not_image reserve_menu"><a href="">管理者メニュー</a>
+               <%# 見出しはロールで呼び替える。中身の出し分けは各項目の admin_user? %>
+               <li class="not_image reserve_menu"><a href=""><%= admin_user? ? '管理者メニュー' : 'スタッフメニュー' %></a>
                   <ul class="dropdown">
                       <%# ここから スタッフ（"10"）にも出す項目 %>
                       <li><%= link_to 'お客様一覧', users_path %></li>
