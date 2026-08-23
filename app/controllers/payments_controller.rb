@@ -1,15 +1,35 @@
 class PaymentsController < ApplicationController
   
   layout 'main/main'
-  
+
+  # 発行を許す回数券の枚数。
+  #
+  # /payments/:id/new の :id は支払 ID ではなく「枚数」で、
+  # complete_cash_payment がその数だけ Coupon を作る。検証が無かったため
+  # /payments/9999/new を開いてから現金払いへ進むだけで 9999 枚発行できた。
+  # pay_select のボタンもこの定数から作る。片方だけ増やしても食い違わないように。
+  ALLOWED_COUPON_COUNTS = [5, 10].freeze
+
   before_action :authenticate_user!
-  before_action :authenticate_admin_user?, only: [:index]
+
+  # 回数券の閲覧・使用・使用取消は施術スタッフの窓口業務なので "1" と "10" に開く。
+  # 支払レコードごとの削除（payment_destroy）は管理者だけ。
+  #
+  # ここに権限判定が無かったため、access_controll_payment が
+  # 「そのレコードが存在するか」しか見ておらず（名前に反して所有者も
+  # user_type も見ていない）、ログインしていれば誰でも :id を差し替えて
+  # 他人の回数券を閲覧・消費でき、destroy で使用済みを未使用へ戻して
+  # 自分の残回数を無制限に増やせた。
+  before_action :authenticate_admin_user?, only: [:index, :payment_destroy]
+  before_action :authenticate_staff_user?, only: [:show, :edit, :update, :destroy]
+
   before_action :access_controll_payment, only: [:show, :edit, :update, :destroy]
   # before_action :payment_valid, only: [:complete_cash_payment, :complete_payment]
   
   def pay_select
     # @user_type = User.find_by(id: current_user.id).user_type
     @payments = current_user.payments
+    @coupon_counts = ALLOWED_COUPON_COUNTS
   end 
   
   def construction
@@ -17,7 +37,13 @@ class PaymentsController < ApplicationController
   
   # pay_select.html.erb　からくる
   def new
-    @number_of_coupons = params[:id]
+    # session に入れる前に確かめる。ここを通した値がそのまま発行枚数になる。
+    unless allowed_coupon_count?(params[:id])
+      flash[:alert] = "選択できない回数券です"
+      return redirect_to payments_pay_select_path
+    end
+
+    @number_of_coupons = params[:id].to_i
     session[:number_of_coupons] = @number_of_coupons
     logger.debug("============================= @number_of_coupons = #{@number_of_coupons}")
     @user = User.find_by(id: current_user.id)
@@ -28,6 +54,15 @@ class PaymentsController < ApplicationController
   
   def complete_cash_payment
     @number_of_coupons = session[:number_of_coupons]
+
+    # new で確かめた値だが、発行の直前にもう一度同じ物差しで確かめる。
+    # 実際に Coupon を作るのはここなので、最後の砦をここに置く。
+    unless allowed_coupon_count?(@number_of_coupons)
+      session[:number_of_coupons] = nil
+      flash[:alert] = "選択できない回数券です"
+      return redirect_to payments_pay_select_path
+    end
+
     logger.debug("============================= complete_cash_payment number_of_coupons = #{@number_of_coupons}")
     @user = User.find(current_user.id)
     # price = PayType.find(@pay_type).price
@@ -172,6 +207,13 @@ class PaymentsController < ApplicationController
         end 
       
         return coupon_times
+     end
+     
+     # 枚数は URL（new）とセッション（complete_cash_payment）の2箇所から来る。
+     # どちらも利用者が触れるため、同じ物差しで両方を見る。
+     # 文字列で比べるのは "05" や "5.0" のような表記を弾くため。
+     def allowed_coupon_count?(value)
+       ALLOWED_COUPON_COUNTS.map(&:to_s).include?(value.to_s)
      end
      
      def access_controll_payment

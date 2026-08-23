@@ -31,11 +31,6 @@ class Users::RegistrationsController < Devise::RegistrationsController
       if @user.user_type == nil
         @user.user_type = "0"
       end
-      logger.debug("====================== update Global::ADMIN_EMAIL = #{ENV['USER_EMAIL']}")
-      if @user.email == ENV['USER_EMAIL']
-        @user.user_type = "1"
-        flash[:notice] = "管理者登録できました"  
-      end
       
       if current_user.valid_password?(params[:user][:current_password])
         logger.debug("-------------------- user.valid_password?(params[:user][:password]) = true")
@@ -86,8 +81,18 @@ class Users::RegistrationsController < Devise::RegistrationsController
     end
   
     # If you have extra params to permit, append them to the sanitizer.
+    #
+    # user_type は管理者のときだけ permit する。
+    # account_update の対象は current_user 自身なので、ID を差し替えるまでもなく
+    # 自分の登録情報編集から user_type: "1" を送るだけで管理者に昇格できた。
+    # UsersController#update_params と同じ穴の別経路なので、判定も書き方も揃える。
+    # 片方だけ直すと経路が残る。
+    #
+    # remarks は会員本人が登録時に書く備考のため対象外（現状維持）。
     def configure_account_update_params
-      devise_parameter_sanitizer.permit(:account_update, keys: [:current_password, :email, :name, :name_kana, :tel, :birthday, :introducer, :gender, :remarks, :user_type, :abo, :membership_number])
+      keys = [:current_password, :email, :name, :name_kana, :tel, :birthday, :introducer, :gender, :remarks, :abo, :membership_number]
+      keys << :user_type if current_user&.user_type == "1"
+      devise_parameter_sanitizer.permit(:account_update, keys: keys)
     end
   
     # The path used after sign up.

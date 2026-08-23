@@ -10,7 +10,21 @@ class UsersController < ApplicationController
   # index と同じフィルタにしているのは、削除リンクがその一覧にしか無いため。
   # 「この画面に入れる人＝この画面から消せる人」を1つの判定で揃える。
   before_action :admin_user_login, only: [:index, :destroy]
+
+  # backup_users は全 User を読んで UserBackup を作り直す。
+  # フィルタが1つも掛かっておらず、未ログインのリクエストがそのまま到達していた。
+  before_action :authenticate_admin_user?, only: [:backup_users]
+
   before_action :user_login, only: [:show, :edit, :update]
+
+  # 本人か管理者だけを通す。
+  #
+  # user_login はログイン済みかどうかしか見ないため、URL の :id を差し替えるだけで
+  # 他人の編集画面に入れ、メール・パスワード・user_type まで書き換えられていた。
+  # user_login は他でも使うフィルタなので書き換えず、こちらを重ねる形にした。
+  # show は edit へ飛ばすだけで今は情報を返さないが、中身が変わったときに
+  # 抜けるのを避けるため同じ判定に載せておく。
+  before_action :owner_or_admin_login, only: [:show, :edit, :update]
   
   layout 'main/main'
   def index
@@ -138,8 +152,17 @@ class UsersController < ApplicationController
   
   private
         
+      # user_type は管理者のときだけ permit する。
+      #
+      # 誰でも permit されていたため、自分の編集画面から user_type: "1" を送れば
+      # そのまま管理者に昇格できた。所有者判定（owner_or_admin_login）を入れても
+      # 「自分自身を昇格させる」経路はこちらを塞がないと残る。
+      # Devise 経由の同じ穴は Users::RegistrationsController#configure_account_update_params
+      # で同じ判定を使って塞いでいる。片方だけ直すと経路が残るため、両方を揃えること。
       def update_params
-          params.require(:user).permit(:password, :email, :name, :name_kana, :tel, :birthday, :introducer, :gender, :remarks, :user_type, :abo)
+          keys = [:password, :email, :name, :name_kana, :tel, :birthday, :introducer, :gender, :remarks, :abo]
+          keys << :user_type if current_user&.user_type == "1"
+          params.require(:user).permit(*keys)
       end
       
       def admin_user_login
@@ -154,6 +177,16 @@ class UsersController < ApplicationController
           flash[:alert] = "ログインしてください"
           redirect_to new_user_session_path
         end
+      end
+      
+      # edit / update の対象が本人自身か、操作しているのが管理者かを見る。
+      # user_login のあとに走るので、ここに来る時点でログインは済んでいる。
+      def owner_or_admin_login
+        return if params[:id].to_s == current_user&.id.to_s
+        return if current_user&.user_type == "1"
+
+        flash[:alert] = "アクセス権限がありません"
+        redirect_to new_user_session_path
       end
   
   

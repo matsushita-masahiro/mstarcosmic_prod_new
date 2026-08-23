@@ -66,6 +66,7 @@
   </div>
   
 <!--管理者のみユーザータイプ変更できる-->
+  <%# "1" の誤記。users/edit に同等の欄があるため意図的に未修正 %>
   <% if current_user.user_type == "a" %>
     <div class="field user_type">
       <%= f.label :ユーザータイプ %><br />

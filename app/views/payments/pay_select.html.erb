@@ -1,7 +1,9 @@
 <h3 class="paytitle">回数券購入</h3>
 
-<%= link_to "5回", "/payments/5/new", :class => "btn btn-primary paytype" %>
-<%= link_to "10回", "/payments/10/new", :class => "btn btn-primary paytype" %>
+<%# 枚数は PaymentsController::ALLOWED_COUPON_COUNTS が正。ここに直書きしない %>
+<% @coupon_counts.each do |count| %>
+  <%= link_to "#{count}回", "/payments/#{count}/new", :class => "btn btn-primary paytype" %>
+<% end %>
 
 <div class="bought-coupon">
 <hr>
