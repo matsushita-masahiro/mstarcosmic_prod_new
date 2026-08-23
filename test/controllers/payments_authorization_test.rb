@@ -194,12 +194,27 @@ class PaymentsAuthorizationTest < ActionDispatch::IntegrationTest
     assert Payment.exists?(@payment.id), "スタッフが支払レコードを削除できています"
   end
 
-  test "スタッフは回数券一覧に入れない" do
+  # index は窓口業務の入口。会員を探して消し込むため、スタッフも全件を見る。
+  # ここが閉じていると edit へ辿り着く導線が無く、メニューの「回数券管理」が
+  # 押した先で弾かれる。
+  test "スタッフは回数券一覧に入れる" do
     sign_in @staff
 
     get payments_path
 
-    assert_response :redirect
+    assert_response :success
+  end
+
+  # assigns は gem が要るので、一覧に出ている行そのもの（編集リンク）で見る。
+  test "スタッフの回数券一覧には他人の支払いも並ぶ" do
+    own = Payment.create!(user: @staff, price: 5_000)
+    sign_in @staff
+
+    get payments_path
+
+    assert_includes response.body, %(href="/payments/#{@payment.id}/edit"),
+                    "他人の支払いが一覧に出ていません"
+    assert_includes response.body, %(href="/payments/#{own.id}/edit")
   end
 
   # ── 管理者は従来どおり全て通る ─────────────────

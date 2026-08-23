@@ -1,15 +1,22 @@
 class UsersController < ApplicationController
   
-  # destroy は index と同じ admin_user_login で守る。
+  # destroy は管理者だけ。
   #
-  # 掛かっていなかったため、未ログインのリクエストがそのままアクションまで
-  # 到達して会員を削除できていた（CSRF トークンはサイトを開けば誰でも取れる）。
+  # フィルタが掛かっていなかった時期があり、未ログインのリクエストが
+  # そのままアクションまで到達して会員を削除できていた
+  # （CSRF トークンはサイトを開けば誰でも取れる）。
   #
   # authenticate_staff_user? ではなく管理者判定にするのは、あちらが
   # 施術スタッフ（user_type "10"）も通すため。カルテの閲覧と会員の削除は別の重み。
-  # index と同じフィルタにしているのは、削除リンクがその一覧にしか無いため。
-  # 「この画面に入れる人＝この画面から消せる人」を1つの判定で揃える。
-  before_action :admin_user_login, only: [:index, :destroy]
+  # 削除リンクは一覧にしか無いが、その一覧はスタッフにも開いたので
+  # 「入れる人」と「消せる人」は一致しない。リンク側も admin_user? で絞ってある。
+  before_action :admin_user_login, only: [:destroy]
+
+  # 一覧はスタッフの窓口業務（会員を探す）なので "1" と "10" に開く。
+  # 削除は admin_user_login のまま管理者に残す。
+  # 「この画面に入れる人＝この画面から消せる人」ではなくなったので、
+  # 一覧の削除リンクは管理者にだけ描画すること（users/index.html.erb）。
+  before_action :authenticate_staff_user?, only: [:index]
 
   # backup_users は全 User を読んで UserBackup を作り直す。
   # フィルタが1つも掛かっておらず、未ログインのリクエストがそのまま到達していた。

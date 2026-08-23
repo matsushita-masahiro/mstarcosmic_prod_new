@@ -6,32 +6,36 @@
         <!--<li class="not_image"><a href="/about_metatron">メタトロンとは</a></li>-->
         <!--<li class="not_image"><a href="">料金表</a></li>-->
         
+        <%# 表示条件は各リンク先の before_action と対で決めること。 %>
+        <%# 出ているのに押すと弾かれる／出ていないのに到達できる、はどちらも事故。 %>
+        <%# 対応表は test/integration/staff_menu_test.rb にある。 %>
         <% if user_signed_in? %>
-            <% if admin_user? %>
-               <li class="not_image"><%= link_to 'ページ別文章管理', page_contents_path%></li>
-               <li class="not_image reserve_menu"><a href="">予約関連</a>
-                  <ul class="dropdown">
-                      <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
-                      <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
-                  </ul> 
-               </li>
+            <% if staff_user? %>
+               <% if admin_user? %>
+                 <li class="not_image"><%= link_to 'ページ別文章管理', page_contents_path%></li>
+                 <li class="not_image reserve_menu"><a href="">予約関連</a>
+                    <ul class="dropdown">
+                        <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
+                        <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
+                    </ul> 
+                 </li>
+               <% end %>
                <li class="not_image reserve_menu"><a href="">管理者メニュー</a>
                   <ul class="dropdown">
+                      <%# ここから スタッフ（"10"）にも出す項目 %>
                       <li><%= link_to 'お客様一覧', users_path %></li>
                       <li><%= link_to 'カルテ・施術記録', karte_users_path %></li>
-                      <li><%= link_to '同意書編集', karte_consent_documents_path %></li>
                       <li><a href="/price_plan_admin">料金表</a></li>
                       <li><%= link_to '回数券管理', payments_path %></li>
-                      <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
-                      <li><%= link_to 'メタトロン購入問合せ', metatron_sale_inquiries_path %></li>
                       <li><%= link_to 'スケジュール', "/admin/staffs" %></li>
-                      <li><%= link_to '出張登録', machine_machine_schedules_path("h") %></li>
-                      <li><%= link_to '算命', sanmeis_menu_path %></li>
-                      <!--<li><= link_to sanmeis_menu_path do %>-->
-                      <!--   <i class="fa-solid fa-gear"></i>設定 -->
-                      <!--    < end %>-->
-                      <!--</li>-->
-                      
+                      <%# ここから 管理者（"1"）のみ %>
+                      <% if admin_user? %>
+                        <li><%= link_to '同意書編集', karte_consent_documents_path %></li>
+                        <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
+                        <li><%= link_to 'メタトロン購入問合せ', metatron_sale_inquiries_path %></li>
+                        <li><%= link_to '出張登録', machine_machine_schedules_path("h") %></li>
+                        <li><%= link_to '算命', sanmeis_menu_path %></li>
+                      <% end %>
                   </ul> 
                </li>
             <% end %>
@@ -40,13 +44,8 @@
             <li><%= link_to new_user_registration_path do %><img src="/new-images/signup_button.png" class="button"><% end %></li>
             <li><%= link_to new_user_session_path do %><img src="/new-images/login_button.png" class="button"><% end %></li>
         <% end %>
-        <% if user_signed_in? %>
-          <% if admin_user? %>
-
-          <% else %>
-            <li><%= link_to new_inquiry_path do %><img src="/new-images/inquiry_button.png" class="button"><% end %></li>
-          <% end %>
-        <% else %>
+        <%# 問い合わせボタンは利用者向け。管理側（管理者・スタッフ）には出さない。 %>
+        <% if !user_signed_in? || !staff_user? %>
             <li><%= link_to new_inquiry_path do %><img src="/new-images/inquiry_button.png" class="button"><% end %></li>
         <% end %>
     </ul>
@@ -64,10 +63,7 @@
             <li><%= link_to new_user_registration_path do %><img src="/new-images/sp-signup.png" class="button"><% end %></li>
             <li><%= link_to new_user_session_path do %><img src="/new-images/sp-login.png" class="button"><% end %></li>
         <% end %>
-        <% if user_signed_in? %>
-            <% if admin_user? %>
-            <% end %>
-        <% else %>
+        <% if !user_signed_in? %>
            <li><%= link_to new_inquiry_path do %><img src="/new-images/sp-inquiry.png" class="button"><% end %></li>
         <% end %>
         <li class="sp-menu"><img src="/new-images/sp-menu.png" class="button" id="open"></li>
@@ -79,20 +75,25 @@
         <ul>
             <li><a href="/about_metatron">メタトロンとは</a></li>
             <li><a href="/price_plan_admin">料金表</a></li>
-            <% if user_signed_in? %>
-               <li><%= link_to 'ページ別文章管理', page_contents_path%></li>
-               <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
-               <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
+            <%# PC 側と同じ出し分けにすること。ここだけ user_signed_in? しか %>
+            <%# 見ていなかったため、判定を通ったログイン利用者に全項目が出ていた。 %>
+            <% if user_signed_in? && staff_user? %>
+               <%# スタッフ（"10"）にも出す項目 %>
                <li><%= link_to 'お客様一覧', users_path %></li>
                <li><%= link_to 'カルテ・施術記録', karte_users_path %></li>
-               <li><%= link_to '同意書の管理', karte_consent_documents_path %></li>
                <li><%= link_to '回数券管理', payments_path %></li>
-               <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
-               <li><%= link_to 'メタトロン購入お問合せ一覧', metatron_sale_inquiries_path %></li>
                <li><%= link_to 'スケジュール', "/admin/staffs" %></li>
-               <li><%= link_to '出張登録', machine_machine_schedules_path("h") %></li>
-               <li><%= link_to '算命学', sanmeis_menu_path %></li>
-            <% else %>
+               <%# 管理者（"1"）のみ %>
+               <% if admin_user? %>
+                 <li><%= link_to 'ページ別文章管理', page_contents_path%></li>
+                 <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
+                 <li><%= link_to '予約一覧', reserves_my_reserved_path %></li>
+                 <li><%= link_to '同意書の管理', karte_consent_documents_path %></li>
+                 <li><%= link_to 'お問合せ一覧', inquiries_path %></li>
+                 <li><%= link_to 'メタトロン購入お問合せ一覧', metatron_sale_inquiries_path %></li>
+                 <li><%= link_to '出張登録', machine_machine_schedules_path("h") %></li>
+                 <li><%= link_to '算命学', sanmeis_menu_path %></li>
+               <% end %>
             <% end %>
         </ul>
     </section>

@@ -11,6 +11,15 @@ module Karte
   # 新しいバージョンを公開すると、その瞬間から全員が未署名扱いになり、
   # 次回来店時に再署名が必要になる。公開前に必ず確認を出す。
   class ConsentDocumentsController < BaseController
+    # 同意書は全患者に影響する法的文書で、公開すればその瞬間から全員が
+    # 未署名扱いになる。施術スタッフの窓口業務の範囲を超えるため管理者だけに絞る。
+    #
+    # 親（BaseController）の authenticate_staff_user? はそのまま残す。
+    # 先に "1" / "10" を通し、ここで "1" だけに狭める順で走る。
+    # カルテ本体（Karte::UsersController 等）はスタッフに開いたままなので、
+    # BaseController 側には手を入れない。
+    before_action :authenticate_admin_user?
+
     before_action :set_document, only: %i[show edit update publish archive destroy]
     before_action :ensure_editable, only: %i[edit update destroy]
 

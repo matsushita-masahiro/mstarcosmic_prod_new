@@ -10,6 +10,11 @@ class PaymentsController < ApplicationController
   # pay_select のボタンもこの定数から作る。片方だけ増やしても食い違わないように。
   ALLOWED_COUPON_COUNTS = [5, 10].freeze
 
+  # 窓口業務を担う user_type（1=管理者 / 10=施術スタッフ）。
+  # authenticate_staff_user? が通す区分と同じものを一覧の出し分けでも使う。
+  # 片方だけ増やすと「入れるのに自分の分しか見えない」状態になる。
+  STAFF_USER_TYPES = UserKarte::STAFF_USER_TYPES
+
   before_action :authenticate_user!
 
   # 回数券の使用・使用取消は施術スタッフの窓口業務なので "1" と "10" に開く。
@@ -25,8 +30,12 @@ class PaymentsController < ApplicationController
   # が購入完了後に redirect_to payment_path(@payment) で show へ着地する設計で、
   # スタッフ限定にすると購入した本人が完了画面で弾かれる（実際に staging で
   # 購入フローを壊した）。所有者も通す判定を別に用意する。
-  before_action :authenticate_admin_user?, only: [:index, :payment_destroy]
-  before_action :authenticate_staff_user?, only: [:edit, :update, :destroy]
+  #
+  # index も窓口業務。会員を探して回数券を消し込むため、スタッフが一覧を
+  # 引けないと edit へ辿り着く導線が無い（メニューの「回数券管理」は
+  # ここを指している）。支払レコードごとの削除だけは管理者に残す。
+  before_action :authenticate_admin_user?, only: [:payment_destroy]
+  before_action :authenticate_staff_user?, only: [:index, :edit, :update, :destroy]
 
   before_action :access_controll_payment, only: [:show, :edit, :update, :destroy]
 
@@ -127,7 +136,11 @@ class PaymentsController < ApplicationController
   end
   
   def index
-    if current_user.user_type == "1"
+    # 窓口で会員を探して消し込むため、スタッフも全件を見る。
+    # 自分の支払いだけでは一覧の用をなさない。
+    # else 側は一般会員が入れなくなった今は通らないが、
+    # 到達者を絞るのは before_action の仕事なので分岐は残す。
+    if STAFF_USER_TYPES.include?(current_user.user_type)
       # 全ユーザーの支払い履歴一覧
       @payments = Payment.all.order(created_at: :desc)
     else

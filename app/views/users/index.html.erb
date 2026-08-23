@@ -31,7 +31,14 @@
       </tr>
       <% @users.each do |user| %>
         <tr style="border-bottom:1px solid #f0f0f0;">
-          <td style="padding:8px 10px;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:1;"><%= link_to user.name, "/users/#{user.id}/edit", style: "color:#2563eb;font-weight:600;text-decoration:none;" %></td>
+          <td style="padding:8px 10px;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:1;">
+            <%# 編集画面は本人か管理者しか開けない。スタッフに出すと押した先で弾かれる %>
+            <% if admin_user? %>
+              <%= link_to user.name, "/users/#{user.id}/edit", style: "color:#2563eb;font-weight:600;text-decoration:none;" %>
+            <% else %>
+              <span style="font-weight:600;"><%= user.name %></span>
+            <% end %>
+          </td>
           <td style="padding:8px 10px;word-break:break-all;"><a href="mailto:<%= user.email %>" data-turbo="false" style="color:#2563eb;text-decoration:none;"><%= user.email %></a></td>
           <td style="padding:8px 10px;white-space:nowrap;"><%= user.tel %></td>
           <td style="padding:8px 10px;white-space:nowrap;"><%= user.birthday %></td>
@@ -48,7 +55,10 @@
             <% else %><span style="color:#ccc;">---</span><% end %>
           </td>
           <td style="padding:8px 10px;">
-            <%= link_to "users/#{user.id}", data: { confirm: "#{user.name}様を本当に削除しますか？" }, method: :delete, style: "color:#e74c3c;font-size:0.75rem;text-decoration:none;" do %>削除<% end %>
+            <%# 削除は管理者だけ。一覧はスタッフにも開いたので、ここで絞る %>
+            <% if admin_user? %>
+              <%= link_to "users/#{user.id}", data: { confirm: "#{user.name}様を本当に削除しますか？" }, method: :delete, style: "color:#e74c3c;font-size:0.75rem;text-decoration:none;" do %>削除<% end %>
+            <% end %>
           </td>
         </tr>
       <% end %>
