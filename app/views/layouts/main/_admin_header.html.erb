@@ -25,12 +25,12 @@
                       <%# 管理者だけに出していた「予約カレンダー」「予約一覧」は %>
                       <%# _header の「予約カレンダー」「MY予約」と同じパスなので、 %>
                       <%# この1つに寄せた。同じリンクが2箇所に並ばないようにするため。 %>
+                      <%# 回数券購入は載せない。管理者・スタッフは回数券を買う側ではない。 %>
+                      <%# スケジュール入力も載せない。スタッフメニューの %>
+                      <%# 「スケジュール」（/admin/staffs）と重複するため。 %>
+                      <%# どちらも _header には残してあり、一般会員には従来どおり出る。 %>
                       <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
                       <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
-                      <li><%= link_to '回数券購入', payments_pay_select_path %></li>
-                      <% if staff_info %>
-                        <li><%= link_to 'スケジュール入力', new_staff_schedules_path(staff_id: staff_info.id) %></li>
-                      <% end %>
                   </ul> 
                </li>
                <%# 見出しはロールで呼び替える。中身の出し分けは各項目の admin_user? %>
@@ -97,10 +97,6 @@
                <li><%= link_to 'プロフィール', edit_user_registration_path %></li>
                <li><%= link_to '予約カレンダー', "/reserves/machine_select" %></li>
                <li><%= link_to 'MY予約', reserves_my_reserved_path %></li>
-               <li><%= link_to '回数券購入', payments_pay_select_path %></li>
-               <% if staff_info %>
-                 <li><%= link_to 'スケジュール入力', new_staff_schedules_path(staff_id: staff_info.id) %></li>
-               <% end %>
                <%# スタッフ（"10"）にも出す管理項目 %>
                <li><%= link_to 'お客様一覧', users_path %></li>
                <li><%= link_to 'カルテ・施術記録', karte_users_path %></li>

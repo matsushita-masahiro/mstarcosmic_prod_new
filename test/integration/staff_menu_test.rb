@@ -84,9 +84,20 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
   # 片方だけ直すと管理側と会員側で導線がずれるので、必ず両方を見ること。
   MEMBER_ITEMS = [
     { label: "プロフィール", path: "/users/edit" },
-    { label: "回数券購入",   path: "/payments/pay_select" },
     { label: "予約カレンダー", path: "/reserves/machine_select" },
     { label: "MY予約",       path: "/reserves/my_reserved" }
+  ].freeze
+
+  # 会員導線のうち、管理側のヘッダーには載せないもの。
+  # _header には残っているので、一般会員には従来どおり出る。
+  # needle は body から探す文字列。スケジュール入力は
+  # new_staff_schedules_path(staff_id:) で ?staff_id=N が付くため、
+  # href 全体ではなくパスの前半で見る。
+  MEMBER_ONLY_ITEMS = [
+    # 管理者・スタッフは回数券を買う側ではない
+    { label: "回数券購入", needle: %(href="/payments/pay_select") },
+    # スタッフメニューの「スケジュール」（/admin/staffs）と重複する
+    { label: "スケジュール入力", needle: "/new_staff_schedules" }
   ].freeze
 
   setup do
@@ -107,6 +118,11 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
     @admin  = create_user(email: "menu-admin@example.com",  name: "管理者",     user_type: "1")
     @staff  = create_user(email: "menu-staff@example.com",  name: "施術スタッフ", user_type: "10")
     @member = create_user(email: "menu-member@example.com", name: "一般会員",   user_type: "2")
+
+    # staff_info は user_type "10" かつ Staff レコードがあるときだけ真を返す。
+    # 無いと「スケジュール入力が出ない」のが、管理側から外したからなのか
+    # そもそも描画条件を満たしていないだけなのか区別できない。
+    Staff.create!(user_id: @staff.id, name: "すたっふ", name_kanji: "施術スタッフ")
   end
 
   # ── 1. ヘッダーそのものの出し分けと見出しのラベル ──
@@ -308,6 +324,30 @@ class StaffMenuTest < ActionDispatch::IntegrationTest
       assert_includes sp_overlay(response.body), %(href="#{item[:path]}"),
                       "管理者のSPメニューに #{item[:label]} が出ていません"
     end
+  end
+
+  MEMBER_ONLY_ITEMS.each do |item|
+    test "会員のみ: #{item[:label]} は管理側のヘッダーに出ない" do
+      %i[admin staff].each do |role|
+        sign_in user_for(role)
+        get root_path
+
+        assert_not_includes pc_header(response.body), item[:needle],
+                            "#{role} のPCメニューに #{item[:label]} が出ています"
+        assert_not_includes sp_overlay(response.body), item[:needle],
+                            "#{role} のSPメニューに #{item[:label]} が出ています"
+        sign_out user_for(role)
+      end
+    end
+  end
+
+  # 管理側から外しただけで、一般会員の導線からは消していない。
+  test "会員のみ: 回数券購入は一般会員には出る" do
+    sign_in @member
+    get root_path
+
+    assert_includes response.body, %(href="/payments/pay_select"),
+                    "一般会員から回数券購入が消えています"
   end
 
   test "必ずお読みください がスタッフに出る" do
