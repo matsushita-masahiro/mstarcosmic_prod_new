@@ -173,6 +173,9 @@
     // 流れて押せなくなる。ビューポート右上に固定する。
     .overlay #close {
         position: fixed;
+        // env() 非対応だと宣言ごと無効化され top:auto に落ちる。
+        // fixed 要素が静的位置に戻り閉じるボタンを見失うため、先に 0 を置く。
+        top: 0;
         top: env(safe-area-inset-top, 0px);
         right: 0;
         z-index: 1001;
@@ -273,6 +276,8 @@
            // スクロールが発生しないため、高さは中身に任せる。
            // Safari の下部ツールバーとホームインジケータで
            // 最終項目が隠れないよう下端に余白を確保する。
+           // 同様に env() 非対応時に余白が 0 にならないようフォールバックを置く。
+           padding-bottom: 80px;
            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
        }
        
