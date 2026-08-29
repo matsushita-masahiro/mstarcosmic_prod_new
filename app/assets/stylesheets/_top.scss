@@ -140,7 +140,17 @@
     }
     
     .overlay {
+        // dvh 非対応ブラウザ向けのフォールバック。下行の dvh が使えれば上書きされる。
         height: calc(100vh - 50px);
+        // iOS Safari の 100vh はツールバー分だけ実表示領域より大きく、
+        // 最終項目が画面外に出る。dvh は実表示領域に追従する。
+        height: calc(100dvh - 50px);
+        // 固定高なのに overflow 未指定だとスクロールコンテナにならず、
+        // はみ出した項目に到達できない。項目数が多い管理者メニュー用。
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        // 端まで来たとき背面ページにスクロールが伝播しないようにする。
+        overscroll-behavior: contain;
         z-index: 1000;
         position: fixed;
         top: 0;
@@ -159,10 +169,13 @@
       opacity: 1;
       pointer-events: auto;
     }
+    // .overlay がスクロールコンテナになったため absolute だと中身と一緒に
+    // 流れて押せなくなる。ビューポート右上に固定する。
     .overlay #close {
-        position: absolute;
-        top: 0;
+        position: fixed;
+        top: env(safe-area-inset-top, 0px);
         right: 0;
+        z-index: 1001;
         cursor: pointer;
       }
       
@@ -185,7 +198,7 @@
     transform: none;
   }
   
-  @for $i from 1 through 15 {
+  @for $i from 1 through 20 {
      .overlay.show li:nth-child(#{$i}) {
         transition-delay: #{$i/10}s;
       }
@@ -256,7 +269,11 @@
         //   2025/4/4
            display: block;
            margin-top: 15vw;
-           height: calc(100vh - 80px);
+           // 固定高を持たせると overlay の scrollHeight が伸びず
+           // スクロールが発生しないため、高さは中身に任せる。
+           // Safari の下部ツールバーとホームインジケータで
+           // 最終項目が隠れないよう下端に余白を確保する。
+           padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
        }
        
        #close {
