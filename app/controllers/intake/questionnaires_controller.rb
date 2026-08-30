@@ -153,8 +153,8 @@ module Intake
 
     # 画面に出す設問。
     #
-    # ask_when_unknown を持つ設問は、その情報が既に分かっている患者には
-    # 出さない（性別なら users.gender が入っている人）。
+    # ask_unless を持つ設問は、その情報が既に分かっている患者には出さない
+    # （性別なら users.gender が入っている人、血液型なら users.blood_type）。
     # female_only と違って hidden ですらなく、DOM に出力そのものをしない。
     #
     # 出す・出さないの判断はこの1か所だけに置く。ビューにも同じ条件を
@@ -170,11 +170,22 @@ module Intake
                                          .map { |q| q[:key] }
     end
 
+    # ask_unless が持つのは患者（User）の述語名。真なら出力しない。
+    #
+    # 設問ごとに case を足す形をやめている。設問を増やすたびにここへ分岐を
+    # 書き足すことになり、書き忘れると「既に分かっているのに聞く」側へ倒れる。
+    # 出さない判断が漏れて全員に出る壊れ方は、画面を見るまで気づけない。
+    #
+    # 述語名は MedicalQuestionnaireForm の定義にしかない。綴りを間違えると
+    # ここで NoMethodError になり記入画面が開かなくなるが、rescue はしない。
+    # 拾って false にすると「聞かないはずの設問が全員に出る」状態のまま
+    # 動き続け、患者が答えたぶんだけ間違った回答が積まれる。
+    # 定義側の綴りは medical_questionnaire_form_test が全件を見ている。
     def skipped_question?(question)
-      case question[:ask_when_unknown]
-      when :gender then current_patient.gender_known?
-      else false
-      end
+      predicate = question[:ask_unless]
+      return false if predicate.blank?
+
+      current_patient.public_send(predicate)
     end
 
     # 保存する回答。
@@ -182,7 +193,7 @@ module Intake
     # 訂正では、画面に出さなかった設問の回答を前版から補う。
     # 出力していない設問は collectAnswers() が拾いようがないため、
     # 届いた回答をそのまま入れると、答えていたはずの項目が
-    # 「未回答」になって消える（性別がこれにあたる）。
+    # 「未回答」になって消える（性別・血液型がこれにあたる）。
     #
     # 条件付き表示（[hidden]）の設問はこの対象ではない。あちらは DOM に
     # 出力されていて、患者が条件を外したときはクライアントが値を消す。

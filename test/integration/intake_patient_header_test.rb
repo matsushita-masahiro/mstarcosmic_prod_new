@@ -7,7 +7,7 @@ require "test_helper"
 #
 # 性別についてはもう1つ守るものがある。ヘッダーに性別が出るのは
 # users.gender が分かっている患者だけで、その患者には問診票が
-# q0_gender を聞かない（ask_when_unknown）。逆に聞いている患者には
+# q0_gender を聞かない（ask_unless）。逆に聞いている患者には
 # ヘッダーに出さない。この排他が崩れると、同じ画面で性別を2回見せるか、
 # 答えている最中の項目を先に断定して見せることになる。
 class IntakePatientHeaderTest < ActionDispatch::IntegrationTest

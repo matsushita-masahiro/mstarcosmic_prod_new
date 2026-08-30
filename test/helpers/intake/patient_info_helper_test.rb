@@ -11,8 +11,8 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
   # DB に触らない。ヘッダーの表示は保存済みかどうかと関係が無く、
   # User の検証（生年月日必須など）に引きずられると
   # 「生年月日が無い患者」の側が作れなくなる。
-  def build_user(birthday: nil, gender: nil)
-    User.new(birthday: birthday, gender: gender)
+  def build_user(birthday: nil, gender: nil, blood_type: nil)
+    User.new(birthday: birthday, gender: gender, blood_type: blood_type)
   end
 
   # ── 生年月日 ──────────────────────────────
@@ -92,6 +92,53 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     assert_nil patient_gender_label(user)
   end
 
+  # ── 血液型 ───────────────────────────────
+  #
+  # 性別と違って patient_ 付きの包みを持たない。blood_type_label が
+  # 未登録でも定義外でも nil を返すので、そのまま並べられる。
+  # ここで確かめるのは、その nil がヘッダーで項目ごと消えること。
+  test "血液型は日本語ラベルで並ぶ" do
+    travel_to Date.new(2026, 8, 30) do
+      user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "a")
+
+      assert_equal "1985年3月4日（41歳） ／ 女性 ／ A型", patient_attributes_line(user)
+    end
+  end
+
+  # 「不明」は消さない。空欄にするとスタッフからは「まだ訊いていない」と
+  # 見分けが付かず、もう一度訊くことになる。
+  test "不明と答えた血液型も表示する" do
+    travel_to Date.new(2026, 8, 30) do
+      user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "unknown")
+
+      assert_equal "1985年3月4日（41歳） ／ 女性 ／ 不明", patient_attributes_line(user)
+    end
+  end
+
+  test "未登録の血液型は区切り記号ごと消える" do
+    travel_to Date.new(2026, 8, 30) do
+      user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: nil)
+
+      assert_equal "1985年3月4日（41歳） ／ 女性", patient_attributes_line(user)
+    end
+  end
+
+  # 定義に無い値でも同じ。生値が「1985年3月4日（41歳） ／ 女性 ／ a+」と
+  # 並ぶより、項目ごと消えるほうがまだ読める。
+  test "定義に無い血液型は生値を出さずに消える" do
+    travel_to Date.new(2026, 8, 30) do
+      user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "a+")
+
+      assert_equal "1985年3月4日（41歳） ／ 女性", patient_attributes_line(user)
+    end
+  end
+
+  test "血液型だけなら区切り記号を残さない" do
+    assert_equal "O型",
+                 patient_attributes_line(build_user(birthday: nil, gender: nil,
+                                                    blood_type: "o"))
+  end
+
   # ── 2行目全体 ─────────────────────────────
   test "両方あれば区切って並べる" do
     travel_to Date.new(2026, 8, 30) do
@@ -113,10 +160,21 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     assert_equal "女性", patient_attributes_line(build_user(birthday: nil, gender: "f"))
   end
 
-  test "両方欠ければ空文字で、呼び出し側が行ごと落とせる" do
-    line = patient_attributes_line(build_user(birthday: nil, gender: nil))
+  # 3項目すべて欠けたとき。1つでも判定を間違えると区切り記号だけが残る。
+  test "3項目とも欠ければ空文字で、呼び出し側が行ごと落とせる" do
+    line = patient_attributes_line(build_user(birthday: nil, gender: nil,
+                                              blood_type: nil))
 
     assert_equal "", line
     assert_predicate line, :blank?
+  end
+
+  # 真ん中が欠けた形。区切り記号が二重（「／ ／」）にならないこと。
+  test "真ん中が欠けても区切り記号は二重にならない" do
+    travel_to Date.new(2026, 8, 30) do
+      user = build_user(birthday: Date.new(1985, 3, 4), gender: nil, blood_type: "ab")
+
+      assert_equal "1985年3月4日（41歳） ／ AB型", patient_attributes_line(user)
+    end
   end
 end

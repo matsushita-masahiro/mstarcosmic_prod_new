@@ -58,13 +58,13 @@ class MedicalQuestionnaireFormTest < ActiveSupport::TestCase
   end
 
   # female_only は「hidden で隠すだけ（DOM にはある）」、
-  # ask_when_unknown は「そもそも出力しない」。性質が違う。
+  # ask_unless は「そもそも出力しない」。性質が違う。
   # 両方を持つ設問ができると、隠すのか出さないのかが決まらず、
   # 訂正の持ち越し（Intake::QuestionnairesController#answers_to_save）が
   # 誤って前版の値を復活させうる。
-  test "ask_when_unknown と female_only は同じ設問に付かない" do
+  test "ask_unless と female_only は同じ設問に付かない" do
     both = MedicalQuestionnaireForm::QUESTIONS.select do |q|
-      q[:ask_when_unknown] && q[:female_only]
+      q[:ask_unless] && q[:female_only]
     end
 
     assert_empty both.map { |q| q[:key] },
@@ -93,10 +93,49 @@ class MedicalQuestionnaireFormTest < ActiveSupport::TestCase
     assert_empty missing, "定義から引けない項目があります"
   end
 
-  test "ask_when_unknown を持つのは性別だけ" do
+  # 出し分けの対象は性別と血液型の2つだけ。増やすときは、訂正での持ち越し
+  # （answers_to_save）と確認画面への表示が付いてくることを確かめること。
+  test "ask_unless を持つのは性別と血液型だけ" do
     keys = MedicalQuestionnaireForm::QUESTIONS
-             .select { |q| q[:ask_when_unknown] }.map { |q| q[:key] }
+             .select { |q| q[:ask_unless] }.map { |q| q[:key] }
 
-    assert_equal [ MedicalQuestionnaireForm::GENDER_KEY ], keys
+    assert_equal [ MedicalQuestionnaireForm::GENDER_KEY,
+                   MedicalQuestionnaireForm::BLOOD_TYPE_KEY ], keys
+  end
+
+  # ask_unless の値は User の述語名で、記入画面がそのまま public_send する。
+  # 綴りを間違えると NoMethodError で記入画面が開かなくなる。
+  # 患者が画面を開くまで気づけないので、定義側で落とす。
+  test "ask_unless の述語は User に生えている" do
+    missing = MedicalQuestionnaireForm::QUESTIONS.filter_map { |q| q[:ask_unless] }
+                                                 .reject { |name| User.method_defined?(name) }
+
+    assert_empty missing,
+                 "User に無い述語です: #{missing.join(', ')}。記入画面が 500 になります"
+  end
+
+  # ── 既存設問のキーと並び順 ─────────────────────────
+  #
+  # answers（jsonb）のキーはこの key と一致している。改名すれば過去の回答と
+  # 対応が取れなくなり、並べ替えれば確認画面・カルテの読み順が変わる。
+  # 過去に q6_family_history のキーを壊した事故があるため、明示的に固定する。
+  #
+  # 設問の「追加」は止めない。ここが見ているのは、既にあるキーが
+  # 同じ名前・同じ相対順序で残っているかどうかだけ。
+  EXISTING_KEYS = %w[
+    q0_gender
+    q1_purpose q2_under_treatment q3_history q4_medication q5_occupation
+    q6_family_history q7_marital_status q8_smoking q9_drinking q10_pacemaker
+    q11_water q12_supplement_advice q13_pregnant q14_food_advice
+    q15_other_advice q16_concerns q17_has_additional q18_vaccinated q19_infected
+  ].freeze
+
+  test "既存設問のキーと相対順序は変わらない" do
+    keys = MedicalQuestionnaireForm::QUESTIONS.map { |q| q[:key] }
+
+    assert_equal EXISTING_KEYS, keys & EXISTING_KEYS,
+                 "既存のキーが改名または並べ替えられています。過去の回答と対応が取れなくなります"
+    assert_empty EXISTING_KEYS - keys,
+                 "既存の設問が定義から消えています: #{(EXISTING_KEYS - keys).join(', ')}"
   end
 end

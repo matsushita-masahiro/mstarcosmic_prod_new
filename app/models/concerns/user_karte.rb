@@ -14,6 +14,19 @@ module UserKarte
   FEMALE_VALUES = %w[f female woman 女 女性].freeze
   MALE_VALUES   = %w[m male man 男 男性].freeze
 
+  # 血液型の表示ラベル。キーは問診票の回答値がそのまま入った users.blood_type。
+  #
+  # gender の FEMALE_VALUES / MALE_VALUES のような表記ゆれ吸収は置かない。
+  # あちらは users.gender が問診票より古く "f" / "female" / "男性" が混在して
+  # いるためで、血液型は 20260830125530 で新設したカラムなので語彙が1つしかない。
+  # 吸収層を先回りで置くと、拾ってほしくない値まで拾えるようになる。
+  #
+  # "unknown"（患者が「不明」と答えた）も表示する。空欄にするとスタッフからは
+  # 「まだ訊いていない（NULL）」と見分けが付かず、もう一度訊くことになる。
+  BLOOD_TYPE_LABELS = {
+    "a" => "A型", "b" => "B型", "o" => "O型", "ab" => "AB型", "unknown" => "不明"
+  }.freeze
+
   # カルテ対象外の user_type（1=管理者 / 10=施術スタッフ）
   # 患者一覧の除外条件と、施術メモの担当者候補の両方で使う。
   STAFF_USER_TYPES = %w[1 10].freeze
@@ -85,6 +98,27 @@ module UserKarte
     return "男性" if male?
     "未登録"
   end
+
+  # 血液型を訊いたか。値が入っていれば真で、"unknown" も訊いたうちに数える。
+  #
+  # gender_known? と対にしない。あちらは「認識できる値か」の判定で、
+  # "unknown" のような値は偽になる。血液型で同じ意味論を採ると、
+  # 「不明」と答えた患者に来店のたびに同じことを訊くことになる。
+  # 名前を _known? にしないのは、対だと読めてしまうのを避けるため。
+  #
+  # NULL … まだ訊いていない → 問診票で訊く（ask_unless）
+  # それ以外 … 訊いた → もう訊かない
+  def blood_type_recorded? = blood_type.present?
+
+  # 表示ラベル。未登録・定義に無い値では nil。
+  #
+  # gender_label が未判別に "未登録" を返すのと揃えていない。あちらは
+  # スタッフに入力を促す文言で、血液型はカルテに表示欄そのものが無い。
+  # 患者向けヘッダーだけが呼ぶので、出せないときは項目ごと消す。
+  #
+  # 定義に無い値で生値を返さないこと。users.gender の "f" がそのまま
+  # 画面に出ると患者に意味が通らないのと同じ。
+  def blood_type_label = BLOOD_TYPE_LABELS[blood_type]
 
   def age(on: Date.current)
     return nil if birthday.blank?

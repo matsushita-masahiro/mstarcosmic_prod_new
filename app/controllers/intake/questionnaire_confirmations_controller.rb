@@ -70,7 +70,10 @@ module Intake
         user_id: current_patient.id, label: "questionnaire"
       )
 
+      # どちらも users 側が未設定のときだけ書く。呼び忘れても例外にならず
+      # 値が入らないだけなので、両方が呼ばれることをテストで固定している。
       questionnaire.sync_patient_gender!
+      questionnaire.sync_patient_blood_type!
 
       intake_session.complete!(ip: request.remote_ip, user_agent: request.user_agent)
       session[:completed_signer_name] = questionnaire.signer_name

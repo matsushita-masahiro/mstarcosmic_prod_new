@@ -4,7 +4,7 @@ require "test_helper"
 #
 # ── なぜ持ち越しが要るのか ──────────────────────────
 #
-# 性別は users.gender が未設定の患者にだけ聞く（ask_when_unknown）。
+# 性別は users.gender が未設定の患者にだけ聞く（ask_unless）。
 # 初回提出で users.gender が埋まるので、次に開く訂正画面ではもう聞かれない。
 # 出力されない設問は collectAnswers() が拾いようがなく、そのまま保存すると
 # 前版で答えていた性別が「未回答」になって消える。該当すれば必ず消える。
@@ -56,6 +56,37 @@ class IntakeGenderQuestionTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select %(input[name="answers[q0_gender]"]), false,
                   "分かっている情報を聞き直しています"
+  end
+
+  # 冒頭で性別を選んだら女性専用設問（【13】妊娠）を出し直すための action。
+  #
+  # ask_unless を「述語名を持つ」形に一般化したとき、この条件は
+  # q[:ask_when_unknown] == :gender をキー比較に書き換えている。
+  # 落ちても画面は普通に描けてしまい、気づくのは女性の患者が性別を選んでも
+  # 妊娠の設問が出てこないときになる。
+  test "性別の設問には女性専用設問を出し直す action が付く" do
+    enter
+    get intake_questionnaire_path
+
+    assert_response :success
+    assert_select %(section[data-action="change->questionnaire#genderChanged"]), 1
+    assert_select %(section[data-action="change->questionnaire#genderChanged"]) do
+      assert_select %(input[name="answers[q0_gender]"])
+    end
+  end
+
+  # 血液型にも ask_unless は付くが、選んでも出し直すものは無い。
+  # 一般化のついでに全部へ配ってしまっていないこと。
+  test "血液型の設問には genderChanged が付かない" do
+    @patient.update_column(:blood_type, nil)
+    enter
+    get intake_questionnaire_path
+
+    assert_response :success
+    assert_select %(section[data-action="change->questionnaire#genderChanged"]) do
+      assert_select %(input[name="answers[q0_blood_type]"]), false,
+                    "血液型を選ぶたびに女性専用設問を描き直しています"
+    end
   end
 
   # 出力しないだけで、設問そのものは定義にある。

@@ -24,17 +24,27 @@
 #
 # female_only: true を指定した設問は、女性と判定された場合のみ表示する。
 #
-# ask_when_unknown: 既に分かっていることは聞かない設問。値は患者側の判定を表す
-# （:gender なら users.gender が未設定のときだけ聞く）。
+# ask_unless: 既に分かっていることは聞かない設問。値は患者（User）の述語名で、
+# それが真なら出力しない（:gender_known? なら users.gender が判別できる
+# 患者には性別を聞かない）。設問ごとに述語を差し替えられる。
+#
+# 区分名ではなく述語名そのものを書くのは、何を見て出し分けているかを
+# 設問定義だけで読めるようにするため。以前は :gender という区分名を持ち、
+# 対応する述語は Intake::QuestionnairesController の case 式が握っていた。
+# その形だと設問を足すたびにコントローラ側の分岐も足すことになり、
+# 足し忘れると「聞かないはずの設問」が全員に出る。
+#
+# 述語は User に生えていること。綴りを間違えると記入画面が 500 になる。
+# 定義側で気づけるよう medical_questionnaire_form_test が全件を確かめている。
 #
 # 【female_only との違い。混同すると回答が消える】
-#   female_only       条件を満たさなくても DOM には出力され、hidden で隠れるだけ。
-#                     画面は全欄の状態を表しているので、訂正しても回答は失われない。
-#   ask_when_unknown  条件を満たすと、そもそも出力しない。画面に無い＝収集されない
-#                     ので、訂正では前版から持ち越さないと回答が消える
-#                     （Intake::QuestionnairesController#answers_to_save）。
+#   female_only  条件を満たさなくても DOM には出力され、hidden で隠れるだけ。
+#                画面は全欄の状態を表しているので、訂正しても回答は失われない。
+#   ask_unless   条件を満たすと、そもそも出力しない。画面に無い＝収集されない
+#                ので、訂正では前版から持ち越さないと回答が消える
+#                （Intake::QuestionnairesController#answers_to_save）。
 #
-# つまり female_only は「表示するかどうか」、ask_when_unknown は
+# つまり female_only は「表示するかどうか」、ask_unless は
 # 「出力するかどうか」。性質が違うので同じ属性に寄せないこと。
 module MedicalQuestionnaireForm
   VERSION = "2026-08-03".freeze
@@ -44,13 +54,18 @@ module MedicalQuestionnaireForm
   # 両者が直書きで食い違わないよう定数にしている。
   GENDER_KEY = "q0_gender".freeze
 
+  # 血液型の設問キー。users.blood_type への反映
+  # （MedicalQuestionnaire#sync_patient_blood_type!）が同じキーを見るため、
+  # 性別と同じく定数にしている。
+  BLOOD_TYPE_KEY = "q0_blood_type".freeze
+
   YES_NO = [
     { value: "no",  label: "いいえ" },
     { value: "yes", label: "はい" }
   ].freeze
 
   QUESTIONS = [
-    # 性別。users.gender が未設定の患者にだけ聞く（ask_when_unknown）。
+    # 性別。users.gender が未設定の患者にだけ聞く（ask_unless）。
     #
     # 設問番号を持たせていない。既存は 1〜19 で、ぶつからない番号は 0 になるが
     # 「【0】」と画面に出るのは不自然なため。番号の無い設問は記入画面・
@@ -62,10 +77,42 @@ module MedicalQuestionnaireForm
       key: GENDER_KEY, type: :radio,
       label: "性別",
       required: true,
-      ask_when_unknown: :gender,
+      ask_unless: :gender_known?,
       options: [
         { value: "female", label: "女性" },
         { value: "male",   label: "男性" }
+      ]
+    },
+    # 血液型。users.blood_type が未設定の患者にだけ聞く（ask_unless）。
+    #
+    # 性別と同じく設問番号を持たない。既存は【1】〜【19】で連番になっており、
+    # 途中に差し込むと以降の番号がすべてずれる。患者が紙で見慣れた番号でもある。
+    #
+    # 値は "a" / "b" / "o" / "ab" / "unknown" が users.blood_type へそのまま入る
+    # （sync_patient_blood_type!）。gender のような変換層は持たない。
+    # gender が "female" → "f" と写しているのは users.gender が問診票より古く
+    # 語彙が違うためで、血液型は今回の新設なのでズレようが無い。
+    #
+    # 「不明」を選択肢に置くのは、答えられない患者を未回答のまま通すと
+    # 次の来店でまた同じことを聞くことになるため。
+    # NULL は「まだ訊いていない」、"unknown" は「訊いたが分からない」で別物。
+    # ラベルはヘッダーの表示（UserKarte::BLOOD_TYPE_LABELS）と同じ文言にしてある。
+    # 確認画面とヘッダーで呼び名が違うと、同じ回答が別物に見える。
+    #
+    # Rh は訊かない。施術の判断に使っておらず、訊く項目を増やすほど
+    # 記入が重くなる。必要になったら別の設問として足すこと
+    # （この設問の value に "a+" などを混ぜると過去の回答と食い違う）。
+    {
+      key: BLOOD_TYPE_KEY, type: :radio,
+      label: "血液型",
+      required: true,
+      ask_unless: :blood_type_recorded?,
+      options: [
+        { value: "a",       label: "A型" },
+        { value: "b",       label: "B型" },
+        { value: "o",       label: "O型" },
+        { value: "ab",      label: "AB型" },
+        { value: "unknown", label: "不明" }
       ]
     },
     {

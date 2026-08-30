@@ -183,7 +183,7 @@ class MedicalQuestionnaire < ApplicationRecord
   # 既に値がある場合は上書きしない（患者の自己申告より既存データを優先）。
   #
   # 設問そのものは MedicalQuestionnaireForm::QUESTIONS にある
-  # （ask_when_unknown: :gender。users.gender が未設定のときだけ出す）。
+  # （ask_unless: :gender_known?。users.gender が未設定のときだけ出す）。
   # キーと値（"female" / "male"）は定義と対応しているので、
   # 片方だけを変えないこと。
   #
@@ -197,6 +197,30 @@ class MedicalQuestionnaire < ApplicationRecord
     return if value.blank?
 
     user.update_column(:gender, value == "female" ? "f" : "m")
+  end
+
+  # 問診票で血液型を聞いた場合、users 側が未設定なら反映する。
+  # 既に値がある場合は上書きしない（sync_patient_gender! と同じ取り決め）。
+  #
+  # 値は変換しない。回答値（"a"/"b"/"o"/"ab"/"unknown"）がそのまま
+  # users.blood_type に入る。sync_patient_gender! が "female" → "f" と
+  # 写しているのは users.gender が問診票より古く語彙が違うためで、
+  # 血液型にその事情は無い。変換を作らなければズレようが無い。
+  #
+  # 2つの sync をまとめていないのは、gender 側のこの変換を隠したくないため。
+  # 共通の1メソッドにすると、変換の有無が引数のブロックに落ちて読み取りにくい。
+  # 代わりに、両方が確定時に呼ばれ続けることをテストで固定している
+  # （どちらかを呼び忘れても落ちず、データが静かに入らないだけになる）。
+  #
+  # ここが未設定を条件にしているので、「不明」と答えた患者にも
+  # "unknown" が入り、次の来店では ask_unless が設問ごと落とす。
+  def sync_patient_blood_type!
+    return if user.blood_type.present?
+
+    value = answer(MedicalQuestionnaireForm::BLOOD_TYPE_KEY)
+    return if value.blank?
+
+    user.update_column(:blood_type, value)
   end
 
   def answer(key) = answers[key.to_s]

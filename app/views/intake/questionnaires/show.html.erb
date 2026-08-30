@@ -33,7 +33,7 @@
 
   <form data-questionnaire-target="form" onsubmit="return false;">
 
-    <%# 設問はすべて定義から描く。性別（ask_when_unknown）もここに含まれる。
+    <%# 設問はすべて定義から描く。性別・血液型（ask_unless）もここに含まれる。
         出す・出さないの判断はコントローラ側（rendered_questions）に寄せてあり、
         @questions には出す設問だけが入っている。
         ここで条件を書き足すと、訂正での持ち越し（answers_to_save）が
@@ -45,8 +45,11 @@
                  <%= "hidden" unless @is_female %>
                <% end %>
                <%# 冒頭で性別を選んだら女性専用設問を出し直す。change は
-                   section まで上がるので、選択肢ごとに action を書かずに済む。 %>
-               <% if q[:ask_when_unknown] == :gender %>
+                   section まで上がるので、選択肢ごとに action を書かずに済む。
+
+                   ここは性別だけの話なのでキーで見る。ask_unless を持つ設問は
+                   血液型にも増えたが、あちらを選んでも出し直すものは無い。 %>
+               <% if q[:key] == MedicalQuestionnaireForm::GENDER_KEY %>
                  data-action="change->questionnaire#genderChanged"
                <% end %>>
         <h2 class="q-label">
