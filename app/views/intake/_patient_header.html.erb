@@ -1,0 +1,20 @@
+<%#
+  患者向けヘッダー。記入画面・確認画面・同意書の3画面で共有する。
+
+  同じ内容を3箇所に手で書いていたため、会員番号の出し方が片方だけ
+  format("%06d", id) の直書きになっていた（karte_member_no と出力は同じ）。
+  1行目と2行目の対応を崩さないよう、ここ1箇所にまとめている。
+
+  氏名はカナを優先する。患者が自分の名前だと分かることが目的で、
+  漢字より読み仮名の方が確かめやすい。カナが無ければ氏名に落ちる。
+%>
+<% attributes_line = patient_attributes_line(current_patient) %>
+<p class="intake-meta<%= " has-sub" if attributes_line.present? %>">
+  <%= current_patient.name_kana.presence || current_patient.name %> 様
+  ／ 会員No. <%= current_patient.karte_member_no %>
+</p>
+<%# 生年月日も性別も分からない患者では attributes_line が空になる。
+    区切り記号や空行だけが残らないよう、行ごと出さない。 %>
+<% if attributes_line.present? %>
+  <p class="intake-meta-sub"><%= attributes_line %></p>
+<% end %>

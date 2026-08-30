@@ -1,0 +1,11 @@
+ja:
+  date:
+    formats:
+      # 患者向けの生年月日。ゼロ埋めしないのは読みやすさのため
+      # （1985年3月4日）。rails-i18n の default / long / short は
+      # deep merge で残るので、ここに書くのは追加する書式だけ。
+      #
+      # カルテ側（UserKarte#birthday_display の 1985/03/04）は
+      # あえて揃えていない。桁が揃っていると台帳として拾いやすく、
+      # 患者に読ませる書式とは目的が違う。
+      birthday: "%Y年%-m月%-d日"

@@ -1,9 +1,6 @@
 <h1>メタトロン測定に関する同意</h1>
 
-<p class="intake-meta">
-  <%= current_patient.name_kana.presence || current_patient.name %> 様
-  ／ 会員No. <%= format("%06d", current_patient.id) %>
-</p>
+<%= render "intake/patient_header" %>
 
 <div data-controller="scroll-guard">
   <div class="intake-doc is-unread"

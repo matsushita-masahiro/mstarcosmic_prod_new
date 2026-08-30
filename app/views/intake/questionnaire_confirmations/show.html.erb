@@ -17,10 +17,7 @@
 
 <h1><%= revising ? "訂正内容のご確認" : "記入内容のご確認" %></h1>
 
-<p class="intake-meta">
-  <%= current_patient.name_kana.presence || current_patient.name %> 様
-  ／ 会員No. <%= current_patient.karte_member_no %>
-</p>
+<%= render "intake/patient_header" %>
 
 <p class="intake-hint" style="margin-bottom:16px;">
   <% if revising %>

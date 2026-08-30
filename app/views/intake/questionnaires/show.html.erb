@@ -1,9 +1,6 @@
 <h1><%= @revision_target ? "問診票の修正" : "問診票のご記入" %></h1>
 
-<p class="intake-meta">
-  <%= current_patient.name_kana.presence || current_patient.name %> 様
-  ／ 会員No. <%= current_patient.karte_member_no %>
-</p>
+<%= render "intake/patient_header" %>
 
 <%# 何をしている画面かを患者に伝える。前の内容が入った状態で開くので、
     説明が無いと「前に書いたものが勝手に出ている」と受け取られる。 %>
