@@ -1,7 +1,7 @@
 <h1>メタトロン測定に関する同意</h1>
 
 <p class="intake-meta">
-  <%= current_patient.patient_profile&.name_kana.presence || current_patient.try(:name) %> 様
+  <%= current_patient.name_kana.presence || current_patient.name %> 様
   ／ 会員No. <%= format("%06d", current_patient.id) %>
 </p>
 
