@@ -120,6 +120,26 @@ module UserKarte
   # 画面に出ると患者に意味が通らないのと同じ。
   def blood_type_label = BLOOD_TYPE_LABELS[blood_type]
 
+  # カルテ表示用。未登録も文言にする。
+  #
+  # 患者向け（blood_type_label）と分ける理由は、未確定の2状態で
+  # スタッフの取るべき行動が変わるため。
+  #
+  #   "unknown"     … 訊いたが患者が知らなかった → もう一度訊いても得られない
+  #   nil / 定義外  … まだ訊いていない          → 次回の問診票で埋まる
+  #
+  # 同じ表示に畳むと、この区別が消えて「聞き直せば分かるのか」が読めなくなる。
+  # 患者向けヘッダーでは逆に nil のまま項目ごと消す。患者に自分の登録状態が
+  # どうなっているかを見せる必要は無い。
+  #
+  # 定義外の値も「未登録」に倒す。生値（"a+" など）を出すよりは、
+  # 訊き直せば埋まる側に寄せるほうが実害が小さい。
+  #
+  # 名前が karte_ 始まりなのは karte_member_no / karte_records_summary と同じ流儀。
+  # blood_type_label と接尾辞で分けると、呼び間違えても動いてしまい、
+  # 患者に「血液型未登録」が出るまで気づけない。
+  def karte_blood_type_label = blood_type_label || "血液型未登録"
+
   def age(on: Date.current)
     return nil if birthday.blank?
     years = on.year - birthday.year

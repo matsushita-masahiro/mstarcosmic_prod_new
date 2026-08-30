@@ -98,6 +98,29 @@ class IntakeBloodTypeQuestionTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # カルテ側は未登録を「血液型未登録」と文言で出す（スタッフの行動が変わるため）。
+  # 患者向けヘッダーは項目ごと消したまま。患者に自分の登録状態を見せる必要は無い。
+  # カルテ用のメソッドを患者向けに呼び違えても画面は普通に描けるので、
+  # 文言そのものが出ないことを名指しで見る。
+  test "患者向けヘッダーに血液型未登録という文言は出ない" do
+    enter
+    get intake_questionnaire_path
+
+    assert_response :success
+    assert_no_match "血液型未登録", response.body,
+                    "カルテ用の文言が患者の画面に漏れています"
+  end
+
+  test "確認画面のヘッダーにも血液型未登録は出ない" do
+    @patient.update_column(:blood_type, nil)
+    enter
+    submit(answers: { "q7_marital_status" => "single" })
+    get intake_questionnaire_confirmation_path
+
+    assert_response :success
+    assert_no_match "血液型未登録", response.body
+  end
+
   test "登録済みなら設問に出ずヘッダーに出る" do
     @patient.update_column(:blood_type, "ab")
     enter

@@ -64,6 +64,79 @@ class UserBloodTypeTest < ActiveSupport::TestCase
     end
   end
 
+  # ── カルテ表示用ラベル ──────────────────────────
+  #
+  # 患者向けと分けているのは、未確定の2状態でスタッフの行動が変わるため。
+  #   "unknown"    … 訊いたが患者が知らなかった → 聞き直しても得られない
+  #   nil / 定義外 … まだ訊いていない          → 次回の問診票で埋まる
+  test "カルテでは定義された値が日本語ラベルになる" do
+    { "a" => "A型", "b" => "B型", "o" => "O型", "ab" => "AB型" }.each do |value, expected|
+      assert_equal expected, build_user(value).karte_blood_type_label,
+                   "blood_type=#{value.inspect} が #{expected} になりません"
+    end
+  end
+
+  test "カルテでは不明と答えたことが分かる" do
+    assert_equal "不明", build_user("unknown").karte_blood_type_label
+  end
+
+  test "カルテでは未登録も文言で出す" do
+    [ nil, "", "  " ].each do |value|
+      assert_equal "血液型未登録", build_user(value).karte_blood_type_label,
+                   "blood_type=#{value.inspect} で未登録と分かりません"
+    end
+  end
+
+  # 生値を画面に出さない。訊き直せば埋まる側に倒す。
+  test "カルテでも定義に無い値は生値を出さず未登録に倒す" do
+    [ "A", "AB型", "a+", "rh-", "0", "不明", "その他" ].each do |value|
+      assert_equal "血液型未登録", build_user(value).karte_blood_type_label,
+                   "blood_type=#{value.inspect} の生値が画面に出ています"
+    end
+  end
+
+  # ここがこの機能の要。同じ文字列に畳むと区別そのものが消え、
+  # スタッフには「聞き直せば分かるのか」が読めなくなる。
+  test "訊いて不明だった患者と、まだ訊いていない患者は違う表示になる" do
+    asked     = build_user("unknown").karte_blood_type_label
+    not_asked = build_user(nil).karte_blood_type_label
+
+    assert_not_equal asked, not_asked,
+                     "「訊いたが不明」と「まだ訊いていない」が見分けられません"
+    assert_equal "不明", asked
+    assert_equal "血液型未登録", not_asked
+  end
+
+  # ── 患者向けの戻り値を変えていないこと ──────────────────
+  #
+  # カルテ用を足すついでに blood_type_label を「未登録」を返す形へ
+  # 変えてしまうと、問診票ヘッダーの compact_blank が効かなくなり、
+  # 患者の画面に内部状態が出る。落ちても例外にならないので明示的に見る。
+  test "患者向けラベルは未登録でも nil を返し続ける" do
+    [ nil, "", "  ", "a+", "その他" ].each do |value|
+      assert_nil build_user(value).blood_type_label,
+                 "blood_type=#{value.inspect} で患者向けの戻り値が変わっています"
+    end
+  end
+
+  test "患者向けラベルは血液型未登録という文言を返さない" do
+    labels = [ nil, "", "a+", "a", "unknown" ].map { |v| build_user(v).blood_type_label }
+
+    assert_not_includes labels, "血液型未登録",
+                        "カルテ用の文言が患者向けに漏れています"
+  end
+
+  # 定義された値では両者が一致していること。カルテ側だけ別の呼び名を
+  # 持ち始めると、同じ患者が画面によって違う血液型に見える。
+  test "登録済みならカルテと患者向けで同じ呼び名になる" do
+    UserKarte::BLOOD_TYPE_LABELS.each_key do |value|
+      user = build_user(value)
+
+      assert_equal user.blood_type_label, user.karte_blood_type_label,
+                   "#{value.inspect} の呼び名が画面によって違います"
+    end
+  end
+
   # 設問の選択肢とラベルの語彙が一致していること。
   # 片方だけ足すと、答えられるのに画面に出ない値ができる。
   test "設問の選択肢はすべてラベルを持つ" do

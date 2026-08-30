@@ -21,6 +21,10 @@
       ／ <%= @user.birthday_display %>（<%= @user.age %>歳）
     <% end %>
     ／ <%= @user.gender_label %>
+    <%# 生年月日・性別・血液型は身体属性としてまとまる。電話番号は連絡先で別種。
+        性別と同じく、未登録でも項目ごと消さずに文言を出す。空欄にすると
+        「訊いたが不明」と「まだ訊いていない」が見分けられない。 %>
+    ／ <%= @user.karte_blood_type_label %>
     <% if @user.tel.present? %>／ <%= @user.tel %><% end %>
     <br>
     初診日: <%= @first_visit_at ? l(@first_visit_at.to_date, format: :long) : "未登録" %>
