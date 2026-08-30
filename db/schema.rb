@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_23_082155) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_30_125532) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -253,7 +253,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_23_082155) do
   create_table "patient_profiles", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "name_roman"
-    t.integer "blood_type"
     t.string "postal_code"
     t.string "prefecture"
     t.string "city"
@@ -445,6 +444,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_23_082155) do
     t.string "abo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "blood_type"
   end
 
   create_table "user_types", force: :cascade do |t|
@@ -476,6 +476,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_23_082155) do
     t.boolean "registration_status", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "blood_type"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

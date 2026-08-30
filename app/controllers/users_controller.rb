@@ -142,6 +142,7 @@ class UsersController < ApplicationController
        @backup_user.membership_number = user.membership_number
        @backup_user.user_type = user.user_type
        @backup_user.abo = user.abo
+       @backup_user.blood_type = user.blood_type
        @backup_user.created_at = user.created_at
        @backup_user.updated_at = user.updated_at
        

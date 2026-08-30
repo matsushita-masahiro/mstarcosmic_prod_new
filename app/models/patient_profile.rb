@@ -6,16 +6,9 @@
 class PatientProfile < ApplicationRecord
   belongs_to :user
 
-  # 血液型はここで管理する。
-  #
-  # 【注意】users.abo は血液型ではない。Amway ABO（Amway Business Owner）会員か
-  # どうかの判定カラムで、値も "abo" / "other" の二択
-  # （app/views/users/edit.html.erb の「ABOの方 / ABO以外」がその UI）。
-  # 名前が似ているだけで血液型とは無関係なので、血液型の保存先を検討するときに
-  # abo を候補に入れないこと。以前このカラムを「壊れた血液型カラム」と誤認した
-  # 記述があり、db/migrate/20260802052015_cleanup_patient_profiles.rb に
-  # その訂正を残してある。
-  enum :blood_type, { a: 0, b: 1, o: 2, ab: 3, unknown: 4 }, prefix: true
+  # 血液型はここには無い。users.blood_type にある（20260830125530）。
+  # 患者の恒久属性は users に集約する方針（20260802052015）に合わせ、
+  # 未使用だった blood_type カラムは 20260830125532 で削除した。
   enum :referral_source, { introduction: 0, hp: 1, other: 2 }, prefix: true
 
   validates :postal_code, format: { with: /\A\d{7}\z/, allow_blank: true }
