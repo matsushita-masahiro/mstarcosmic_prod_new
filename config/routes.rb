@@ -45,6 +45,7 @@ Rails.application.routes.draw do
       resources :schedules, only: :index
       resources :staffs, only: :index
       resources :staff_machine_relations, only: :index
+      resources :machines, only: :index
       post 'users/find_or_register', to: 'users#find_or_register'
     end
   end

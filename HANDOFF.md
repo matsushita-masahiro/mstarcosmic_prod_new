@@ -97,6 +97,27 @@ before_action :redirect_edit_user, oniy: [:index]
 判断すること。恒久対応は pg gem の更新か `parallelize` の縮小だが、
 どちらも別途判断が要る（Gemfile.lock の変更はデプロイに影響する）。
 
+## 8. /admin/machines が 500 になる（MachinesController が存在しない）
+
+`config/routes.rb:132` の `scope :admin` 内に `resources :machines` が
+定義されているが、対応する `MachinesController` がリポジトリに存在しない。
+`app/views/machines/` も無い（あるのは `machine_schedules` のみ）。
+アクセスすると `uninitialized constant MachinesController` で 500 になる。
+
+このため **`machines` テーブルを更新する画面が無い**。
+`number_of_machine` の変更は SQL / rails console で行う必要がある。
+
+`machines` テーブルを読んでいるのは実質2箇所:
+
+- `app/controllers/reserves_controller.rb:487` — 旧予約画面の機器台数チェック
+- `app/views/staffs/new.html.erb:69` — スタッフ登録画面の機器ラベル表示
+
+加えて medirosa が `GET /api/v1/machines`（今回追加）経由で
+`number_of_machine` を読む予定のため、参照箇所は今後増える。
+
+管理画面を作るか、ルートを削除して console 運用と割り切るかは別途判断。
+今回は手を出していない。
+
 ---
 
 ## 履歴の追跡について（今回の調査結果）
