@@ -41,7 +41,7 @@ Rails.application.routes.draw do
   # API
   namespace :api do
     namespace :v1 do
-      resources :reserves, only: %i[index show create update]
+      resources :reserves, only: %i[index show create update destroy]
       resources :schedules, only: :index
       resources :staffs, only: :index
       resources :staff_machine_relations, only: :index
