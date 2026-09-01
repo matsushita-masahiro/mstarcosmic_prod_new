@@ -118,6 +118,42 @@ before_action :redirect_edit_user, oniy: [:index]
 管理画面を作るか、ルートを削除して console 運用と割り切るかは別途判断。
 今回は手を出していない。
 
+## 9. Reserve#remove_from_reservations が実質機能していない
+
+`after_destroy` で新 `Reservation` を掃除するコールバックだが、
+グループの引き直し方が原因でほぼ一致しない。
+
+```ruby
+group = Reserve.where(root_reserve_id: root_reserve_id || id)
+return if group.empty?
+min_space = group.minimum(:reserved_space)   # ← ここ
+```
+
+`after_destroy` の時点で**自分は既に消えている**ため、`min_space` が
+「残っているレコードの最小値」になる。10:00 を消すと残った 10:30 から
+`start_time = "10:30"` が算出され、`"10:00"` の `Reservation` に一致しない。
+
+実測した挙動（`test/integration/api_reserve_destroy_test.rb` で固定済み）:
+
+| 削除するもの | Reservation |
+|---|---|
+| 先頭スロット | 残る（start_time がずれる） |
+| 後ろのスロット | 掃除される |
+| 兄弟のいない1件 | 残る（group が空で early return） |
+
+**画面側のキャンセルは壊れていない。** `reserves_controller.rb:353` の
+`delete_linked_reservation` が `destroy_all` の前に走り、全レコードが
+まだ存在する状態で正しい `min_space` を取って消しているため。
+つまり `remove_from_reservations` は実質デッドコードになっている。
+
+medirosa 側のロールバック（フェーズC-2）は、この挙動を前提に
+**reserved_space の降順**で削除している。順序を変えると孤児の
+`Reservation` が残るので、直すときは medirosa 側も合わせて見直すこと。
+
+直すなら `min_space` を削除前に確定させるか、
+`delete_linked_reservation` と同じ形に寄せる。既存動作に影響するため
+今回は手を付けていない。
+
 ---
 
 ## 履歴の追跡について（今回の調査結果）
