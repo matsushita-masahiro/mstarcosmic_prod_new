@@ -124,6 +124,12 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
   def fill_and_send
     type_into_keyboard_pane("q1_purpose", "肩こりの相談")
+    # 血液型は required で、この患者は users.blood_type が未設定のため聞かれる
+    # （ask_unless: :blood_type_recorded?）。答えないと送信が止まる。
+    # 副作用: 確定まで進むテストではこの患者の users.blood_type が
+    # "unknown" になる。確定後のヘッダーを見るテストを足すときは
+    # 「血液型：不明」が出ることを前提にすること。
+    choose_radio("q0_blood_type", "unknown")
     choose_radio("q10_pacemaker", "no")
     # 【13】妊娠は female_only かつ必須。女性と判定された患者では
     # 答えないと送信が止まり、ヘッダーとは関係のないところで落ちる。

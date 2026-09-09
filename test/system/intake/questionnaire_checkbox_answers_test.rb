@@ -160,9 +160,14 @@ class Intake::QuestionnaireCheckboxAnswersTest < ApplicationSystemTestCase
     find(%(input[name="answers[#{key}]"][value="#{value}"])).click
   end
 
-  # 【10】ペースメーカー。必須なので答えないと送信できない。
+  # 必須の設問をまとめて答える。答え残しがあると送信が止まり、
+  # このテストが見たいものと関係のないところで落ちる。
   def answer_required
+    # 【10】ペースメーカー。
     choose_radio("q10_pacemaker", "no")
+    # 血液型。この患者は users.blood_type が未設定のため聞かれる
+    # （ask_unless: :blood_type_recorded?）。
+    choose_radio("q0_blood_type", "unknown")
   end
 
   # 送信 → 確認画面で署名 → 確定。

@@ -54,6 +54,10 @@ class Intake::QuestionnaireGenderTest < ApplicationSystemTestCase
     # 【8】喫煙を「吸う」→「吸わない」。本数は画面上で消える。
     choose_radio("q8_smoking", "no")
 
+    # 血液型は required。前版にも users.blood_type にも入っていないので
+    # 訂正でも聞かれる（ask_unless: :blood_type_recorded?）。
+    choose_radio("q0_blood_type", "unknown")
+
     click_on "記入内容を送信する"
     assert_current_path intake_questionnaire_confirmation_path, wait: 10
 
@@ -80,6 +84,9 @@ class Intake::QuestionnaireGenderTest < ApplicationSystemTestCase
 
     assert_selector %(input[name="answers[q0_gender]"][value="male"])
     choose_radio("q10_pacemaker", "no")
+    # 血液型も required。ここで答えておかないと未回答の知らせに一緒に並び、
+    # このテストが見たい「性別が必須であること」が読み取れなくなる。
+    choose_radio("q0_blood_type", "unknown")
 
     click_on "記入内容を送信する"
     assert_selector '[data-questionnaire-target="status"]',
@@ -145,6 +152,11 @@ class Intake::QuestionnaireGenderTest < ApplicationSystemTestCase
 
   def sign_and_confirm
     canvas = find('[data-signature-pad-target="canvas"]')
+    # 署名枠を画面の中央へ寄せてから描く。訂正の確認画面は前版の回答が
+    # 並ぶぶん縦に長く、血液型の設問が増えて署名枠が可視領域の外に出た。
+    # move_to は要素の中心を基準に動くので、外に出ていると
+    # MoveTargetOutOfBoundsError で落ちる。
+    scroll_to(canvas, align: :center)
     page.driver.browser.action
         .move_to(canvas.native, 10, 10)
         .click_and_hold.move_by(40, 20).move_by(40, -10).release.perform
