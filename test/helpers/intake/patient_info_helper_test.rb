@@ -101,7 +101,8 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "a")
 
-      assert_equal "1985年3月4日（41歳） ／ 女性 ／ A型", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性 ／ 血液型：A型",
+                   patient_attributes_line(user)
     end
   end
 
@@ -111,7 +112,8 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "unknown")
 
-      assert_equal "1985年3月4日（41歳） ／ 女性 ／ 不明", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性 ／ 血液型：不明",
+                   patient_attributes_line(user)
     end
   end
 
@@ -119,22 +121,24 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: nil)
 
-      assert_equal "1985年3月4日（41歳） ／ 女性", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性",
+                   patient_attributes_line(user)
     end
   end
 
-  # 定義に無い値でも同じ。生値が「1985年3月4日（41歳） ／ 女性 ／ a+」と
+  # 定義に無い値でも同じ。生値が「… ／ 性別：女性 ／ 血液型：a+」と
   # 並ぶより、項目ごと消えるほうがまだ読める。
   test "定義に無い血液型は生値を出さずに消える" do
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "a+")
 
-      assert_equal "1985年3月4日（41歳） ／ 女性", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性",
+                   patient_attributes_line(user)
     end
   end
 
   test "血液型だけなら区切り記号を残さない" do
-    assert_equal "O型",
+    assert_equal "血液型：O型",
                  patient_attributes_line(build_user(birthday: nil, gender: nil,
                                                     blood_type: "o"))
   end
@@ -144,7 +148,8 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f")
 
-      assert_equal "1985年3月4日（41歳） ／ 女性", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性",
+                   patient_attributes_line(user)
     end
   end
 
@@ -152,12 +157,12 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: nil)
 
-      assert_equal "1985年3月4日（41歳）", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳）", patient_attributes_line(user)
     end
   end
 
   test "性別だけなら区切り記号を残さない" do
-    assert_equal "女性", patient_attributes_line(build_user(birthday: nil, gender: "f"))
+    assert_equal "性別：女性", patient_attributes_line(build_user(birthday: nil, gender: "f"))
   end
 
   # 3項目すべて欠けたとき。1つでも判定を間違えると区切り記号だけが残る。
@@ -174,7 +179,8 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: nil, blood_type: "ab")
 
-      assert_equal "1985年3月4日（41歳） ／ AB型", patient_attributes_line(user)
+      assert_equal "生年月日：1985年3月4日（41歳） ／ 血液型：AB型",
+                   patient_attributes_line(user)
     end
   end
 end

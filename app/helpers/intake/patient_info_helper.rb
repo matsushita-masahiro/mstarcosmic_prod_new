@@ -29,8 +29,15 @@ module Intake
     end
 
     # 2行目そのもの。出せる項目が無ければ空文字を返し、
-    # 呼び出し側が <p> ごと出さない。区切り記号だけが残らないよう
-    # compact_blank してから繋ぐ。
+    # 呼び出し側が <p> ごと出さない。
+    #
+    # ラベルは値と同じ要素に入れる。ラベルをここより外（ビューや
+    # 書式文字列）に置くと、値が落ちた項目でラベルと区切り記号だけが残る。
+    # filter_map で「値があるものだけラベル付きで返す」を1手で済ませている。
+    #
+    # 血液型のラベルは省けない。生年月日と性別は値だけで何の項目か
+    # 分かるが、「不明」は単独では読めない。
+    #
     # 血液型に patient_ 付きの包みを作っていない。
     # 性別に patient_gender_label が要るのは gender_label が未判別に
     # "未登録" を返すからで、患者向けにそれを消す層が必要になる。
@@ -40,10 +47,10 @@ module Intake
     # 「不明」（患者が "unknown" と答えた）はここに出す。消すと
     # 訊いていない患者と見分けが付かず、もう一度訊くことになる。
     def patient_attributes_line(user)
-      [ patient_birthday_with_age(user),
-        patient_gender_label(user),
-        user.blood_type_label ]
-        .compact_blank
+      [ [ "生年月日", patient_birthday_with_age(user) ],
+        [ "性別",     patient_gender_label(user) ],
+        [ "血液型",   user.blood_type_label ] ]
+        .filter_map { |label, value| "#{label}：#{value}" if value.present? }
         .join(" ／ ")
     end
   end

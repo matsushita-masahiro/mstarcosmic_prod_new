@@ -55,7 +55,7 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
     assert_selector "p.intake-meta", text: "はしばみれい 様"
     assert_selector "p.intake-meta", text: "会員No. #{@patient.karte_member_no}"
-    assert_selector "p.intake-meta-sub", text: "1985年3月4日（41歳） ／ 女性"
+    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳） ／ 性別：女性"
 
     # 分かっている情報は聞かない。ヘッダーと設問の二重取りにしない。
     assert_no_selector %(input[name="answers[q0_gender]"]), visible: :all
@@ -64,7 +64,7 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
     # 確認画面にも同じヘッダーが出ること。署名する画面なので、
     # 誰として署名しているかが見えている必要がある。
-    assert_selector "p.intake-meta-sub", text: "1985年3月4日（41歳） ／ 女性"
+    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳） ／ 性別：女性"
 
     sign_and_confirm
     assert_current_path intake_thanks_path, wait: 10
@@ -99,7 +99,7 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
     @patient.update_columns(gender: nil)
     open_questionnaire
 
-    assert_selector "p.intake-meta-sub", text: "1985年3月4日（41歳）"
+    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳）"
     assert_no_selector "p.intake-meta-sub", text: "／"
     assert_selector %(input[name="answers[q0_gender]"][value="female"])
   end
@@ -111,7 +111,7 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
     assert_selector "h1", text: "メタトロン測定に関する同意"
     assert_selector "p.intake-meta", text: "会員No. #{@patient.karte_member_no}"
-    assert_selector "p.intake-meta-sub", text: "1985年3月4日（41歳） ／ 女性"
+    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳） ／ 性別：女性"
   end
 
   private
