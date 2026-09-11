@@ -127,7 +127,12 @@ class KarteRevisionDisplayTest < ActionDispatch::IntegrationTest
     assert_match(/訂正前（.*）\s*との違いを見る/m, response.body, "差分の折りたたみが出ていません")
     assert_match(/【10】/, response.body, "設問ラベルが出ていません")
     assert_match(/ペースメーカー装着/, response.body)
-    assert_no_match(/q10_pacemaker/, response.body, "キー名が画面に露出しています")
+    # 見える文字だけで判定する。スタッフ追記のフォームが question_key を
+    # hidden field と入れ物の id で持つようになり、属性値としては
+    # キー名が markup に出る。ここで守りたいのは「設問名の代わりに
+    # q10_pacemaker と表示されていないか」なので、テキストだけを見る。
+    assert_no_match(/q10_pacemaker/, Nokogiri::HTML(response.body).text,
+                    "キー名が画面に露出しています")
   end
 
   test "独立した提出には差分が出ない" do

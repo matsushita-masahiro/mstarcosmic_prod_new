@@ -28,6 +28,10 @@ Rails.application.routes.draw do
       resources :treatment_notes, only: %i[index create edit update destroy]
 
       resources :intake_sessions, only: %i[create]
+
+      # スタッフ追記は追加専用。update / destroy は引かない。
+      # 書き間違いは訂正の追記を足す運用にしている。
+      resources :questionnaire_annotations, only: %i[create]
     end
     resources :intake_sessions, only: %i[show destroy]
     resources :consent_documents do

@@ -1,0 +1,11 @@
+<%# 書いた追記を、その設問の追記リストの末尾に足す。
+    並び順は古い順なので append でよい。
+
+    親の設問を渡すのは、サブ項目への追記で「どの項目への追記か」を
+    出すため（karte/users/_annotation の annotation_sub_label）。 %>
+<%= turbo_stream.append annotation_container_id(@questionnaire, @annotation.question_key) do %>
+  <%= render "karte/users/annotation",
+        annotation: @annotation,
+        question: annotation_top_level_question(@annotation.question_key),
+        questionnaire: @questionnaire %>
+<% end %>

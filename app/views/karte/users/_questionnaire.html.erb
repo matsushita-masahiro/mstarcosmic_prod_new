@@ -11,10 +11,13 @@
     revision_diff QuestionnaireRevisionDiff（省略可。訂正版のときだけ中身が出る）
     annotations   question_key => [QuestionnaireAnnotation]（省略可）。
                   版の連なり全体ぶんを渡す。渡さなければ追記は出ない。
+    patient       User（省略可）。追記フォームの送信先を組み立てるのに使う。
+                  渡さなければフォームは出ない（表示だけになる）。
 %>
 <% expanded = local_assigns.fetch(:expanded, false) %>
 <% revision_diff = local_assigns[:revision_diff] %>
 <% annotations = local_assigns.fetch(:annotations, {}) %>
+<% patient = local_assigns[:patient] %>
 <% entries = questionnaire.handwriting_entries.index_by(&:question_key) %>
 
 <%# ── 要点 ────────────────────────────────── %>
@@ -203,7 +206,7 @@
     <% MedicalQuestionnaireForm::QUESTIONS.each do |question| %>
       <%= render "karte/users/annotated_answer", question: question,
             questionnaire: questionnaire, entries: entries,
-            annotations: annotations %>
+            annotations: annotations, patient: patient %>
     <% end %>
   </div>
   <p style="color:#9ca3af;font-size:13px;margin-top:12px;">

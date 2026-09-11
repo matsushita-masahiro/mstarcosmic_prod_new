@@ -235,6 +235,7 @@
             questionnaire: @questionnaire,
             revision_diff: @revision_diff,
             annotations: @annotations,
+            patient: @user,
             expanded: params[:questionnaire_id].present? %>
     <% else %>
       <p style="color:#9ca3af;padding:12px 0;">まだ問診票がありません。</p>

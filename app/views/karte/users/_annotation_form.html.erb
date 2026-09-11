@@ -1,0 +1,41 @@
+<%#
+  設問1件ぶんの追記フォーム。カルテ専用。
+
+  <details> で開閉する。カルテ側は既に「すべての回答を見る」「訂正前との違い」
+  で同じ作りを使っており、追記のためだけに JavaScript を足さない。
+
+  追記は追加専用なので、このフォームは常に新規作成。編集・削除は無い。
+
+  ローカル変数:
+    question      設問定義（最上位）
+    questionnaire 追記を付ける MedicalQuestionnaire（表示中の版）
+    patient       User
+%>
+<details style="margin:0 0 10px;">
+  <summary style="cursor:pointer;font-size:13px;color:#1d4ed8;padding:2px 0;">
+    追記
+  </summary>
+
+  <%= form_with model: QuestionnaireAnnotation.new,
+        url: karte_user_questionnaire_annotations_path(patient),
+        class: "annotation-form" do |f| %>
+    <%= f.hidden_field :medical_questionnaire_id, value: questionnaire.id %>
+    <%= f.hidden_field :question_key, value: question[:key] %>
+
+    <%# キーボード入力のみ。患者側の手書き欄とは違い、
+        スタッフが端末から書くことを想定している。 %>
+    <%= f.text_area :body, rows: 3, required: true,
+          placeholder: "この設問への補足を書きます（患者には表示されません）",
+          style: "width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;
+                  font-size:14px;font-family:inherit;" %>
+
+    <div style="margin-top:4px;">
+      <%= f.submit "追記を保存",
+            style: "padding:6px 16px;border-radius:6px;border:1px solid #1d4ed8;" \
+                   "background:#1d4ed8;color:#fff;font-size:13px;cursor:pointer;" %>
+      <span style="margin-left:8px;font-size:12px;color:#9ca3af;">
+        保存すると取り消せません。直すときは追記を足してください。
+      </span>
+    </div>
+  <% end %>
+</details>

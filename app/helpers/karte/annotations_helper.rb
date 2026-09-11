@@ -26,6 +26,23 @@ module Karte
         .sort_by { |a| [ a.created_at, a.id ] }
     end
 
+    # そのキーを抱えている最上位の設問。追記は親の設問にまとめて出すため、
+    # サブ項目のキーからでも親を引けるようにしておく。
+    def annotation_top_level_question(question_key)
+      MedicalQuestionnaireForm::QUESTIONS.find do |question|
+        annotation_keys_for(question).include?(question_key.to_s)
+      end
+    end
+
+    # 追記を差し込む入れ物の id。
+    # Turbo Stream の append 先もこれで引くので、表示側と作成側で
+    # 同じ規則から組み立てる（片方だけ変えると追記が画面に出なくなる）。
+    def annotation_container_id(questionnaire, question_key)
+      top = annotation_top_level_question(question_key)
+
+      "annotations-#{questionnaire.id}-#{top ? top[:key] : question_key}"
+    end
+
     # 追記に添える見出し。
     #
     # 色だけに意味を持たせない。印刷したときや色覚特性のある方が見たときに
