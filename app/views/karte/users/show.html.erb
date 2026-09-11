@@ -217,8 +217,23 @@
 
               <%# 訂正用のQRを発行する。上書きではなく次の版を作るため、
                   この版の内容はそのまま残る。
-                  下書きには出さない（提出していない版を訂正しても意味がない）。 %>
-              <% unless q.status_draft? %>
+
+                  ボタンは系列の末端にだけ出す。1つの版に訂正版を並列に
+                  ぶら下げることはできず（revision_does_not_branch）、
+                  古い版のボタンを押しても IntakeSession.issue_revision! が
+                  finalized_revision_tip で末端に読み替える。全行に出すと
+                  「この版を直せる」と読め、押した本人が気づかないまま
+                  別の版を起点にすることになる。
+
+                  判定は issue_revision! が対象を決めるのと同じ
+                  finalized_revision_tip で行う。表の最終行や revision の
+                  最大値で判定すると、画面とサーバの判断がずれる。
+
+                  下書きには出さない（提出していない版を訂正しても意味がない）。
+                  末端が下書きのときは、その手前の確定版が
+                  finalized_revision_tip の返り値になり、そちらに出る。 %>
+              <% if !q.status_draft? &&
+                    q.finalized_revision_tip(within: @all_questionnaires) == q %>
                 <%= button_to "修正", karte_user_intake_sessions_path(@user, questionnaire_id: q.id),
                       form: { style: "display:inline;margin-left:12px;" },
                       style: "padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;" \

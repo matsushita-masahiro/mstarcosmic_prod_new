@@ -65,6 +65,12 @@ module Karte
                                        signature_image_attachment: :blob,
                                        handwriting_entries: { image_attachment: :blob })
                              .latest_first.limit(10)
+      # 「修正」ボタンを出す版を決めるために、系列を辿れる全件を持っておく。
+      # 履歴表は最新10件しか出さないが、末端の判定をその窓の中だけで行うと、
+      # 窓の外に訂正版がある版を末端と誤判定してボタンが増える。
+      # finalized_revision_tip に渡すとクエリを出さずに辿れる。
+      @all_questionnaires = @user.medical_questionnaires.to_a
+
       # 警告の根拠は確定版のみから取る。@questionnaires は履歴表用で下書きも含むため、
       # ここから先頭を取ると書きかけの下書きが確定版を押しのけ、
       # 確定版の禁忌が画面から消える。
