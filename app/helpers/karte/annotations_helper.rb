@@ -43,6 +43,18 @@ module Karte
       "annotations-#{questionnaire.id}-#{top ? top[:key] : question_key}"
     end
 
+    # 追記ボタンに添える設問の名前。
+    #
+    # ボタンだけを置くと、直前の設問のものか直後の設問のものかが読めない。
+    # 追記は消せないので、押し間違いは訂正の追記を足すしかない。
+    # 設問番号があれば必ず付ける（画面の見出しと同じ手がかりになる）。
+    def annotation_question_caption(question)
+      label = question[:label].to_s
+      label = "【#{question[:no]}】#{label}" if question[:no]
+
+      truncate(label, length: 28)
+    end
+
     # 追記に添える見出し。
     #
     # 色だけに意味を持たせない。印刷したときや色覚特性のある方が見たときに

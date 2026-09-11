@@ -11,6 +11,16 @@
   その他欄（other）に付いた追記もここで拾う。_answer は回答が無い項目を
   描かないため、サブ項目の側に置くと追記ごと消えることがある。
 
+  ── 追記をどこに置くか ───────────────────────
+
+  回答の直後に、左の罫線で括って置く。設問と設問のあいだに素で置くと、
+  直前の設問のものか直後の設問のものかが読めない。追記は消せない仕様なので、
+  押し間違いは訂正の追記を足すしかなく、位置の曖昧さがそのまま事故になる。
+
+  _answer が何も描かなかった設問（未記入）には、追記が無ければ
+  ボタンごと出さない。描かれていない設問のボタンだけが宙に浮くと、
+  次の設問のものと読まれる。
+
   ローカル変数:
     question      設問定義（最上位）
     questionnaire 表示中の MedicalQuestionnaire
@@ -19,18 +29,38 @@
     patient       User（省略可）。渡さなければ追記フォームを出さない。
                   書き込みの入口を持たせたくない呼び出し側では省く。
 %>
-<%= render "karte/users/answer", question: question,
-      questionnaire: questionnaire, entries: entries, depth: 0 %>
+<% answer_html = capture do %>
+  <%= render "karte/users/answer", question: question,
+        questionnaire: questionnaire, entries: entries, depth: 0 %>
+<% end %>
 
-<%# 入れ物は追記が無くても出す。Turbo Stream の append 先が要るため。 %>
-<div id="<%= annotation_container_id(questionnaire, question[:key]) %>">
-  <% annotations_for_question(annotations, question).each do |annotation| %>
-    <%= render "karte/users/annotation", annotation: annotation,
-          question: question, questionnaire: questionnaire %>
-  <% end %>
-</div>
+<% items = annotations_for_question(annotations, question) %>
+<%# _answer は描くものが無ければ空白しか返さない。その判定をここで持たず、
+    返ってきた中身で見る（条件を書き写すと _answer 側と食い違う）。 %>
+<% answer_shown = answer_html.to_s.strip.present? %>
 
-<% if local_assigns[:patient] %>
-  <%= render "karte/users/annotation_form",
-        question: question, questionnaire: questionnaire, patient: patient %>
+<% if answer_shown || items.any? %>
+  <%= answer_html %>
+
+  <div style="margin:0 0 10px;padding:2px 0 2px 16px;border-left:2px solid #e5e7eb;">
+    <%# 未記入の設問に追記だけが付いている場合。どの設問への追記かを出す。 %>
+    <% unless answer_shown %>
+      <div style="font-size:13px;color:#9ca3af;padding:4px 0;">
+        <%= annotation_question_caption(question) %>（未記入）
+      </div>
+    <% end %>
+
+    <%# 入れ物は追記が無くても出す。Turbo Stream の append 先が要るため。 %>
+    <div id="<%= annotation_container_id(questionnaire, question[:key]) %>">
+      <% items.each do |annotation| %>
+        <%= render "karte/users/annotation", annotation: annotation,
+              question: question, questionnaire: questionnaire %>
+      <% end %>
+    </div>
+
+    <% if local_assigns[:patient] %>
+      <%= render "karte/users/annotation_form",
+            question: question, questionnaire: questionnaire, patient: patient %>
+    <% end %>
+  </div>
 <% end %>

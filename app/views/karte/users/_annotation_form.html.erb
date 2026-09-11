@@ -11,9 +11,14 @@
     questionnaire 追記を付ける MedicalQuestionnaire（表示中の版）
     patient       User
 %>
-<details style="margin:0 0 10px;">
+<%# ボタンにも設問名を出す。回答の直後に置いてはいるが、追記は消せないので
+    「いま押そうとしているのがどの設問か」を押す直前に確かめられる形にする。 %>
+<details style="margin:0;">
   <summary style="cursor:pointer;font-size:13px;color:#1d4ed8;padding:2px 0;">
     追記
+    <span style="color:#9ca3af;margin-left:6px;">
+      <%= annotation_question_caption(question) %>
+    </span>
   </summary>
 
   <%= form_with model: QuestionnaireAnnotation.new,
