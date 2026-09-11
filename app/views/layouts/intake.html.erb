@@ -33,6 +33,9 @@
          無いので、keep-all にすると折り返せず、幅の狭い端末で横にはみ出す。
          万一1項目が収まらないときは、はみ出すより折り返すほうがまだ読める。 */
       .intake-meta-sub { font-size: 14px; color: #6b7280; margin: 0 0 16px; }
+      /* 氏名・会員No.・生年月日・性別・血液型は、どれも1項目1行。
+         繋いで折り返しに任せると「会員No.」と番号が上下に割れる。 */
+      .intake-meta span,
       .intake-meta-sub span { display: block; }
       .intake-doc {
         border: 1px solid #d1d5db; border-radius: 8px; padding: 20px;

@@ -106,6 +106,24 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
     assert_selector %(input[name="answers[q0_gender]"][value="female"])
   end
 
+  # 1行目も1項目1行。氏名と会員No. を繋いでいた頃は、長い氏名で折り返すと
+  # 「会員No.」と番号が上下に割れ、番号だけが次の行に落ちていた。
+  # 番号は患者が自分のものだと確かめる手がかりなので、割れると読めない。
+  test "氏名と会員No. は別々の行に出る" do
+    open_questionnaire
+
+    spans = all("p.intake-meta span")
+    assert_equal 2, spans.size
+
+    assert_equal "はしばみれい 様", spans[0].text
+    assert_equal "会員No. #{@patient.karte_member_no}", spans[1].text,
+                 "会員No. と番号が分かれています"
+
+    rects = spans.map { |span| span.native.rect }
+    assert_operator rects[0].y, :<, rects[1].y, "会員No. が氏名の下に来ていません"
+    assert_equal 1, rects.map(&:x).uniq.size, "左端が揃っていません"
+  end
+
   # 1項目1行になっていること。CSS（.intake-meta-sub span { display: block })
   # が効かないと3項目が1行に並び、iPhone 幅で折り返して行末に ／ ならぬ
   # 項目の途中が残る。文字列の一致だけでは見分けが付かないので、

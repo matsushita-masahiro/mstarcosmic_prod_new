@@ -9,9 +9,12 @@
   漢字より読み仮名の方が確かめやすい。カナが無ければ氏名に落ちる。
 %>
 <% attributes = patient_attributes(current_patient) %>
+<%# 氏名と会員No. も1項目1行にする。繋いでいた頃は折り返しで
+    「会員No.」と番号が上下に分かれ、番号だけが次の行に落ちていた。
+    長い氏名（カタカナのフルネームなど）ほど起きやすい。 %>
 <p class="intake-meta<%= " has-sub" if attributes.any? %>">
-  <%= current_patient.name_kana.presence || current_patient.name %> 様
-  ／ 会員No. <%= current_patient.karte_member_no %>
+  <span><%= current_patient.name_kana.presence || current_patient.name %> 様</span>
+  <span>会員No. <%= current_patient.karte_member_no %></span>
 </p>
 <%# 生年月日も性別も血液型も分からない患者では attributes が空になる。
     空行だけが残らないよう、行ごと出さない。
