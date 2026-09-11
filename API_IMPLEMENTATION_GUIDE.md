@@ -136,7 +136,7 @@ gem 'faraday'
 
 ```
 MSTARCOSMIC_API_URL="http://localhost:3000"
-MSTARCOSMIC_API_KEY="77239f2cbaa030c758b681379adfb8c1b125406ec6da0c9946836eaa5a9050fb"
+MSTARCOSMIC_API_KEY=<API_KEY>
 ```
 
 ### medirosa 側のコントローラー例
@@ -198,12 +198,12 @@ medirosa:    https://www.medirosa.jp
 
 ```bash
 # mstarcosmic側
-heroku config:set API_KEY="9ff6af39fc5714ceb4762830c714ea5ec59896fb4198f6debb98851ad252c656" -a mstarcosmic-prod
+heroku config:set API_KEY=<API_KEY> -a mstarcosmic-prod
 heroku config:set ALLOWED_ORIGINS="https://www.medirosa.jp" -a mstarcosmic-prod
 
 # medirosa側
 heroku config:set MSTARCOSMIC_API_URL="https://www.mstarcosmic.com" -a medirosa
-heroku config:set MSTARCOSMIC_API_KEY="9ff6af39fc5714ceb4762830c714ea5ec59896fb4198f6debb98851ad252c656" -a medirosa
+heroku config:set MSTARCOSMIC_API_KEY=<API_KEY> -a medirosa
 ```
 
 ### ステージング環境
@@ -215,12 +215,12 @@ medirosa:    https://medirosa-staging-2578d5b73058.herokuapp.com
 
 ```bash
 # mstarcosmic-staging側
-heroku config:set API_KEY="1f322f792a4a250b68353b84371f4c303f117b7e245914418833dd033c670f5d" -a mstarcosmic-staging
+heroku config:set API_KEY=<API_KEY> -a mstarcosmic-staging
 heroku config:set ALLOWED_ORIGINS="https://medirosa-staging-2578d5b73058.herokuapp.com" -a mstarcosmic-staging
 
 # medirosa-staging側
 heroku config:set MSTARCOSMIC_API_URL="https://mstarcosmic-staging.herokuapp.com" -a medirosa-staging
-heroku config:set MSTARCOSMIC_API_KEY="1f322f792a4a250b68353b84371f4c303f117b7e245914418833dd033c670f5d" -a medirosa-staging
+heroku config:set MSTARCOSMIC_API_KEY=<API_KEY> -a medirosa-staging
 ```
 
 ### 開発環境
@@ -228,7 +228,7 @@ heroku config:set MSTARCOSMIC_API_KEY="1f322f792a4a250b68353b84371f4c303f117b7e2
 ```
 mstarcosmic: http://localhost:3000
 medirosa:    http://localhost:3001
-API_KEY:     77239f2cbaa030c758b681379adfb8c1b125406ec6da0c9946836eaa5a9050fb
+API_KEY:     <API_KEY>
 ```
 
 ---
