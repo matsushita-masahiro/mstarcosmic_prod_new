@@ -8,13 +8,21 @@
   氏名はカナを優先する。患者が自分の名前だと分かることが目的で、
   漢字より読み仮名の方が確かめやすい。カナが無ければ氏名に落ちる。
 %>
-<% attributes_line = patient_attributes_line(current_patient) %>
-<p class="intake-meta<%= " has-sub" if attributes_line.present? %>">
+<% attributes = patient_attributes(current_patient) %>
+<p class="intake-meta<%= " has-sub" if attributes.any? %>">
   <%= current_patient.name_kana.presence || current_patient.name %> 様
   ／ 会員No. <%= current_patient.karte_member_no %>
 </p>
-<%# 生年月日も性別も分からない患者では attributes_line が空になる。
-    区切り記号や空行だけが残らないよう、行ごと出さない。 %>
-<% if attributes_line.present? %>
-  <p class="intake-meta-sub"><%= attributes_line %></p>
+<%# 生年月日も性別も血液型も分からない患者では attributes が空になる。
+    空行だけが残らないよう、行ごと出さない。
+
+    1項目1行にする。span を並べて CSS で block にしており、ここで
+    <br> を挟んでいないのは、項目が1つだけの患者で余った <br> が
+    空行として残るのを避けるため。 %>
+<% if attributes.any? %>
+  <p class="intake-meta-sub">
+    <% attributes.each do |attribute| %>
+      <span><%= attribute %></span>
+    <% end %>
+  </p>
 <% end %>

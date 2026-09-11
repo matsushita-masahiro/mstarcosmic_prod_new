@@ -40,7 +40,9 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "p.intake-meta", /はしばみれい 様/
     assert_select "p.intake-meta", /会員No\. #{@patient.karte_member_no}/
-    assert_select "p.intake-meta-sub", "生年月日：1985年3月4日（41歳） ／ 性別：女性"
+    assert_select "p.intake-meta-sub span", 2
+    assert_select "p.intake-meta-sub span", "生年月日：1985年3月4日（41歳）"
+    assert_select "p.intake-meta-sub span", "性別：女性"
   end
 
   # ラベルは3項目すべてに付く。血液型のラベルは特に省けない。
@@ -51,8 +53,10 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
     get intake_questionnaire_path
 
     assert_response :success
-    assert_select "p.intake-meta-sub",
-                  "生年月日：1985年3月4日（41歳） ／ 性別：女性 ／ 血液型：A型"
+    assert_select "p.intake-meta-sub span", 3
+    assert_select "p.intake-meta-sub span", "生年月日：1985年3月4日（41歳）"
+    assert_select "p.intake-meta-sub span", "性別：女性"
+    assert_select "p.intake-meta-sub span", "血液型：A型"
   end
 
   # ラベルは値と同じ要素に入れる。外側（ビューや書式文字列）に置くと、
@@ -62,18 +66,19 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
   # 血液型も未設定なので、問診票の設問側には「性別」「血液型」の文字が
   # 出ている（ask_unless で聞かれる）。ページ全体を見ると、2行目から
   # ラベルが消えていなくても設問の文字で判定が濁る。
-  test "欠けた項目のラベルは2行目から区切り記号ごと消える" do
+  test "欠けた項目のラベルは2行目から項目ごと消える" do
     @patient.update_columns(gender: nil, blood_type: nil)
     enter
     get intake_questionnaire_path
 
-    assert_select "p.intake-meta-sub", "生年月日：1985年3月4日（41歳）"
+    assert_select "p.intake-meta-sub span", 1
+    assert_select "p.intake-meta-sub span", "生年月日：1985年3月4日（41歳）"
     assert_select "p.intake-meta-sub", { text: /性別/, count: 0 },
                   "値の無い性別のラベルが2行目に残っています"
     assert_select "p.intake-meta-sub", { text: /血液型/, count: 0 },
                   "値の無い血液型のラベルが2行目に残っています"
     assert_select "p.intake-meta-sub", { text: /／/, count: 0 },
-                  "区切り記号だけが2行目に残っています"
+                  "1項目1行にしたので、2行目に区切り記号は出ないはずです"
 
     # 設問側には出ていること。上の count: 0 が「ページに無いから通った」
     # のではなく「2行目に無いから通った」ことを、ここで裏から押さえる。
@@ -97,7 +102,9 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
     get intake_questionnaire_confirmation_path
 
     assert_response :success
-    assert_select "p.intake-meta-sub", "生年月日：1985年3月4日（41歳） ／ 性別：女性"
+    assert_select "p.intake-meta-sub span", 2
+    assert_select "p.intake-meta-sub span", "生年月日：1985年3月4日（41歳）"
+    assert_select "p.intake-meta-sub span", "性別：女性"
   end
 
   test "同意書にも2行目が出る" do
@@ -106,7 +113,9 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
     get new_intake_consent_path
 
     assert_response :success
-    assert_select "p.intake-meta-sub", "生年月日：1985年3月4日（41歳） ／ 性別：女性"
+    assert_select "p.intake-meta-sub span", 2
+    assert_select "p.intake-meta-sub span", "生年月日：1985年3月4日（41歳）"
+    assert_select "p.intake-meta-sub span", "性別：女性"
   end
 
   # ── 出ない側 ─────────────────────────────
@@ -116,7 +125,8 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
     get intake_questionnaire_path
 
     assert_response :success
-    assert_select "p.intake-meta-sub", "性別：女性"
+    assert_select "p.intake-meta-sub span", 1
+    assert_select "p.intake-meta-sub span", "性別：女性"
     assert_no_match "歳", css_select("p.intake-meta-sub").first.text
   end
 
@@ -137,7 +147,8 @@ class IntakePatientHeaderTest < ActionDispatch::IntegrationTest
     get intake_questionnaire_path
 
     assert_response :success
-    assert_select "p.intake-meta-sub", "生年月日：1985年3月4日（41歳）"
+    assert_select "p.intake-meta-sub span", 1
+    assert_select "p.intake-meta-sub span", "生年月日：1985年3月4日（41歳）"
     assert_no_match "未登録", response.body
   end
 

@@ -101,8 +101,8 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "a")
 
-      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性 ／ 血液型：A型",
-                   patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）", "性別：女性", "血液型：A型" ],
+                   patient_attributes(user)
     end
   end
 
@@ -112,17 +112,17 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "unknown")
 
-      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性 ／ 血液型：不明",
-                   patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）", "性別：女性", "血液型：不明" ],
+                   patient_attributes(user)
     end
   end
 
-  test "未登録の血液型は区切り記号ごと消える" do
+  test "未登録の血液型は項目ごと消える" do
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: nil)
 
-      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性",
-                   patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）", "性別：女性" ],
+                   patient_attributes(user)
     end
   end
 
@@ -132,15 +132,15 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f", blood_type: "a+")
 
-      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性",
-                   patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）", "性別：女性" ],
+                   patient_attributes(user)
     end
   end
 
-  test "血液型だけなら区切り記号を残さない" do
-    assert_equal "血液型：O型",
-                 patient_attributes_line(build_user(birthday: nil, gender: nil,
-                                                    blood_type: "o"))
+  test "血液型だけなら1項目だけ返す" do
+    assert_equal [ "血液型：O型" ],
+                 patient_attributes(build_user(birthday: nil, gender: nil,
+                                               blood_type: "o"))
   end
 
   # ── 2行目全体 ─────────────────────────────
@@ -148,39 +148,39 @@ class Intake::PatientInfoHelperTest < ActionView::TestCase
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: "f")
 
-      assert_equal "生年月日：1985年3月4日（41歳） ／ 性別：女性",
-                   patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）", "性別：女性" ],
+                   patient_attributes(user)
     end
   end
 
-  test "生年月日だけなら区切り記号を残さない" do
+  test "生年月日だけなら1項目だけ返す" do
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: nil)
 
-      assert_equal "生年月日：1985年3月4日（41歳）", patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）" ], patient_attributes(user)
     end
   end
 
-  test "性別だけなら区切り記号を残さない" do
-    assert_equal "性別：女性", patient_attributes_line(build_user(birthday: nil, gender: "f"))
+  test "性別だけなら1項目だけ返す" do
+    assert_equal [ "性別：女性" ], patient_attributes(build_user(birthday: nil, gender: "f"))
   end
 
   # 3項目すべて欠けたとき。1つでも判定を間違えると区切り記号だけが残る。
-  test "3項目とも欠ければ空文字で、呼び出し側が行ごと落とせる" do
-    line = patient_attributes_line(build_user(birthday: nil, gender: nil,
-                                              blood_type: nil))
+  test "3項目とも欠ければ空配列で、呼び出し側が行ごと落とせる" do
+    attributes = patient_attributes(build_user(birthday: nil, gender: nil,
+                                               blood_type: nil))
 
-    assert_equal "", line
-    assert_predicate line, :blank?
+    assert_equal [], attributes
+    assert_empty attributes
   end
 
-  # 真ん中が欠けた形。区切り記号が二重（「／ ／」）にならないこと。
-  test "真ん中が欠けても区切り記号は二重にならない" do
+  # 真ん中が欠けた形。空の項目が挟まったまま残らないこと。
+  test "真ん中が欠けても空の項目が残らない" do
     travel_to Date.new(2026, 8, 30) do
       user = build_user(birthday: Date.new(1985, 3, 4), gender: nil, blood_type: "ab")
 
-      assert_equal "生年月日：1985年3月4日（41歳） ／ 血液型：AB型",
-                   patient_attributes_line(user)
+      assert_equal [ "生年月日：1985年3月4日（41歳）", "血液型：AB型" ],
+                   patient_attributes(user)
     end
   end
 end

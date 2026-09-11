@@ -55,7 +55,8 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
     assert_selector "p.intake-meta", text: "はしばみれい 様"
     assert_selector "p.intake-meta", text: "会員No. #{@patient.karte_member_no}"
-    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳） ／ 性別：女性"
+    assert_selector "p.intake-meta-sub span", text: "生年月日：1985年3月4日（41歳）"
+    assert_selector "p.intake-meta-sub span", text: "性別：女性"
 
     # 分かっている情報は聞かない。ヘッダーと設問の二重取りにしない。
     assert_no_selector %(input[name="answers[q0_gender]"]), visible: :all
@@ -64,7 +65,8 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
     # 確認画面にも同じヘッダーが出ること。署名する画面なので、
     # 誰として署名しているかが見えている必要がある。
-    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳） ／ 性別：女性"
+    assert_selector "p.intake-meta-sub span", text: "生年月日：1985年3月4日（41歳）"
+    assert_selector "p.intake-meta-sub span", text: "性別：女性"
 
     sign_and_confirm
     assert_current_path intake_thanks_path, wait: 10
@@ -99,9 +101,29 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
     @patient.update_columns(gender: nil)
     open_questionnaire
 
-    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳）"
+    assert_selector "p.intake-meta-sub span", text: "生年月日：1985年3月4日（41歳）"
     assert_no_selector "p.intake-meta-sub", text: "／"
     assert_selector %(input[name="answers[q0_gender]"][value="female"])
+  end
+
+  # 1項目1行になっていること。CSS（.intake-meta-sub span { display: block })
+  # が効かないと3項目が1行に並び、iPhone 幅で折り返して行末に ／ ならぬ
+  # 項目の途中が残る。文字列の一致だけでは見分けが付かないので、
+  # 実際に縦に積まれているか座標で見る。
+  test "3項目そろった患者はヘッダーが1項目1行で縦に並ぶ" do
+    @patient.update_column(:blood_type, "a")
+    open_questionnaire
+
+    spans = all("p.intake-meta-sub span")
+    assert_equal 3, spans.size
+
+    rects = spans.map { |span| span.native.rect }
+    assert_equal rects.map(&:y), rects.map(&:y).sort,
+                 "項目が縦に並んでいません"
+    assert_equal 3, rects.map(&:y).uniq.size,
+                 "同じ行に複数の項目が乗っています（display: block が効いていません）"
+    assert_equal 1, rects.map(&:x).uniq.size,
+                 "各行の左端が揃っていません"
   end
 
   # 同意書は問診票より前に出る画面。ここでもヘッダーは同じもの。
@@ -111,7 +133,8 @@ class Intake::PatientHeaderTest < ApplicationSystemTestCase
 
     assert_selector "h1", text: "メタトロン測定に関する同意"
     assert_selector "p.intake-meta", text: "会員No. #{@patient.karte_member_no}"
-    assert_selector "p.intake-meta-sub", text: "生年月日：1985年3月4日（41歳） ／ 性別：女性"
+    assert_selector "p.intake-meta-sub span", text: "生年月日：1985年3月4日（41歳）"
+    assert_selector "p.intake-meta-sub span", text: "性別：女性"
   end
 
   private

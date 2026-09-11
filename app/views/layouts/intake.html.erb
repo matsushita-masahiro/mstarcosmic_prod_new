@@ -26,15 +26,14 @@
          隣接マージンは相殺で大きい方が残るため、2行目側では縮められない。
          1行だけの患者は従来どおりの間隔になる。 */
       .intake-meta.has-sub { margin-bottom: 4px; }
-      /* ラベルを付けて1行が長くなったため、狭い端末では折り返す。
-         日本語は文字境界のどこでも折れるので、そのままだと
-         「生年月日：1985年3月4 / 日（41歳）」のような切れ方になる。
-         keep-all は CJK を単語として扱い、折り返しを ／ 前後の
-         半角スペースだけに限定する。 */
-      .intake-meta-sub {
-        font-size: 14px; color: #6b7280; margin: 0 0 16px;
-        word-break: keep-all;
-      }
+      /* 生年月日・性別・血液型は1項目1行にする。ラベルを付けて長くなり、
+         1行に繋ぐと iPhone 幅で折り返して行末に ／ がぶら下がり、
+         血液型だけが次の行に落ちていた。
+         word-break: keep-all は付けない。項目の中には区切りになる空白が
+         無いので、keep-all にすると折り返せず、幅の狭い端末で横にはみ出す。
+         万一1項目が収まらないときは、はみ出すより折り返すほうがまだ読める。 */
+      .intake-meta-sub { font-size: 14px; color: #6b7280; margin: 0 0 16px; }
+      .intake-meta-sub span { display: block; }
       .intake-doc {
         border: 1px solid #d1d5db; border-radius: 8px; padding: 20px;
         max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
