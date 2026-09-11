@@ -26,12 +26,15 @@
     questionnaire 表示中の MedicalQuestionnaire
     entries       question_key => HandwritingEntry
     annotations   question_key => [QuestionnaireAnnotation]
+    stroke_boundaries question_key => 引き継いだストローク数（省略可）。
+                  手書きの新旧の色分けに使う。カルテからだけ渡すこと。
     patient       User（省略可）。渡さなければ追記フォームを出さない。
                   書き込みの入口を持たせたくない呼び出し側では省く。
 %>
 <% answer_html = capture do %>
   <%= render "karte/users/answer", question: question,
-        questionnaire: questionnaire, entries: entries, depth: 0 %>
+        questionnaire: questionnaire, entries: entries, depth: 0,
+        stroke_boundaries: local_assigns.fetch(:stroke_boundaries, {}) %>
 <% end %>
 
 <% items = annotations_for_question(annotations, question) %>

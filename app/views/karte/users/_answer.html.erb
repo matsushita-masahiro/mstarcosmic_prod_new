@@ -6,6 +6,12 @@
     questionnaire MedicalQuestionnaire
     entries       question_key => HandwritingEntry のハッシュ
     depth         入れ子の深さ（0 が最上位）
+    stroke_boundaries question_key => 前版から引き継いだストローク数（省略可）。
+                  渡された欄だけ、手書きの新旧が色で分かれる。
+                  【重要】カルテからだけ渡す。この partial は患者向けの
+                  確認画面（intake/questionnaire_confirmations/show.html.erb）
+                  も描いており、渡すと患者の画面に色が出る。
+                  渡さなければ単色になるので、渡し忘れは安全側に倒れる。
 
   無回答の項目は出さない。18問すべてを毎回読む運用ではないため、
   「いいえ」と「未記入」が並ぶと目が滑る。
@@ -16,6 +22,7 @@
   これを黙って隠すと「感染していないから聞かれていない」のか
   「聞いたが答えなかった」のかが区別できず、問診票として意味が変わる。
 %>
+<% stroke_boundaries = local_assigns.fetch(:stroke_boundaries, {}) %>
 <% value = questionnaire.answer_for(question[:key]) %>
 <% entry = entries[question[:key]] %>
 <% handwriting = question[:type] == :handwriting %>
@@ -45,14 +52,23 @@
       <% elsif handwriting %>
         <% if entry.input_mode_keyboard? %>
           <%= simple_format entry.transcribed_text, style: "margin:0;" %>
+        <% elsif entry.strokes.present? && entry.canvas_width.to_i.positive? %>
+          <%# strokes から描き直す。PNG は記入時より canvas が狭いと
+              保存されないので、それだけに頼ると「画像あり」と「画像なし」で
+              読めたり読めなかったりする。全点が残っている strokes から
+              描けば、どちらの場合も同じように読める。 %>
+          <%= render "karte/users/handwriting", entry: entry,
+                boundary: stroke_boundaries[entry.question_key] %>
         <% elsif entry.image.attached? %>
+          <%# strokes が無く PNG だけがある欄。描き直せないので画像を出す。 %>
           <%= link_to url_for(entry.image), target: "_blank", rel: "noopener" do %>
             <%= image_tag entry.image,
                   style: "max-width:100%;max-height:120px;background:#fff;
                           border:1px solid #e5e7eb;border-radius:4px;" %>
           <% end %>
         <% else %>
-          <span style="color:#9ca3af;">（手書きあり・画像なし）</span>
+          <%# strokes も PNG も無い。書かれた形跡はあるが復元できない。 %>
+          <span style="color:#9ca3af;">（手書きあり・記録なし）</span>
         <% end %>
       <% elsif question[:type] == :checkboxes %>
         <%= Array(value).join("、") %>
@@ -67,15 +83,18 @@
 <% if question[:other] && questionnaire.answer_for(question[:other][:key]).present? %>
   <%= render "karte/users/answer",
         question: question[:other].merge(type: :text),
-        questionnaire: questionnaire, entries: entries, depth: depth + 1 %>
+        questionnaire: questionnaire, entries: entries, depth: depth + 1,
+        stroke_boundaries: stroke_boundaries %>
 <% end %>
 
 <% if question[:detail] %>
   <%= render "karte/users/answer", question: question[:detail],
-        questionnaire: questionnaire, entries: entries, depth: depth + 1 %>
+        questionnaire: questionnaire, entries: entries, depth: depth + 1,
+        stroke_boundaries: stroke_boundaries %>
 <% end %>
 
 <% Array(question[:subs]).each do |sub| %>
   <%= render "karte/users/answer", question: sub,
-        questionnaire: questionnaire, entries: entries, depth: depth + 1 %>
+        questionnaire: questionnaire, entries: entries, depth: depth + 1,
+        stroke_boundaries: stroke_boundaries %>
 <% end %>

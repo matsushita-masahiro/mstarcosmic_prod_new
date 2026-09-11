@@ -1,0 +1,55 @@
+<%#
+  手書き回答を strokes から描き直す。カルテと患者の確認画面で共有する。
+
+  PNG を直接出さないのは、記入時より canvas が狭いと PNG が保存されない
+  ため（切れた画像を残さない作りになっている）。その欄はこれまで
+  「（手書きあり・画像なし）」としか出せず、患者の確認画面で起きると
+  自分が書いたものを確かめないまま署名することになっていた。
+  strokes には全点が残っているので、そこから描けばどちらの場合も読める。
+
+  PNG は消さない。JS が動かないとき・描画に失敗したときの受け皿として
+  canvas の中に残し、印刷でもそちらが使われる。
+
+  ローカル変数:
+    entry     HandwritingEntry
+    boundary  前版から引き継いだストローク数（省略可・nil 可）。
+              渡されたときだけ、それ以降の線が別の色で描かれる。
+              【重要】カルテからだけ渡すこと。患者に新旧の区別は見せない。
+%>
+<div data-controller="handwriting-replay"
+     data-handwriting-replay-strokes-value="<%= entry.strokes.to_json %>"
+     data-handwriting-replay-width-value="<%= entry.canvas_width %>"
+     data-handwriting-replay-height-value="<%= entry.canvas_height %>"
+     <%# boundary が無ければ属性ごと出さない。hasBoundaryValue が false になり
+         単色で描かれる。既定値つきの数値にすると 0（＝全部が新しい）と
+         区別できなくなる。 %>
+     <%= tag.attributes("data-handwriting-replay-boundary-value" => boundary) if boundary %>
+     style="max-width:100%;">
+  <canvas data-handwriting-replay-target="canvas"
+          style="display:block;max-width:100%;background:#fff;
+                 border:1px solid #e5e7eb;border-radius:4px;">
+    <%# JS が動かないときの受け皿。canvas の中身は描画できた時点で隠れる。 %>
+    <% if entry.image.attached? %>
+      <%= image_tag entry.image, style: "max-width:100%;background:#fff;" %>
+    <% end %>
+  </canvas>
+
+  <%# PNG があるうちは原寸を別タブで開ける導線を残す。canvas は表示幅に
+      合わせて縮むので、細かい字を確かめたいときに原寸が要る。
+      PNG が無い欄（記入時より canvas が狭くて保存されなかったもの）には
+      開くものが無いので出さない。 %>
+  <% if entry.image.attached? %>
+    <p style="margin:4px 0 0;font-size:12px;">
+      <%= link_to "原寸を開く", url_for(entry.image), target: "_blank", rel: "noopener",
+            style: "color:#1d4ed8;text-decoration:none;" %>
+    </p>
+  <% end %>
+
+  <%# 色だけに意味を持たせない。どちらが元でどちらが追加かを文言で示す。 %>
+  <% if boundary %>
+    <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">
+      <span style="color:#111827;">■</span> 前回までの記入
+      <span style="color:#1d4ed8;margin-left:10px;">■</span> 今回の書き足し
+    </p>
+  <% end %>
+</div>

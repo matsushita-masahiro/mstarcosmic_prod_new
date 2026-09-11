@@ -18,6 +18,7 @@
 <% revision_diff = local_assigns[:revision_diff] %>
 <% annotations = local_assigns.fetch(:annotations, {}) %>
 <% patient = local_assigns[:patient] %>
+<% stroke_boundaries = local_assigns.fetch(:stroke_boundaries, {}) %>
 <% entries = questionnaire.handwriting_entries.index_by(&:question_key) %>
 
 <%# ── 要点 ────────────────────────────────── %>
@@ -28,7 +29,8 @@
     <% question = MedicalQuestionnaireForm.find(key) %>
     <% next if question.nil? %>
     <%= render "karte/users/answer", question: question,
-          questionnaire: questionnaire, entries: entries, depth: 0 %>
+          questionnaire: questionnaire, entries: entries, depth: 0,
+          stroke_boundaries: stroke_boundaries %>
   <% end %>
 </div>
 
@@ -206,7 +208,8 @@
     <% MedicalQuestionnaireForm::QUESTIONS.each do |question| %>
       <%= render "karte/users/annotated_answer", question: question,
             questionnaire: questionnaire, entries: entries,
-            annotations: annotations, patient: patient %>
+            annotations: annotations, patient: patient,
+            stroke_boundaries: stroke_boundaries %>
     <% end %>
   </div>
   <p style="color:#9ca3af;font-size:13px;margin-top:12px;">

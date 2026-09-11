@@ -192,8 +192,11 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
     assert_match "痛み・気になるところ", body
     assert_match "ここが痛い", body
 
-    # 手書き画像はタップで原寸が開く
-    assert_match(/<a [^>]*target="_blank"[^>]*>\s*<img/m, body)
+    # 手書きは strokes から canvas に描き直す。PNG は記入時より canvas が
+    # 狭いと保存されないので、それだけに頼ると読めない欄が出る。
+    assert_match(/data-controller="handwriting-replay"/, body)
+    # PNG があるうちは原寸を別タブで開ける導線を残す。
+    assert_match(/<a [^>]*target="_blank"[^>]*>原寸を開く<\/a>/m, body)
 
     # サブ項目も入れ子で出る
     assert_match "摘出臓器", body
@@ -619,7 +622,14 @@ class KarteQuestionnaireTest < ActionDispatch::IntegrationTest
 
     pen_keys.each do |key|
       entry = questionnaire.handwriting_entries.create!(
-        question_key: key, input_mode: :pen, strokes: [ [ { "x" => 1, "y" => 1 } ] ]
+        # 実データと同じ形にする。signature_pad の toData() は
+        # { penColor:, points: [{ x:, y:, time:, pressure: }] } の配列を返す。
+        # 旧い [[{x,y}]] のままだと、strokes の中身を読む実装
+        # （手書きの再描画・新旧の色分け）が実データと違うもので通ってしまう。
+        question_key: key, input_mode: :pen, canvas_width: 353, canvas_height: 140,
+        strokes: [ { "penColor" => "#111827",
+                     "points" => [ { "x" => 1.0, "y" => 1.0,
+                                     "time" => 1_787_230_336_819, "pressure" => 0.5 } ] } ]
       )
       entry.image.attach(io: StringIO.new(PNG), filename: "#{key}.png",
                          content_type: "image/png")
