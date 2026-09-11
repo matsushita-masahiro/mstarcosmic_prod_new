@@ -1,0 +1,31 @@
+<%#
+  設問1件の回答に、スタッフ追記を添えて出す。カルテ専用。
+
+  【重要】追記を karte/users/_answer 側に入れないこと。
+  あの partial は患者向けの確認画面
+  （intake/questionnaire_confirmations/show.html.erb）が直接描いており、
+  追記を混ぜると患者の画面に出る。この partial は
+  karte/users/_questionnaire からしか描かれない。
+
+  追記は親の設問にまとめて出す。付随項目（detail）・サブ項目（subs）・
+  その他欄（other）に付いた追記もここで拾う。_answer は回答が無い項目を
+  描かないため、サブ項目の側に置くと追記ごと消えることがある。
+
+  ローカル変数:
+    question      設問定義（最上位）
+    questionnaire 表示中の MedicalQuestionnaire
+    entries       question_key => HandwritingEntry
+    annotations   question_key => [QuestionnaireAnnotation]
+%>
+<%= render "karte/users/answer", question: question,
+      questionnaire: questionnaire, entries: entries, depth: 0 %>
+
+<% items = annotations_for_question(annotations, question) %>
+<% if items.any? %>
+  <div style="padding:0 0 8px;">
+    <% items.each do |annotation| %>
+      <%= render "karte/users/annotation", annotation: annotation,
+            question: question, questionnaire: questionnaire %>
+    <% end %>
+  </div>
+<% end %>

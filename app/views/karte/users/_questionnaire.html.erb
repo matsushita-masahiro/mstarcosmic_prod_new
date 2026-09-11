@@ -9,9 +9,12 @@
     questionnaire MedicalQuestionnaire
     expanded      true なら全設問を開いた状態で出す（履歴から選んだとき）
     revision_diff QuestionnaireRevisionDiff（省略可。訂正版のときだけ中身が出る）
+    annotations   question_key => [QuestionnaireAnnotation]（省略可）。
+                  版の連なり全体ぶんを渡す。渡さなければ追記は出ない。
 %>
 <% expanded = local_assigns.fetch(:expanded, false) %>
 <% revision_diff = local_assigns[:revision_diff] %>
+<% annotations = local_assigns.fetch(:annotations, {}) %>
 <% entries = questionnaire.handwriting_entries.index_by(&:question_key) %>
 
 <%# ── 要点 ────────────────────────────────── %>
@@ -184,13 +187,23 @@
 
 <%# ── 全設問 ──────────────────────────────── %>
 <details style="margin-top:20px;" <%= "open" if expanded %>>
+  <%# 追記は折りたたみの中にある。件数を見出しに出しておかないと、
+      開く習慣のないスタッフが申し送りに気づけない。 %>
+  <% annotation_count = annotations.values.sum(&:size) %>
   <summary style="cursor:pointer;font-size:15px;color:#1d4ed8;padding:8px 0;">
     すべての回答を見る
+    <% if annotation_count.positive? %>
+      <span style="margin-left:8px;padding:1px 8px;border-radius:10px;font-size:12px;
+                   background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;">
+        スタッフ追記 <%= annotation_count %>件
+      </span>
+    <% end %>
   </summary>
   <div style="margin-top:8px;">
     <% MedicalQuestionnaireForm::QUESTIONS.each do |question| %>
-      <%= render "karte/users/answer", question: question,
-            questionnaire: questionnaire, entries: entries, depth: 0 %>
+      <%= render "karte/users/annotated_answer", question: question,
+            questionnaire: questionnaire, entries: entries,
+            annotations: annotations %>
     <% end %>
   </div>
   <p style="color:#9ca3af;font-size:13px;margin-top:12px;">

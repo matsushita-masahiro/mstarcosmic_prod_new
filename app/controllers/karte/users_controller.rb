@@ -79,6 +79,12 @@ module Karte
       # 施術判断の根拠になる版（@latest_questionnaire）で見る。
       @latest_revision_diff = QuestionnaireRevisionDiff.new(@latest_questionnaire)
 
+      # スタッフの追記。表示中の版だけでなく、版の連なり全体から集める。
+      # v1 に書いた申し送りが、患者が v2 を出した瞬間に最新版の画面から
+      # 黙って消えるのを避けるため。過去版を開けば見えるとしても気づかれない。
+      # レコード自体は書かれた版にぶら下げたまま動かさない（追加専用のため）。
+      @annotations = annotations_for(@questionnaire)
+
       @consents = @user.consents.includes(:consent_document).latest_first
 
       @first_visit_at = @user.first_visit_at
@@ -170,6 +176,19 @@ module Karte
     # 2回目以降の来店ぶんを切り替えて見る。
     # 読み込み済みの配列から選ぶので追加クエリは出ない。
     # 他人の問診票 ID を渡されても @questionnaires の中にしか無いため拾えない。
+    # question_key => [QuestionnaireAnnotation] （古い順）。
+    # 版を辿るのは MedicalQuestionnaire#revision_chain を流用している
+    # （循環参照でも止まる作りになっている）。
+    def annotations_for(questionnaire)
+      return {} if questionnaire.nil?
+
+      QuestionnaireAnnotation
+        .where(medical_questionnaire_id: questionnaire.revision_chain.map(&:id))
+        .includes(:staff, :medical_questionnaire)
+        .chronological
+        .group_by(&:question_key)
+    end
+
     def selected_questionnaire
       requested = params[:questionnaire_id].presence
       (requested && @questionnaires.find { |q| q.id == requested.to_i }) || default_questionnaire

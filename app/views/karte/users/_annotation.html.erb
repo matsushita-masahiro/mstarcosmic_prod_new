@@ -1,0 +1,25 @@
+<%#
+  スタッフ追記1件。カルテ専用で、患者には見せない。
+
+  色は青。赤は禁忌の「施術できません」、黄は「確認してください」に
+  割り当て済みで、追記を赤にすると警告色と区別がつかなくなる。
+
+  色だけに意味を持たせない。印刷したときや色覚特性のある方が見たときに
+  「スタッフが書いたもの」という情報が落ちないよう、
+  「スタッフ追記：{名前} {日付}」の見出しを必ず添える。
+
+  ローカル変数:
+    annotation    QuestionnaireAnnotation
+    question      親の設問定義（サブ項目への追記かを見分けるのに使う）
+    questionnaire 表示中の MedicalQuestionnaire（別版への追記かの判定に使う）
+%>
+<div style="margin-top:6px;padding:4px 0 4px 12px;border-left:3px solid #bfdbfe;">
+  <div style="font-size:12px;color:#2563eb;">
+    <%= annotation_heading(annotation, questionnaire) %>
+    <% if (sub_label = annotation_sub_label(annotation, question)) %>
+      <span style="color:#6b7280;">／ <%= sub_label %></span>
+    <% end %>
+  </div>
+  <%= simple_format annotation.body,
+        style: "margin:2px 0 0;font-size:14px;color:#1d4ed8;" %>
+</div>
