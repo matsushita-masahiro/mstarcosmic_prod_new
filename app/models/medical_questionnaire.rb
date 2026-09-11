@@ -8,6 +8,17 @@ class MedicalQuestionnaire < ApplicationRecord
   has_many :handwriting_entries, dependent: :destroy
   has_many :body_marks, dependent: :destroy
 
+  # スタッフの追記。患者の回答（answers）とは別に持つ。
+  #
+  # dependent: :delete_all にしているのは readonly? のため。
+  # QuestionnaireAnnotation は追加専用（readonly? = persisted?）で、
+  # Rails は readonly なレコードの destroy も止める。:destroy にすると
+  # 患者削除の連鎖（User → 問診票 → 追記）が ActiveRecord::ReadOnlyRecord で
+  # 落ちる。:delete_all は SQL の DELETE を1本出すだけでレコードを
+  # インスタンス化しないため、readonly の判定を通らない。
+  # 追記にコールバックは無いので、消し方を変えても失うものは無い。
+  has_many :questionnaire_annotations, dependent: :delete_all
+
   # 訂正（版管理）。提出済みの問診票を直すときは上書きせず、次の版を作る。
   #
   #   v2 ─ previous_version ─→ nil        （独立した提出。revision 1）

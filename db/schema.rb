@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_30_125532) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_11_121430) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -285,6 +285,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_30_125532) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "questionnaire_annotations", force: :cascade do |t|
+    t.bigint "medical_questionnaire_id", null: false
+    t.string "question_key", null: false
+    t.text "body", null: false
+    t.bigint "staff_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["medical_questionnaire_id", "question_key"], name: "idx_annotations_on_questionnaire_and_question"
+    t.index ["medical_questionnaire_id"], name: "index_questionnaire_annotations_on_medical_questionnaire_id"
+    t.index ["staff_id"], name: "index_questionnaire_annotations_on_staff_id"
+  end
+
   create_table "reservations", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "staff_id"
@@ -499,6 +511,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_30_125532) do
   add_foreign_key "medical_questionnaires", "users", column: "reviewed_by_id", on_delete: :nullify
   add_foreign_key "ms_inquiry_answers", "metatron_sale_inquiries"
   add_foreign_key "patient_profiles", "users"
+  add_foreign_key "questionnaire_annotations", "medical_questionnaires"
+  add_foreign_key "questionnaire_annotations", "users", column: "staff_id"
   add_foreign_key "reservations", "staffs"
   add_foreign_key "reservations", "users"
   add_foreign_key "schedules", "staffs"
