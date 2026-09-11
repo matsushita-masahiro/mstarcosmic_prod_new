@@ -234,6 +234,24 @@ class MedicalQuestionnaire < ApplicationRecord
     user.update_column(:blood_type, value)
   end
 
+  # question_key => 前の版から引き継いだストローク数。
+  # 引き継ぎが無い欄は含めない（呼び出し側は「境界なし＝単色」として扱う）。
+  #
+  # 【重要】カルテ側だけが使う。患者の確認画面には渡さないこと。
+  # 新旧の色分けは施術判断の文脈で、患者に見せる区別ではない。
+  # 渡さなければ色分けのしようがない、という形で安全側に倒している。
+  def inherited_stroke_counts
+    previous = previous_version
+    return {} if previous.nil?
+
+    previous_entries = previous.handwriting_entries.index_by(&:question_key)
+
+    handwriting_entries.each_with_object({}) do |entry, result|
+      count = entry.inherited_stroke_count(previous_entries[entry.question_key])
+      result[entry.question_key] = count unless count.nil?
+    end
+  end
+
   def answer(key) = answers[key.to_s]
 
   # 訂正版か（独立した提出ではないか）

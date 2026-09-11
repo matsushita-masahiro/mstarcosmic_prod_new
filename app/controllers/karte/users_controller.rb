@@ -77,6 +77,12 @@ module Karte
       @latest_questionnaire = @user.latest_questionnaire
       @questionnaire = selected_questionnaire
 
+      # 手書きの新旧を色分けするための境界。表示中の版が決まってから組み立てる。
+      # カルテ側でだけ渡す。患者の確認画面は同じ partial を描くが、
+      # これを渡さないので単色になる。渡さなければ色分けのしようがない、
+      # という形で安全側に倒している。
+      @stroke_boundaries = @questionnaire&.inherited_stroke_counts || {}
+
       # 表示中の版が訂正版なら、前版との差分を出す。
       # 訂正版でなければ present? が false になり、画面には何も出ない。
       @revision_diff = QuestionnaireRevisionDiff.new(@questionnaire)
