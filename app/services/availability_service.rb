@@ -3,6 +3,26 @@ class AvailabilityService
   SLOTS_PER_DAY = 24
   CUTOFF_HOUR   = 15
 
+  # 予約の事前チェックに使う施術時間（分）。
+  #
+  # 既定は60分で、整体だけ services.min_duration から引く。
+  # 直書きの 60 を散らさないよう、値を決めるのはここ1箇所にする。
+  # （reserves_controller#new と reserves/_form_machine_staff の両方が呼ぶ）
+  #
+  # 全サービスを min_duration 由来にしていないのは、鍼灸で食い違いが
+  # あるため。鍼灸は services.min_duration=90 だがフォームの frames は 60 で、
+  # データとフォームが既にずれている。ここを全サービスで min_duration 由来に
+  # すると、鍼灸は90分の連続空きを要求されて予約可能枠が不当に狭まる。
+  # 整体のみスコープしているのはそのため。鍼灸は別途要調査。
+  DEFAULT_DURATION_MINUTES = 60
+  DURATION_FROM_SERVICE = %w[seitai].freeze
+
+  def self.reservation_duration_minutes(service_name)
+    return DEFAULT_DURATION_MINUTES unless DURATION_FROM_SERVICE.include?(service_name.to_s)
+
+    Service.find_by(name: service_name)&.min_duration || DEFAULT_DURATION_MINUTES
+  end
+
   def self.time_slots
     @time_slots ||= SLOTS_PER_DAY.times.map do |i|
       format('%02d:%02d', 10 + i / 2, (i % 2) * 30)

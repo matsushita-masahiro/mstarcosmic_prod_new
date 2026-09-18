@@ -32,7 +32,7 @@
             <span style="width:70px;color:#888;font-size:0.85rem;">スタッフ</span>
             <span style="flex:1;">
               <% service_name = { 'h' => 'holistic', 'e' => 'esute', 'seitai' => 'seitai' }[@machine] || 'holistic' %>
-              <% available = AvailabilityService.new(service_name, @date.to_date, num_days: 1, user_signed_in: true).available_staff(@date.to_date, format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i), duration_minutes: 60) %>
+              <% available = AvailabilityService.new(service_name, @date.to_date, num_days: 1, user_signed_in: true).available_staff(@date.to_date, format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i), duration_minutes: AvailabilityService.reservation_duration_minutes(service_name)) %>
               <% if @machine == 'e' || @machine == 'seitai' %>
                 <%# エステ・整体は担当スタッフ固定 %>
                 <% staff = available.first %>

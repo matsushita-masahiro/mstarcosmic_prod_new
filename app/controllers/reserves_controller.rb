@@ -27,11 +27,14 @@ class ReservesController < ApplicationController
         # url直打ち(reserves/new)防止 
         return redirect_to reserves_path if @date.nil?
 
-        # 60分確保できるか事前チェック
+        # 施術時間ぶんの連続空きを確保できるか事前チェック。
+        # 60 を直書きすると、整体を30分にしてもここで弾かれ、
+        # カレンダーの ✘ がモーダルに移動するだけになる。
         slot_time = format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i)
         service_name = machine_to_service_name(@machine)
+        @required_duration = AvailabilityService.reservation_duration_minutes(service_name)
         @available_staff = AvailabilityService.new(service_name, @date.to_date, num_days: 1, user_signed_in: user_signed_in? || false)
-                                              .available_staff(@date.to_date, slot_time, duration_minutes: 60)
+                                              .available_staff(@date.to_date, slot_time, duration_minutes: @required_duration)
 
         respond_to do |format|
             # format.html

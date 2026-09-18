@@ -1,6 +1,7 @@
 console.log("===================== new.js.erb start");
 <% if @available_staff.empty? %>
-  alert("この時間帯は60分の予約枠を確保できません。別の時間帯をお選びください。");
+  <%# 文言も実際に要求している時間に追従させる。整体なら「30分の」。 %>
+  alert("この時間帯は<%= @required_duration %>分の予約枠を確保できません。別の時間帯をお選びください。");
 <% else %>
   <% if @user.present? %>
     $("#user-modal").html("<%= escape_javascript(render 'form_machine_staff') %>")
