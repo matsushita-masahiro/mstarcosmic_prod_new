@@ -14,6 +14,10 @@ class AvailabilityService
   # データとフォームが既にずれている。ここを全サービスで min_duration 由来に
   # すると、鍼灸は90分の連続空きを要求されて予約可能枠が不当に狭まる。
   # 整体のみスコープしているのはそのため。鍼灸は別途要調査。
+  # 営業終了。time_slots_for_service と calc_slot が 22:00 を直書きしていたので
+  # 名前を付けて共有する（値は変えていない）。
+  BUSINESS_END_MINUTES = 22 * 60
+
   DEFAULT_DURATION_MINUTES = 60
   DURATION_FROM_SERVICE = %w[seitai].freeze
 
@@ -22,6 +26,51 @@ class AvailabilityService
 
     Service.find_by(name: service_name)&.min_duration || DEFAULT_DURATION_MINUTES
   end
+
+  # その枠から実際に取れる施術時間の一覧（分）。
+  #
+  #   available_durations('seitai', date, '10:30')
+  #   => [30, 60, 90, 120]  完全に空いている
+  #   => [30, 60]           11:30 から埋まっている
+  #   => [30]               11:00 から埋まっている
+  #   => [30]               21:30 開始（営業終了22:00を超えられない）
+  #
+  # 選択肢を固定で並べない理由。エステは 60/90/120/150 を直書きしており、
+  # 事前チェックは「60分で開始できるか」しか見ていない。選んだ長さが
+  # 空いているかは確かめていない。枠が埋まりにくいので表面化していないが、
+  # 整体は30分刻みで細かく埋まるため、同じ作りにすると
+  # 「○ を押して120分を選んだら実は30分しか空いていなかった」が起きる。
+  #
+  # 判定は available_staff に委ねる。空き判定をここに書き写すと、
+  # カレンダーの ○✘ と選択肢がずれる。
+  #
+  # 短い方から順に試し、取れなくなった時点で打ち切る（break）。
+  # 飛び地を拾わないため。11:00 が埋まり 11:30 が空いていても、
+  # 10:30 の選択肢は [30] であって [30, 90] にはならない。
+  def self.available_durations(service_name, date, slot_time, user_signed_in: true)
+    service = Service.find_by(name: service_name)
+    return [] if service.nil?
+
+    svc = new(service_name, date, num_days: 1, user_signed_in: user_signed_in)
+    durations = []
+
+    (SLOT_MINUTES..service.max_duration).step(SLOT_MINUTES) do |minutes|
+      break if ends_after_business_hours?(slot_time, minutes)
+      break if svc.available_staff(date, slot_time, duration_minutes: minutes).empty?
+
+      durations << minutes
+    end
+
+    durations
+  end
+
+  # 営業終了（22:00）を超えるか。21:30 開始の30分はちょうど22:00で収まる。
+  def self.ends_after_business_hours?(slot_time, minutes)
+    h, m = slot_time.split(":").map(&:to_i)
+
+    (h * 60 + m + minutes) > BUSINESS_END_MINUTES
+  end
+  private_class_method :ends_after_business_hours?
 
   def self.time_slots
     @time_slots ||= SLOTS_PER_DAY.times.map do |i|

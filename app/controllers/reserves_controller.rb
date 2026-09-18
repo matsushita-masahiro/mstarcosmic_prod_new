@@ -33,6 +33,15 @@ class ReservesController < ApplicationController
         slot_time = format('%02d:%02d', @frame.to_f.to_i, ((@frame.to_f % 1) * 60).to_i)
         service_name = machine_to_service_name(@machine)
         @required_duration = AvailabilityService.reservation_duration_minutes(service_name)
+        # 整体だけ、その枠から実際に取れる長さの一覧を出す。
+        # 固定で並べると「選んだ長さが空いていなかった」が起きる。
+        @available_durations =
+          if service_name == "seitai"
+            AvailabilityService.available_durations(service_name, @date.to_date, slot_time,
+                                                    user_signed_in: user_signed_in? || false)
+          else
+            []
+          end
         @available_staff = AvailabilityService.new(service_name, @date.to_date, num_days: 1, user_signed_in: user_signed_in? || false)
                                               .available_staff(@date.to_date, slot_time, duration_minutes: @required_duration)
 
@@ -109,6 +118,29 @@ class ReservesController < ApplicationController
                 logger.debug("--------------- can_reserve_sanmei_next_space else 無関係= staff_id = #{@staff.id} machine = #{reserve_params[:machine]}")
             end
         
+            # ── 整体だけ、全枠の空きを保存前に確かめる ──────────
+            #
+            # 下の available_flag はループ内で毎回上書きされ、最後の枠の可否しか
+            # 見ていない。コメントの「１つでも予約されてたら false」が実装されて
+            # おらず、先頭の枠が埋まっていても素通りする。エステ・ホリスティック・
+            # 鍼灸では今もこの状態で、二重予約を作れる。
+            #
+            # それを今回まとめて直さないのは運用影響のため。本番の直近180日を
+            # 調べると重なりは holistic の42グループだけで、machines の
+            # number_of_machine が h=2 なのですべて定員内。エステ（1台）・
+            # 鍼灸（1台）の重なりは0件で、穴は理論上のものに留まっている。
+            # 既存の判定を厳しくすると、今まで通っていた予約が弾かれて
+            # 現場の運用が変わる。整体は30分刻みで細かく埋まり、今回
+            # 30/60/90/120 を選べるようにするため、ここだけ先に塞ぐ。
+            #
+            # 既存の available_flag には手を入れず、整体は別経路にしている。
+            # エステ等を直すときは、この分岐ごと畳んで all? に寄せること。
+            if seitai_request? && !seitai_slots_all_available?
+              can_reserve_flag = false
+              # 既存の流儀に合わせる。あとで "予約できませんでした" が連結される。
+              error_msg = "選択された時間はすでに予約が入っているため"
+            end
+
             if can_reserve_flag
             
               j = 0  # 保存レコード数初期化
@@ -120,7 +152,10 @@ class ReservesController < ApplicationController
                  logger.debug("^^^^^^^^^^^^^^^^^^^^^^^^^ available_flag = #{available_flag}")
               end
               
-              if available_flag
+              if seitai_request?
+                # 整体は transaction で囲む別経路。途中で失敗したら1件も残さない。
+                j = create_seitai_reserves(@frames, new_customer_flag)
+              elsif available_flag
                   @frames.times do |i|
                     @reserve = Reserve.new(reserve_params)
                     if !user_signed_in?
@@ -444,6 +479,64 @@ class ReservesController < ApplicationController
     # end
     
     # 翌日の予約は15時以降は不可,当日予約不可
+    def seitai_request?
+      reserve_params[:machine] == "seitai"
+    end
+
+    # 予約しようとしている全枠が空いているか。
+    #
+    # 既存の available_flag と違い all? で畳む。あちらはループ内で毎回
+    # 上書きしており、最後の枠の可否しか見ていない（先頭が埋まっていても通る）。
+    # 判定そのものは available_space をそのまま使い、書き写さない。
+    def seitai_slots_all_available?
+      base = params[:reserve][:reserved_space].to_f
+
+      @frames.times.all? do |i|
+        available_space(params[:reserve][:reserved_date], (base + (0.5 * i)),
+                        params[:reserve][:staff_id], params[:reserve][:machine])
+      end
+    end
+
+    # 整体の予約行をまとめて作る。保存できた件数を返す。
+    #
+    # transaction で囲むのは、途中の枠で失敗したときに先頭だけ残さないため。
+    # 既存の経路（エステ等）は囲まれておらず、失敗しても作成済みの行が残る。
+    #
+    # 巻き戻しは Rollback に任せている。after_create の
+    # Reserve#sync_to_reservations も同じ transaction の中で走るので、
+    # reservations 側も一緒に戻る。手で消す必要が出た場合は
+    # reserved_space の降順で消すこと（昇順だと after_destroy の同期が
+    # 親グループを引けずに落ちる）。
+    def create_seitai_reserves(frames, new_customer_flag)
+      saved = 0
+      base = params[:reserve][:reserved_space].to_f
+
+      Reserve.transaction do
+        frames.times do |i|
+          reserve = Reserve.new(reserve_params)
+          reserve.user_id = @user.id unless user_signed_in?
+          reserve.reserved_space = base + (0.5 * i)
+          reserve.new_customer = true if new_customer_flag
+
+          raise ActiveRecord::Rollback unless reserve.save
+
+          if i.zero?
+            reserve.update(root_reserve_id: reserve.id)
+            @this_root_reserve_id = reserve.id
+            @flash_reserve_space = reserve.reserved_space
+            @root_reserve = reserve
+          else
+            reserve.update(root_reserve_id: @this_root_reserve_id)
+          end
+
+          @reserve = reserve
+          saved += 1
+        end
+      end
+
+      saved
+    end
+
     def reject_reserve_new
       tokyo_time = Time.now.in_time_zone("Tokyo")
       today = Time.now.in_time_zone("Tokyo").to_date

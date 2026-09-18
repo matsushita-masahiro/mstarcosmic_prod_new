@@ -74,12 +74,34 @@
               </label>
             </div>
           <% elsif @machine == 'seitai' %>
-            <%# 施術時間は services.min_duration と二重管理。
-                片方だけ変更すると予約枠と空き判定が食い違う。
-                ここは reserves が何枠作るかを決め（frames/30 = 枠数）、
-                services.min_duration はカレンダーの空き判定に効く。 %>
-            <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;">30分</div>
-            <%= f.hidden_field :frames, value: "30" %>
+            <%# 選択肢はこの枠から実際に取れる長さだけを出す
+                （ReservesController#new の @available_durations）。
+                刻みは30分、上限は services.max_duration、営業終了22:00 まで。
+
+                エステ（上の分岐）のように 60/90/120/150 を固定で並べない。
+                あちらは選んだ長さが空いているかを確かめておらず、
+                整体は30分刻みで細かく埋まるため、同じ作りにすると
+                「○ を押して120分を選んだら30分しか空いていなかった」が起きる。
+
+                施術時間の持ち方が services と分かれている点は変わっていない。
+                services.min_duration … その枠から開始できるか（カレンダーの ○✘）
+                services.max_duration … 最長どこまで取れるか（選択肢の上限）
+                frames                … 実際に何枠作るか（reserves の行数）
+                ずらすと画面と予約が食い違う。 %>
+            <% durations = @available_durations.presence || [ 30 ] %>
+            <% if durations.size == 1 %>
+              <%# 選択肢が1つならラジオにしない。押させる意味がない。 %>
+              <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;"><%= durations.first %>分</div>
+              <%= f.hidden_field :frames, value: durations.first.to_s %>
+            <% else %>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <% durations.each_with_index do |minutes, index| %>
+                  <label style="padding:8px 20px;border-radius:20px;<%= index.zero? ? 'background:#fff3cd;color:#856404;' : 'border:1.5px solid #ddd;' %>font-size:0.85rem;font-weight:600;cursor:pointer;">
+                    <%= f.radio_button :frames, minutes.to_s, checked: index.zero? %> <%= minutes %>分
+                  </label>
+                <% end %>
+              </div>
+            <% end %>
           <% elsif user_signed_in? && admin_user? %>
             <div style="display:flex;gap:8px;">
               <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
