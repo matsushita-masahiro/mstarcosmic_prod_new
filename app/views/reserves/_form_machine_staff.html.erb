@@ -74,8 +74,12 @@
               </label>
             </div>
           <% elsif @machine == 'seitai' %>
-            <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;">60分</div>
-            <%= f.hidden_field :frames, value: "60" %>
+            <%# 施術時間は services.min_duration と二重管理。
+                片方だけ変更すると予約枠と空き判定が食い違う。
+                ここは reserves が何枠作るかを決め（frames/30 = 枠数）、
+                services.min_duration はカレンダーの空き判定に効く。 %>
+            <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;">30分</div>
+            <%= f.hidden_field :frames, value: "30" %>
           <% elsif user_signed_in? && admin_user? %>
             <div style="display:flex;gap:8px;">
               <label style="padding:8px 20px;border-radius:20px;border:1.5px solid #ddd;font-size:0.85rem;font-weight:600;cursor:pointer;">
