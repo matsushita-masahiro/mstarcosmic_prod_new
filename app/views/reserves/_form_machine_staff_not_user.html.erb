@@ -32,13 +32,16 @@
           </div>
           <div style="display:flex;padding:10px 0;">
             <span style="width:80px;color:#888;font-size:0.85rem;">サービス</span>
-            <span style="font-weight:600;">ホリスティック</span>
+            <%# 機器で分岐していなかったため、?machine=seitai で来ると
+                「ホリスティック」と誤表示されていた。整体だけ差し替える。
+                それ以外は従来どおりホリスティック表記のまま。 %>
+            <span style="font-weight:600;"><%= @machine == 'seitai' ? '整体' : 'ホリスティック' %></span>
           </div>
         </div>
 
         <div style="margin-bottom:16px;">
           <div style="color:#888;font-size:0.8rem;margin-bottom:6px;">予約時間</div>
-          <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;">60分</div>
+          <div style="padding:10px 16px;background:#fff3cd;color:#856404;border-radius:10px;font-weight:600;font-size:0.9rem;"><%= @machine == 'seitai' ? '30分' : '60分' %></div>
         </div>
 
         <div style="margin-bottom:16px;">
@@ -51,7 +54,10 @@
         <%= f.hidden_field :start_date, value: @start_date %>
         <%= f.hidden_field :staff_id, value: 0 %>
         <%= f.hidden_field :machine, value: @machine %>
-        <%= f.hidden_field :frames, value: "60" %>
+        <%# 施術時間は services.min_duration と二重管理。
+            片方だけ変更すると予約枠と空き判定が食い違う。
+            整体だけ30分（1枠）。他は従来どおり60分（2枠）。 %>
+        <%= f.hidden_field :frames, value: (@machine == 'seitai' ? "30" : "60") %>
 
         <div style="display:flex;gap:12px;justify-content:center;padding-top:8px;">
           <button type="button" data-bs-dismiss="modal" style="padding:10px 28px;border-radius:24px;border:1.5px solid #ddd;background:#fff;color:#333;font-size:0.9rem;font-weight:500;cursor:pointer;">戻る</button>
