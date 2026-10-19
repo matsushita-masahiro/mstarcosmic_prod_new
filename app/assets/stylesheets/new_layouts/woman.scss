@@ -21,6 +21,30 @@
     margin: 0 0 0 10%;
 }
 
+/* 表紙を横に並べる。figure を flex で2枚、間は gap で空ける。
+   .publish-area > .woman（直下セレクタ）は .woman-covers で包んだ時点で
+   外れるので、上のルールは残したまま新しい並べ方に移れる。 */
+.publish-area > .woman-covers {
+    display: flex;
+    gap: 4%;
+    width: 90%;
+    margin: 0 0 0 10%;
+}
+
+.woman-covers > .woman-cover {
+    width: 48%;
+    margin: 0;
+}
+
+.woman-covers > .woman-cover > .woman-title {
+    margin: 0 0 10px;
+}
+
+.woman-covers > .woman-cover > .woman {
+    width: 100%;
+    margin: 0;
+}
+
 @media screen and (max-width: 768px) {
     #features {
         display: block;
@@ -41,6 +65,13 @@
     
     .publish-area > .woman {
         width: 70%;
+        margin: 0 0 0 5%;
+    }
+
+    /* 768px 以下でも横並びのまま。右カラムが全幅になるぶん
+       1枚あたりはむしろ広くなる（実測で約315px）。 */
+    .publish-area > .woman-covers {
+        width: 95%;
         margin: 0 0 0 5%;
     }
     

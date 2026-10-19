@@ -11,8 +11,23 @@
         </div>
     </div>
     <div class="publish-area">
-        <div class="woman-title">ウーマン・セレンディピティV<br>に掲載されました(84〜87頁)11月発売</div>
-        <img src="/new-images/20241122/woman.JPG" class="woman" >
+        <%# 表紙ごとに見出しを持たせる。figure/figcaption にしているのは、
+            号が増えたときに「どの見出しがどの表紙のものか」を
+            マークアップだけで追えるようにするため。
+
+            .woman-covers で包むと、woman.scss の
+            .publish-area > .woman（直下セレクタ）が自然に外れる。
+            既存ルールを消さずに新しい並べ方へ移せる。 %>
+        <div class="woman-covers">
+            <figure class="woman-cover">
+                <figcaption class="woman-title">ウーマン・セレンディピティVI<br>に掲載されました(00〜00頁)1月発売</figcaption>
+                <img src="/new-images/20261020/woman6.jpg" class="woman" alt="WOMAN Serendipity VI 表紙">
+            </figure>
+            <figure class="woman-cover">
+                <figcaption class="woman-title">ウーマン・セレンディピティV<br>に掲載されました(84〜87頁)11月発売</figcaption>
+                <img src="/new-images/20241122/woman.JPG" class="woman" alt="WOMAN Serendipity V 表紙">
+            </figure>
+        </div>
     </div>
 </section>
 <section id="metatron-features" class="metatron-features">
