@@ -45,7 +45,12 @@
     margin: 0;
 }
 
-@media screen and (max-width: 768px) {
+/* 2カラム解除は 792px。main.scss 側（.sp-top-banner の表示切替）が
+   max-width: 792px で、サイト内のブレークポイントを揃えている。
+
+   768px にしていた頃は 769〜792px の帯だけ「まだ2カラム・右カラムが狭い」
+   が重なり、表紙が1枚95pxまで潰れて誌名が読めなかった。 */
+@media screen and (max-width: 792px) {
     #features {
         display: block;
     }
