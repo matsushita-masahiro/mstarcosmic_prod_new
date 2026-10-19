@@ -31,13 +31,21 @@
     margin: 0 0 0 10%;
 }
 
+/* 見出しの行数が号によって違う（VI は3行・V は4行）ため、
+   そのままだと行数の少ない側の画像だけ上にずれる。
+   figure を縦の flex にして見出しに flex: 1 を持たせ、余った高さを
+   見出しの側で吸収させる。見出しの文字は上詰めのまま、空きは
+   見出しと画像のあいだに入るので、画像の上端が揃う。 */
 .woman-covers > .woman-cover {
     width: 48%;
     margin: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .woman-covers > .woman-cover > .woman-title {
     margin: 0 0 10px;
+    flex: 1;
 }
 
 .woman-covers > .woman-cover > .woman {
